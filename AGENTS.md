@@ -27,6 +27,8 @@ SPA на React + TypeScript + Vite. Бэк — репозиторий BookedUp-b
 
 - `vite-plugin-svgr` с `include: '**/*.svg'` и `exportType: 'default'` — кит импортирует SVG без `?react`;
 - `optimizeDeps.exclude: ['ted-ui']` — пакет поставляется исходниками `.tsx`;
+- `optimizeDeps.include` — все пакеты, которые импортирует кит. Без этого в dev-режиме (сборка не ловит!) CommonJS-зависимость падает в браузере с `does not provide an export named …`. При обновлении TedUI сверить список с его импортами и прогнать `npm run test:e2e`;
+- `verbatimModuleSyntax: false` — tsc проверяет исходники кита, а они импортируют типы без `import type`;
 - `import 'ted-ui/tokens.scss'` в `main.tsx`, ресеты в `src/styles/global.scss`, Montserrat в `index.html`;
 - `registerUIKitTranslations(i18n)` в `src/i18n.ts`.
 
@@ -43,4 +45,4 @@ npm test
 npm run build
 ```
 
-`npm run test:e2e` — Playwright (один раз нужен `npx playwright install chromium`).
+`npm run test:e2e` — Playwright на dev-сервере, падает на любой ошибке страницы (один раз нужен `npx playwright install chromium --only-shell`). Обязателен после изменений `vite.config.ts` и обновления TedUI: `build` проблемы dev-режима не видит.
