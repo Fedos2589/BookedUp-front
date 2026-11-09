@@ -1,0 +1,48 @@
+{
+  "name": "bookedup-front",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "api:generate": "orval"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^7.0.5",
+    "@sentry/react": "^11.11.0",
+    "@tanstack/react-query": "^5.107.1",
+    "@tanstack/react-router": "^1.170.46",
+    "dayjs": "^1.11.23",
+    "i18next": "^26.7.2",
+    "posthog-js": "^1.447.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-hook-form": "^7.91.0",
+    "react-i18next": "^17.1.13",
+    "ted-ui": "github:Fedos2589/TedUI#v0.1.0",
+    "zod": "^4.6.7",
+    "zustand": "^5.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "happy-dom": "^21.0.4",
+    "orval": "^8.47.0",
+    "oxlint": "^1.90.0",
+    "sass": "^1.108.1",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.6",
+    "vite-plugin-svgr": "^5.2.0",
+    "vitest": "^5.1.0"
+  }
+}

@@ -1,0 +1,18 @@
+// Base resets TedUI components are measured against.
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
