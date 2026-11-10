@@ -37,12 +37,18 @@ const CYRILLIC: Record<string, string> = {
   э: 'e',
   ю: 'yu',
   я: 'ya',
+  // Ukrainian; и stays i as in Russian (one table serves both).
+  і: 'i',
+  ї: 'yi',
+  є: 'ye',
+  ґ: 'g',
 }
 
 // A suggested public page address for a business name; '' when the name has no
 // Latin, Cyrillic or digits to build one from (the owner types it then).
 export function slugFromName(name: string): string {
-  const latin = [...name.toLowerCase()]
+  // NFC first: й pasted as и + breve (NFD, e.g. from macOS) must match the table.
+  const latin = [...name.normalize('NFC').toLowerCase()]
     .map((char) => CYRILLIC[char] ?? char)
     .join('')
     // é → e + accent, № → No: decompose, drop the accents, lowercase what appeared.

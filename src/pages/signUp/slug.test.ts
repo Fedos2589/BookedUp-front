@@ -8,6 +8,10 @@ test.each([
   ['Щука и Ёж', 'shchuka-i-yozh'],
   ['  Café — Crème!! 24/7 ', 'cafe-creme-24-7'],
   ['Подъезд №5', 'podezd-no5'],
+  // Review #8: Ukrainian letters (и stays i, as in Russian) and NFD input,
+  // as pasted from macOS (й = и + U+0306).
+  ['Київ Єва Ґанок', 'kiyiv-yeva-ganok'],
+  ['Мой'.normalize('NFD'), 'moy'],
   ['---', ''],
   ['สปา', ''],
 ])('%j → %j', (name, slug) => {
