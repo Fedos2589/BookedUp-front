@@ -1,7 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
 import type { TFunction } from 'i18next'
-import { Fragment, useMemo, useState } from 'react'
+import {
+  type FormEvent,
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
@@ -63,6 +70,24 @@ export function SignUpPage() {
     },
   })
   const { errors } = form.formState
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  // A step change moves focus to the new step's first invalid field (a 409 on
+  // the email sends the owner back to it) or else to its heading — it never
+  // drops to <body>. Not on the first render: no step has changed yet.
+  const firstRender = useRef(true)
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false
+      return
+    }
+    const invalid =
+      step === 'account'
+        ? ACCOUNT_FIELDS.find((name) => form.getFieldState(name).error)
+        : undefined
+    if (invalid) form.setFocus(invalid)
+    else headingRef.current?.focus()
+  }, [step, form])
 
   const signUp = useSignUpControllerSignUp({
     mutation: {
@@ -75,22 +100,32 @@ export function SignUpPage() {
         const fields = conflictOrInvalidFields(error)
         if (fields.length === 0) return
         for (const field of fields) {
-          form.setError(field, {
-            message:
-              error.status === 409
-                ? field === 'email'
-                  ? 'validation.emailTaken'
-                  : 'validation.slugTaken'
-                : 'validation.invalid',
-          })
+          form.setError(
+            field,
+            {
+              message:
+                error.status === 409
+                  ? field === 'email'
+                    ? 'validation.emailTaken'
+                    : 'validation.slugTaken'
+                  : 'validation.invalid',
+            },
+            // A field on this step is mounted and takes focus now; one on the
+            // first step gets it from the step change above.
+            { shouldFocus: true },
+          )
         }
         if (fields.some(isAccountField)) setStep('account')
       },
     },
   })
 
-  const next = async () => {
-    if (await form.trigger(ACCOUNT_FIELDS)) setStep('business')
+  // Step 1 submits like any form (Enter, the keyboard's "Go") but checks only
+  // its own fields and moves on.
+  const next = async (event: FormEvent) => {
+    event.preventDefault()
+    if (await form.trigger(ACCOUNT_FIELDS, { shouldFocus: true }))
+      setStep('business')
   }
 
   const submit = form.handleSubmit((values) =>
@@ -115,6 +150,7 @@ export function SignUpPage() {
 
   return (
     <AuthLayout
+      headingRef={headingRef}
       title={
         step === 'account'
           ? t('auth.signUp.accountTitle')
@@ -124,7 +160,11 @@ export function SignUpPage() {
       <Typography variant="t5" color="grey-400">
         {t('auth.signUp.step', { step: step === 'account' ? 1 : 2 })}
       </Typography>
-      <form className={authStyles.form} noValidate onSubmit={submit}>
+      <form
+        className={authStyles.form}
+        noValidate
+        onSubmit={step === 'account' ? (event) => void next(event) : submit}
+      >
         {/* Keyed: without it React reuses step 1's inputs for step 2 at the same
             positions, and going back shows step 2's values in them. */}
         {step === 'account' ? (
@@ -155,7 +195,7 @@ export function SignUpPage() {
               errorText={fieldErrorText(t, errors.password)}
               {...form.register('password')}
             />
-            <Button type="button" fullWidth onClick={() => void next()}>
+            <Button type="submit" variant="solid" colorScheme="black" fullWidth>
               {t('auth.signUp.continue')}
             </Button>
           </Fragment>
@@ -170,7 +210,11 @@ export function SignUpPage() {
               {...form.register('businessName', {
                 onChange: (event: { target: { value: string } }) => {
                   if (!slugEdited)
-                    form.setValue('slug', slugFromName(event.target.value))
+                    form.setValue('slug', slugFromName(event.target.value), {
+                      // After a submit, check it again: a 409 "taken" must
+                      // not outlive the address it was about.
+                      shouldValidate: form.formState.isSubmitted,
+                    })
                 },
               })}
             />
@@ -211,7 +255,13 @@ export function SignUpPage() {
                 {signUpErrorText(t, signUp.error)}
               </Typography>
             )}
-            <Button type="submit" fullWidth loading={signUp.isPending}>
+            <Button
+              type="submit"
+              variant="solid"
+              colorScheme="black"
+              fullWidth
+              loading={signUp.isPending}
+            >
               {t('auth.signUp.submit')}
             </Button>
             <Button

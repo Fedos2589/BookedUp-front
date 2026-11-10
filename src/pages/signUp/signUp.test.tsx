@@ -173,3 +173,89 @@ test('signed up but without a session: the owner is sent to sign in', async () =
 
   await waitFor(() => expect(router.state.location.pathname).toBe('/sign-in'))
 })
+
+// Review #4: Enter / the keyboard's "Go" submits the step (implicit submission
+// needs a submit button in the form).
+test('the first step is submitted like a form', async () => {
+  fakeApi({ 'GET /api/me': [401] })
+  renderApp('/sign-up')
+  await screen.findByRole('heading', { name: 'Create your account' })
+  fill('Your name', 'Anna')
+  fill('Email', 'anna@example.com')
+  fill('Password', 'long enough')
+
+  expect(
+    screen.getByRole('button', { name: 'Continue' }).getAttribute('type'),
+  ).toBe('submit')
+  fireEvent.submit(field('Password').form!)
+
+  expect(
+    await screen.findByRole('heading', { name: 'Your business' }),
+  ).toBeTruthy()
+})
+
+// Review #5: focus follows the flow.
+test('the next step’s heading gets the focus', async () => {
+  fakeApi({ 'GET /api/me': [401] })
+  renderApp('/sign-up')
+  await passAccountStep()
+
+  await waitFor(() =>
+    expect(document.activeElement).toBe(
+      screen.getByRole('heading', { name: 'Your business' }),
+    ),
+  )
+})
+
+test('an invalid first step focuses its first invalid field', async () => {
+  fakeApi({ 'GET /api/me': [401] })
+  renderApp('/sign-up')
+  await screen.findByRole('heading', { name: 'Create your account' })
+  fill('Your name', 'Anna')
+  fill('Email', 'anna@example.com')
+  fill('Password', 'short')
+
+  click('Continue')
+
+  await waitFor(() => expect(document.activeElement).toBe(field('Password')))
+})
+
+test('a registered email focuses the email field', async () => {
+  fakeApi({
+    'GET /api/me': [401],
+    'POST /api/auth/sign-up': [
+      409,
+      { statusCode: 409, error: 'Conflict', message: 'taken', field: 'email' },
+    ],
+  })
+  renderApp('/sign-up')
+  await passAccountStep()
+  fill('Business name', 'Judo Kids')
+
+  click('Create account')
+
+  await waitFor(() => expect(document.activeElement).toBe(field('Email')))
+})
+
+// Review #6.
+test('a taken address stops being reported once the name changes it', async () => {
+  fakeApi({
+    'GET /api/me': [401],
+    'POST /api/auth/sign-up': [
+      409,
+      { statusCode: 409, error: 'Conflict', message: 'taken', field: 'slug' },
+    ],
+  })
+  renderApp('/sign-up')
+  await passAccountStep()
+  fill('Business name', 'Judo Kids')
+  click('Create account')
+  await screen.findByText('This address is taken')
+
+  fill('Business name', 'Judo Kids Phuket')
+
+  await waitFor(() =>
+    expect(screen.queryByText('This address is taken')).toBeNull(),
+  )
+  expect(field('Booking page address').value).toBe('judo-kids-phuket')
+})
