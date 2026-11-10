@@ -29,12 +29,11 @@ test('sign up speaks the browser’s Russian and fits 390px', async ({
   await expect(
     page.getByRole('heading', { name: 'Создайте аккаунт' }),
   ).toBeVisible()
-  expect(await page.evaluate(() => document.documentElement.lang)).toBe('ru')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ru')
   await toBusinessStep(page)
   await page.getByLabel('Название бизнеса').fill('Студия красоты Анны')
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
-    390,
-  )
+  // e2e has no DOM types: the page evaluates the expression as text.
+  expect(await page.evaluate('document.documentElement.scrollWidth')).toBe(390)
 })
 
 test('on a short screen the main action is pinned to the bottom', async ({
@@ -45,7 +44,7 @@ test('on a short screen the main action is pinned to the bottom', async ({
   await asGuest(page)
   await page.goto('/sign-up')
   await toBusinessStep(page)
-  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.evaluate('window.scrollTo(0, 0)')
 
   const submit = await page
     .getByRole('button', { name: 'Создать аккаунт' })
