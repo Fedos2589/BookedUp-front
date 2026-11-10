@@ -12,7 +12,8 @@ SPA на React + TypeScript + Vite. Бэк — репозиторий BookedUp-b
 - `src/pages/` — страницы, `src/app/` — провайдеры и роутер.
 - `src/api/` — **генерируется Orval** (`npm run api:generate`, бэк должен быть запущен). Руками не правится: следующая генерация затрёт. Нужен другой тип или эндпоинт — меняется бэк.
 - `src/apiFetch.ts` — fetch, через который ходит весь сгенерированный клиент (`mutator` в `orval.config.ts`): ответ не 2xx бросает `ApiError` со `status` и телом, хуки отдают само тело.
-- `src/auth/session.ts` — сессия: `requireAccount` (beforeLoad кабинета: 401 на `GET /me` → `/sign-in`) и `redirectIfSignedIn` (страницы входа и регистрации).
+- `src/auth/session.ts` — сессия: `requireAccount` (beforeLoad кабинета: 401 на `GET /me` → `/sign-in`) и `redirectIfSignedIn` (страницы входа и регистрации). Ответ `/me` моложе 30 с берётся из кэша, старше — запрашивается снова.
+- `src/app/createApp.ts` — кэш запросов и роутер вместе. 401 на любой запрос при известном аккаунте = сессия кончилась: кэш очищается, переход на `/sign-in`. Отдельно обрабатывать 401 в экранах не нужно.
 - `src/i18n.ts` — i18next, строки в `src/locales/{en,ru}.json`; `src/monitoring.ts` — Sentry и PostHog, включаются только по env.
 - `src/test/` — `renderApp(path)` (всё приложение на memory history со своим кэшем) и `fakeApi` (подменяет fetch ответами по маршрутам и записывает запросы).
 
@@ -27,7 +28,7 @@ SPA на React + TypeScript + Vite. Бэк — репозиторий BookedUp-b
 
 ## API
 
-Браузер ходит в API только на свой origin, под `/api`: бэк отклоняет изменяющие запросы с чужого origin (CSRF). Dev-сервер проксирует `/api` на бэк (`API_PROXY_TARGET`, по умолчанию `http://localhost:3000`) и срезает префикс; в проде то же сделает reverse proxy.
+Браузер ходит в API только на свой origin, под `/api`: бэк отклоняет изменяющие запросы с чужого origin (CSRF). Dev-сервер проксирует `/api` на бэк (`API_PROXY_TARGET` из shell или `.env.local`, по умолчанию `http://localhost:3000`) и срезает префикс; в проде то же сделает reverse proxy.
 
 - **Без `changeOrigin` в proxy.** Он переписывает `Host`; с телефона по LAN (обычный HTTP — браузер не шлёт `Sec-Fetch-Site`) бэк сравнивает `Origin` с `Host`, и каждый POST получает 403. На localhost этого не видно.
 - С телефона: `npm run dev -- --host`, в `.env` бэка `SESSION_COOKIE_SECURE=false` (иначе Secure-кука по HTTP не сохранится), открыть `http://<IP компьютера>:5173`.
