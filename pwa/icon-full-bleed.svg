@@ -1,0 +1,8 @@
+<!-- Source of the maskable and apple-touch icons: the platform crops or rounds
+     it, so the purple fills the square and the mark stays inside the central
+     80% safe zone. The mark is the one in the BookedUp logo (bookedup-logo.svg). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#5B47FB"/>
+  <path transform="translate(4 -28) scale(8)" d="M17 35 L27 45 L46 26 M35 26 H46 V37"
+        fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

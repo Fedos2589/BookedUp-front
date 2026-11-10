@@ -1,9 +1,13 @@
+// @vitest-environment node
+// Lives outside src/ under tsconfig.node.json: it reads the app's sources from
+// disk with Node, which the app's own code never gets types for.
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { expect, test } from 'vitest'
 
-const SRC = join(__dirname, '..')
+const SRC = fileURLToPath(new URL('../src', import.meta.url))
 
 function* sourceFiles(dir: string): Generator<string> {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -22,7 +26,7 @@ test('no plain vh units in the app', () => {
   for (const file of sourceFiles(SRC)) {
     readFileSync(file, 'utf8')
       .split('\n')
-      .forEach((line, index) => {
+      .forEach((line: string, index: number) => {
         if (/(?<![a-z])\d*\.?\d+vh\b/.test(line))
           offenders.push(`${relative(SRC, file)}:${index + 1}: ${line.trim()}`)
       })

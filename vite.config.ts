@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { loadEnv } from 'vite'
 import { defineConfig } from 'vitest/config'
+import { VitePWA } from 'vite-plugin-pwa'
 import svgr from 'vite-plugin-svgr'
 
 export default defineConfig(({ mode }) => {
@@ -13,6 +14,62 @@ export default defineConfig(({ mode }) => {
       react(),
       // TedUI imports `.svg` as React components without the `?react` suffix.
       svgr({ include: '**/*.svg', svgrOptions: { exportType: 'default' } }),
+      // Installable app (E20): manifest + a service worker for the app shell.
+      VitePWA({
+        // A new version waits until the app is closed: an automatic reload
+        // could wipe a half-filled form. A "new version" prompt comes later.
+        registerType: 'prompt',
+        // A <script> in index.html registers it; no app code involved.
+        injectRegister: 'script',
+        includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+        manifest: {
+          name: 'BookedUp',
+          short_name: 'BookedUp',
+          description: 'Bookings, schedule and clients of your business',
+          start_url: '/',
+          scope: '/',
+          display: 'standalone',
+          // Raw values: a manifest can't read CSS tokens. White = the app's
+          // background (--color-bw-white), so the splash and bars match it.
+          background_color: '#ffffff',
+          theme_color: '#ffffff',
+          icons: [
+            { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },
+            { src: 'pwa-512.png', sizes: '512x512', type: 'image/png' },
+            {
+              src: 'pwa-maskable-512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable',
+            },
+          ],
+        },
+        workbox: {
+          // The shell (JS, CSS, HTML, icons) is precached; navigations fall
+          // back to index.html offline.
+          globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+          navigateFallback: '/index.html',
+          // Never the API: its answers are per account and must be fresh.
+          navigateFallbackDenylist: [/^\/api(\/|$)/],
+          runtimeCaching: [
+            {
+              // Montserrat (index.html): the stylesheet, then the font files.
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+              handler: 'StaleWhileRevalidate',
+              options: { cacheName: 'google-fonts-css' },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-files',
+                expiration: { maxEntries: 20, maxAgeSeconds: 365 * 24 * 3600 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+          ],
+        },
+      }),
     ],
     server: {
       proxy: {
@@ -60,7 +117,7 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       environment: 'happy-dom',
-      include: ['src/**/*.test.{ts,tsx}'],
+      include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts'],
     },
   }
 })
