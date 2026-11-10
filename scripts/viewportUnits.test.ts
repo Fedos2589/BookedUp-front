@@ -13,7 +13,7 @@ function* sourceFiles(dir: string): Generator<string> {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) yield* sourceFiles(path)
-    else if (/\.(scss|tsx)$/.test(entry.name)) yield path
+    else if (/\.(s?css|tsx?)$/.test(entry.name)) yield path
   }
 }
 

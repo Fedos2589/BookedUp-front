@@ -21,7 +21,9 @@ export default defineConfig(({ mode }) => {
         registerType: 'prompt',
         // A <script> in index.html registers it; no app code involved.
         injectRegister: 'script',
-        includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+        // globPatterns below already precaches every icon; listing them again
+        // (includeAssets, the manifest's icons) only duplicated the entries.
+        includeManifestIcons: false,
         manifest: {
           name: 'BookedUp',
           short_name: 'BookedUp',
