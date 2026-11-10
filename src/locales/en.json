@@ -1,8 +1,29 @@
 {
   "dashboard": {
-    "subtitle": "Business dashboard"
+    "subtitle": "Business dashboard",
+    "signOut": "Sign out",
+    "loadFailed": "Couldn't load your account",
+    "tryAgain": "Try again"
   },
   "booking": {
     "title": "Booking: {{businessSlug}}"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "signIn": {
+      "title": "Sign in",
+      "submit": "Sign in",
+      "invalidCredentials": "Invalid email or password",
+      "noAccount": "New to BookedUp?",
+      "toSignUp": "Create an account"
+    },
+    "tooManyAttempts": "Too many attempts. Try again later.",
+    "failed": "Something went wrong. Try again."
+  },
+  "validation": {
+    "required": "Required",
+    "email": "Enter a valid email",
+    "invalid": "Check this field"
   }
 }

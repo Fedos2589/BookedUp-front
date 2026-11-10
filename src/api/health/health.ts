@@ -5,7 +5,9 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useQuery
+  queryOptions as queryOptionsBuilder,
+  useQuery,
+  useSuspenseQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
@@ -16,7 +18,9 @@ import type {
   QueryKey,
   UndefinedInitialDataOptions,
   UseQueryOptions,
-  UseQueryResult
+  UseQueryResult,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult
 } from '@tanstack/react-query';
 
 import { apiFetch } from '../../apiFetch';
@@ -126,6 +130,57 @@ export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healt
   const queryOptions = getHealthControllerCheckQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getHealthControllerCheckSuspenseQueryOptions = <TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getHealthControllerCheckQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof healthControllerCheck>>> = ({ signal }) => healthControllerCheck({ signal, ...requestOptions });
+
+
+
+
+
+   return  queryOptionsBuilder({ queryKey, ...queryOptions, queryFn: queryOptions?.queryFn ?? queryFn}) as UseSuspenseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> } & { throwOnError?: ((this: never, error: TError) => boolean) & { readonly __inferenceOnly: never } }
+}
+
+export type HealthControllerCheckSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof healthControllerCheck>>>
+export type HealthControllerCheckSuspenseQueryError = ErrorType<unknown>
+
+
+export function useHealthControllerCheckSuspense<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useHealthControllerCheckSuspense<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useHealthControllerCheckSuspense<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useHealthControllerCheckSuspense<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getHealthControllerCheckSuspenseQueryOptions(options)
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }

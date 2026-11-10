@@ -1,8 +1,29 @@
 {
   "dashboard": {
-    "subtitle": "Кабинет бизнеса"
+    "subtitle": "Кабинет бизнеса",
+    "signOut": "Выйти",
+    "loadFailed": "Не удалось загрузить аккаунт",
+    "tryAgain": "Попробовать снова"
   },
   "booking": {
     "title": "Запись: {{businessSlug}}"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Пароль",
+    "signIn": {
+      "title": "Вход",
+      "submit": "Войти",
+      "invalidCredentials": "Неверный email или пароль",
+      "noAccount": "Впервые в BookedUp?",
+      "toSignUp": "Создать аккаунт"
+    },
+    "tooManyAttempts": "Слишком много попыток. Попробуйте позже.",
+    "failed": "Что-то пошло не так. Попробуйте ещё раз."
+  },
+  "validation": {
+    "required": "Обязательное поле",
+    "email": "Введите корректный email",
+    "invalid": "Проверьте это поле"
   }
 }

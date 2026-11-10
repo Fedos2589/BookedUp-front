@@ -1,16 +1,11 @@
-import { render, screen } from '@testing-library/react'
+// @vitest-environment happy-dom
+import { screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import '../i18n'
-import { App } from './App'
-import { router } from './router'
+import { renderApp } from '../test/renderApp'
 
 test('renders the public booking page for a business', async () => {
-  await router.navigate({
-    to: '/book/$businessSlug',
-    params: { businessSlug: 'judo-kids' },
-  })
-  render(<App />)
+  renderApp('/book/judo-kids')
 
   expect(
     await screen.findByRole('heading', { name: 'Booking: judo-kids' }),

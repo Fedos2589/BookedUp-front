@@ -1,20 +1,38 @@
+import type { QueryClient } from '@tanstack/react-query'
 import {
-  createRootRoute,
+  createRootRouteWithContext,
   createRoute,
   createRouter,
+  type RouterHistory,
   Outlet,
 } from '@tanstack/react-router'
 
+import { redirectIfSignedIn, requireAccount } from '../auth/session'
+import { SignInPage } from '../pages/auth/SignInPage'
 import { BookingPage } from '../pages/BookingPage'
+import { DashboardError } from '../pages/DashboardError'
 import { DashboardPage } from '../pages/DashboardPage'
 
-const rootRoute = createRootRoute({ component: Outlet })
+type RouterContext = { queryClient: QueryClient }
 
-// Business cabinet: owner, admin, master.
+const rootRoute = createRootRouteWithContext<RouterContext>()({
+  component: Outlet,
+})
+
+// Business cabinet: owner, admin, master. Signed-in only.
 const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
+  beforeLoad: ({ context }) => requireAccount(context.queryClient),
   component: DashboardPage,
+  errorComponent: DashboardError,
+})
+
+const signInRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/sign-in',
+  beforeLoad: ({ context }) => redirectIfSignedIn(context.queryClient),
+  component: SignInPage,
 })
 
 // Public booking page of a business, for its clients.
@@ -24,12 +42,21 @@ const bookingRoute = createRoute({
   component: BookingPage,
 })
 
-export const routeTree = rootRoute.addChildren([dashboardRoute, bookingRoute])
+export const routeTree = rootRoute.addChildren([
+  dashboardRoute,
+  signInRoute,
+  bookingRoute,
+])
 
-export const router = createRouter({ routeTree })
+export function createAppRouter(
+  queryClient: QueryClient,
+  history?: RouterHistory,
+) {
+  return createRouter({ routeTree, context: { queryClient }, history })
+}
 
 declare module '@tanstack/react-router' {
   interface Register {
-    router: typeof router
+    router: ReturnType<typeof createAppRouter>
   }
 }

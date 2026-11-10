@@ -17,6 +17,8 @@ export default defineConfig({
         mutator: { path: 'src/apiFetch.ts', name: 'apiFetch' },
         // Hooks return the body itself; the status lives on ApiError.
         fetch: { includeHttpResponseReturnType: false },
+        // useXSuspense hooks: data a route's beforeLoad has already loaded.
+        query: { useSuspenseQuery: true },
       },
     },
   },

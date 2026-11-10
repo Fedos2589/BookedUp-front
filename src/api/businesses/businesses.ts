@@ -5,7 +5,9 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useQuery
+  queryOptions as queryOptionsBuilder,
+  useQuery,
+  useSuspenseQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
@@ -16,7 +18,9 @@ import type {
   QueryKey,
   UndefinedInitialDataOptions,
   UseQueryOptions,
-  UseQueryResult
+  UseQueryResult,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult
 } from '@tanstack/react-query';
 
 import type {
@@ -130,6 +134,57 @@ export function useBusinessControllerDescribe<TData = Awaited<ReturnType<typeof 
   const queryOptions = getBusinessControllerDescribeQueryOptions(businessId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getBusinessControllerDescribeSuspenseQueryOptions = <TData = Awaited<ReturnType<typeof businessControllerDescribe>>, TError = ErrorType<void>>(businessId: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof businessControllerDescribe>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBusinessControllerDescribeQueryKey(businessId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof businessControllerDescribe>>> = ({ signal }) => businessControllerDescribe(businessId, { signal, ...requestOptions });
+
+
+
+
+
+   return  queryOptionsBuilder({ queryKey, ...queryOptions, queryFn: queryOptions?.queryFn ?? queryFn}) as UseSuspenseQueryOptions<Awaited<ReturnType<typeof businessControllerDescribe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> } & { throwOnError?: ((this: never, error: TError) => boolean) & { readonly __inferenceOnly: never } }
+}
+
+export type BusinessControllerDescribeSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof businessControllerDescribe>>>
+export type BusinessControllerDescribeSuspenseQueryError = ErrorType<void>
+
+
+export function useBusinessControllerDescribeSuspense<TData = Awaited<ReturnType<typeof businessControllerDescribe>>, TError = ErrorType<void>>(
+ businessId: string, options: { query:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof businessControllerDescribe>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBusinessControllerDescribeSuspense<TData = Awaited<ReturnType<typeof businessControllerDescribe>>, TError = ErrorType<void>>(
+ businessId: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof businessControllerDescribe>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBusinessControllerDescribeSuspense<TData = Awaited<ReturnType<typeof businessControllerDescribe>>, TError = ErrorType<void>>(
+ businessId: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof businessControllerDescribe>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBusinessControllerDescribeSuspense<TData = Awaited<ReturnType<typeof businessControllerDescribe>>, TError = ErrorType<void>>(
+ businessId: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof businessControllerDescribe>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBusinessControllerDescribeSuspenseQueryOptions(businessId,options)
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
