@@ -1,4 +1,11 @@
-import { expect, test } from '@playwright/test'
+import { expect, type Locator, test } from '@playwright/test'
+
+// In the installed iOS app a white 8px strip (.pwa-top-edge) covers the top of
+// the screen: every page keeps its first line below it (AGENTS.md).
+async function expectClearOfTopEdge(heading: Locator) {
+  const box = await heading.boundingBox()
+  expect(box!.y).toBeGreaterThanOrEqual(8)
+}
 
 // No back here (CI has none): pages that ask the API get a stubbed answer.
 for (const path of ['/sign-in', '/sign-up', '/book/judo-kids']) {
@@ -10,7 +17,9 @@ for (const path of ['/sign-in', '/sign-up', '/book/judo-kids']) {
     await page.goto(path, { waitUntil: 'networkidle' })
 
     expect(errors).toEqual([])
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    const heading = page.getByRole('heading', { level: 1 })
+    await expect(heading).toBeVisible()
+    await expectClearOfTopEdge(heading)
   })
 }
 
@@ -56,5 +65,22 @@ test('the cabinet renders for a signed-in owner without page errors', async ({
   await page.goto('/', { waitUntil: 'networkidle' })
 
   expect(errors).toEqual([])
-  await expect(page.getByRole('heading', { name: 'Judo Kids' })).toBeVisible()
+  const heading = page.getByRole('heading', { name: 'Judo Kids' })
+  await expect(heading).toBeVisible()
+  await expectClearOfTopEdge(heading)
+})
+
+test('the cabinet’s error screen, when the session check fails', async ({
+  page,
+}) => {
+  await page.route('**/api/me', (route) => route.fulfill({ status: 502 }))
+
+  await page.goto('/')
+
+  const heading = page.getByRole('heading', {
+    name: "Couldn't load your account",
+  })
+  await expect(heading).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
+  await expectClearOfTopEdge(heading)
 })

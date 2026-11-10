@@ -11,3 +11,8 @@
   justify-content: space-between;
   gap: var(--spacing-16);
 }
+
+// The error screen's retry button: its own width, not the column's.
+.retry {
+  align-self: flex-start;
+}
