@@ -8,6 +8,18 @@ export default defineConfig({
     // TedUI imports `.svg` as React components without the `?react` suffix.
     svgr({ include: '**/*.svg', svgrOptions: { exportType: 'default' } }),
   ],
+  server: {
+    proxy: {
+      // The API on the app's own origin: the back's CSRF check refuses writes from
+      // any other. No `changeOrigin`: it would rewrite Host, and from a phone on the
+      // LAN (no Sec-Fetch-Site over plain HTTP) the back compares Origin with Host,
+      // so every POST would get 403.
+      '/api': {
+        target: process.env.API_PROXY_TARGET ?? 'http://localhost:3000',
+        rewrite: (path) => path.replace(/^\/api(?=\/|$)/, ''),
+      },
+    },
+  },
   optimizeDeps: {
     // TedUI ships .tsx sources: Vite compiles it like app code instead of pre-bundling it.
     exclude: ['ted-ui'],
