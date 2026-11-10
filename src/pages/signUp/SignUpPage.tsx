@@ -11,6 +11,7 @@ import {
 } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { ActionBar } from 'ted-ui/ActionBar'
 import { Button } from 'ted-ui/Button'
 import { Combobox } from 'ted-ui/Combobox'
 import { Input } from 'ted-ui/Input'
@@ -195,7 +196,7 @@ export function SignUpPage() {
               errorText={fieldErrorText(t, errors.password)}
               {...form.register('password')}
             />
-            <div className={authStyles.actions}>
+            <ActionBar className={authStyles.actions}>
               <Button
                 type="submit"
                 variant="solid"
@@ -204,7 +205,7 @@ export function SignUpPage() {
               >
                 {t('auth.signUp.continue')}
               </Button>
-            </div>
+            </ActionBar>
           </Fragment>
         ) : (
           <Fragment key="business">
@@ -262,7 +263,7 @@ export function SignUpPage() {
                 {signUpErrorText(t, signUp.error)}
               </Typography>
             )}
-            <div className={authStyles.actions}>
+            <ActionBar className={authStyles.actions}>
               <Button
                 type="submit"
                 variant="solid"
@@ -281,7 +282,7 @@ export function SignUpPage() {
               >
                 {t('auth.signUp.back')}
               </Button>
-            </div>
+            </ActionBar>
           </Fragment>
         )}
       </form>

@@ -10,6 +10,13 @@ body {
   font-family: 'Montserrat', sans-serif;
 }
 
+// The app shell fills the screen as it is now: dvh follows the browser bars
+// and, with interactive-widget=resizes-content (index.html), the keyboard.
+// Never vh (src/styles/viewportUnits.test.ts).
+#root {
+  min-height: 100dvh;
+}
+
 input,
 button,
 textarea,

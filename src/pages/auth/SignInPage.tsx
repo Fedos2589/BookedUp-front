@@ -4,6 +4,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import type { TFunction } from 'i18next'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { ActionBar } from 'ted-ui/ActionBar'
 import { Button } from 'ted-ui/Button'
 import { Input } from 'ted-ui/Input'
 import { Typography } from 'ted-ui/Typography'
@@ -81,7 +82,7 @@ export function SignInPage() {
             {signInErrorText(t, signIn.error)}
           </Typography>
         )}
-        <div className={authStyles.actions}>
+        <ActionBar className={authStyles.actions}>
           <Button
             type="submit"
             variant="solid"
@@ -91,7 +92,7 @@ export function SignInPage() {
           >
             {t('auth.signIn.submit')}
           </Button>
-        </div>
+        </ActionBar>
       </form>
       <Typography variant="t5">
         {t('auth.signIn.noAccount')}{' '}
