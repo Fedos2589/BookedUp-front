@@ -1,0 +1,54 @@
+{
+  "dashboard": {
+    "subtitle": "Business dashboard",
+    "signOut": "Sign out",
+    "loadFailed": "Couldn't load your account",
+    "tryAgain": "Try again"
+  },
+  "booking": {
+    "title": "Booking: {{businessSlug}}"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "signIn": {
+      "title": "Sign in",
+      "submit": "Sign in",
+      "invalidCredentials": "Invalid email or password",
+      "noAccount": "New to BookedUp?",
+      "toSignUp": "Create an account"
+    },
+    "tooManyAttempts": "Too many attempts. Try again later.",
+    "failed": "Something went wrong. Try again.",
+    "name": "Your name",
+    "signUp": {
+      "accountTitle": "Create your account",
+      "businessTitle": "Your business",
+      "step": "Step {{step}} of 2",
+      "continue": "Continue",
+      "back": "Back",
+      "submit": "Create account",
+      "businessName": "Business name",
+      "slug": "Booking page address",
+      "slugHelper": "Clients will book at {{url}}",
+      "timeZone": "Time zone",
+      "timeZoneHelper": "Bookings are shown in this time zone",
+      "hasAccount": "Already have an account?",
+      "toSignIn": "Sign in"
+    }
+  },
+  "validation": {
+    "required": "Required",
+    "email": "Enter a valid email",
+    "invalid": "Check this field",
+    "passwordMin": "At least 8 characters",
+    "tooLong": "Too long",
+    "slug": "Latin letters, digits and single hyphens",
+    "emailTaken": "This email is already registered",
+    "slugTaken": "This address is taken",
+    "timeZone": "Pick a time zone from the list"
+  },
+  "common": {
+    "loading": "Loading"
+  }
+}

@@ -1,0 +1,44 @@
+@use 'ted-ui/styles/breakpoints' as *;
+
+.page {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-32) var(--spacing-16);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-24);
+  width: 100%;
+  max-width: 400px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.link {
+  color: var(--color-blue-300);
+}
+
+// The form's main action (and its secondary one). On mobile it stays pinned to
+// the bottom of the screen as a full-width bar, above the home indicator, so it
+// is reachable after long content or with the keyboard open (ted-ui usage.md).
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+
+  @include mobile {
+    position: sticky;
+    bottom: 0;
+    // Bleeds into the page's side padding so the bar spans the screen.
+    margin-inline: calc(-1 * var(--spacing-16));
+    padding: var(--spacing-12) var(--spacing-16)
+      calc(var(--spacing-12) + env(safe-area-inset-bottom, 0px));
+    background: var(--color-bw-white);
+  }
+}

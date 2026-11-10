@@ -26,3 +26,9 @@ dist-ssr
 # Playwright
 test-results
 playwright-report
+
+# Env files hold local settings and secrets: never committed. A template
+# without values may be, as .env.example.
+.env
+.env.*
+!.env.example
