@@ -16,11 +16,11 @@ export default defineConfig(({ mode }) => {
       svgr({ include: '**/*.svg', svgrOptions: { exportType: 'default' } }),
       // Installable app (E20): manifest + a service worker for the app shell.
       VitePWA({
-        // A new version waits until the app is closed: an automatic reload
-        // could wipe a half-filled form. A "new version" prompt comes later.
+        // The app decides when a new version takes over (src/pwa/
+        // updatePolicy.ts): never in front of the user or over typed input.
         registerType: 'prompt',
-        // A <script> in index.html registers it; no app code involved.
-        injectRegister: 'script',
+        // src/pwa/registerAppUpdates.ts registers it (virtual:pwa-register).
+        injectRegister: false,
         // globPatterns below already precaches every icon; listing them again
         // (includeAssets, the manifest's icons) only duplicated the entries.
         includeManifestIcons: false,

@@ -75,3 +75,29 @@ test('offline, the app still has its font', async ({ page, context }) => {
       font.family.replaceAll('"', '') === 'Montserrat' && font.status === 'loaded'))`
   expect(await page.evaluate(montserratLoaded)).toBe(true)
 })
+
+// An installed app comes back from the background without a reload, so the
+// browser would never look for a new version on its own: the app asks each
+// time it is shown again (src/pwa/updatePolicy.ts).
+test('coming back to the screen checks for a new version', async ({ page }) => {
+  // The browser's own fetch of sw.js is not a page request: count the app's
+  // calls to registration.update() instead.
+  await page.addInitScript(`(() => {
+    const update = ServiceWorkerRegistration.prototype.update
+    window.__updateChecks = 0
+    ServiceWorkerRegistration.prototype.update = function () {
+      window.__updateChecks += 1
+      return update.call(this)
+    }
+  })()`)
+  await page.route('**/api/me', (route) => route.fulfill({ status: 401 }))
+  await page.goto('/sign-in')
+  expect(await page.evaluate(activeWorkerState)).toBe('activated')
+  const before = await page.evaluate('window.__updateChecks')
+
+  await page.evaluate("document.dispatchEvent(new Event('visibilitychange'))")
+
+  await expect
+    .poll(() => page.evaluate('window.__updateChecks'))
+    .toBe(Number(before) + 1)
+})

@@ -20,6 +20,7 @@ import { Typography } from 'ted-ui/Typography'
 import { useSignUpControllerSignUp } from '../../api/auth/auth'
 import { ApiError } from '../../apiFetch'
 import { fieldErrorText } from '../../forms/fieldError'
+import { useUnsavedInput } from '../../pwa/unsavedInput'
 import { AuthLayout } from '../auth/AuthLayout'
 import authStyles from '../auth/AuthLayout.module.scss'
 import { fieldsFromBadRequest, type SignUpField } from './badRequest'
@@ -71,6 +72,8 @@ export function SignUpPage() {
     },
   })
   const { errors } = form.formState
+  // Typed input holds back a new app version's reload (src/pwa).
+  useUnsavedInput(form.formState.isDirty)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   // A step change moves focus to the new step's first invalid field (a 409 on

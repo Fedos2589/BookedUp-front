@@ -14,6 +14,7 @@ import { useSessionControllerSignIn } from '../../api/auth/auth'
 import { ApiError } from '../../apiFetch'
 import { meQueryKey } from '../../auth/session'
 import { fieldErrorText } from '../../forms/fieldError'
+import { useUnsavedInput } from '../../pwa/unsavedInput'
 import { AuthLayout } from './AuthLayout'
 import authStyles from './AuthLayout.module.scss'
 
@@ -51,6 +52,8 @@ export function SignInPage() {
     },
   })
   const { errors } = form.formState
+  // Typed input holds back a new app version's reload (src/pwa).
+  useUnsavedInput(form.formState.isDirty)
 
   return (
     <AuthLayout title={t('auth.signIn.title')}>

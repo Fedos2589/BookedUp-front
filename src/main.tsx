@@ -14,8 +14,10 @@ import { createRoot } from 'react-dom/client'
 import { App } from './app/App'
 import { createApp } from './app/createApp'
 import { initMonitoring } from './monitoring'
+import { registerAppUpdates } from './pwa/registerAppUpdates'
 
 initMonitoring()
+registerAppUpdates()
 
 const { queryClient, router } = createApp()
 
