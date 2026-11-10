@@ -24,6 +24,9 @@
     <title>BookedUp</title>
   </head>
   <body>
+    <!-- iOS 26+ installed app: a solid box at the top edge stops the system
+         blurring content scrolled under it (styles in src/styles/global.scss). -->
+    <div class="pwa-top-edge" aria-hidden="true"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
