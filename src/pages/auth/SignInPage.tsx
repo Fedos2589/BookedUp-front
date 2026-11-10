@@ -81,15 +81,17 @@ export function SignInPage() {
             {signInErrorText(t, signIn.error)}
           </Typography>
         )}
-        <Button
-          type="submit"
-          variant="solid"
-          colorScheme="black"
-          fullWidth
-          loading={signIn.isPending}
-        >
-          {t('auth.signIn.submit')}
-        </Button>
+        <div className={authStyles.actions}>
+          <Button
+            type="submit"
+            variant="solid"
+            colorScheme="black"
+            fullWidth
+            loading={signIn.isPending}
+          >
+            {t('auth.signIn.submit')}
+          </Button>
+        </div>
       </form>
       <Typography variant="t5">
         {t('auth.signIn.noAccount')}{' '}

@@ -195,9 +195,16 @@ export function SignUpPage() {
               errorText={fieldErrorText(t, errors.password)}
               {...form.register('password')}
             />
-            <Button type="submit" variant="solid" colorScheme="black" fullWidth>
-              {t('auth.signUp.continue')}
-            </Button>
+            <div className={authStyles.actions}>
+              <Button
+                type="submit"
+                variant="solid"
+                colorScheme="black"
+                fullWidth
+              >
+                {t('auth.signUp.continue')}
+              </Button>
+            </div>
           </Fragment>
         ) : (
           <Fragment key="business">
@@ -255,24 +262,26 @@ export function SignUpPage() {
                 {signUpErrorText(t, signUp.error)}
               </Typography>
             )}
-            <Button
-              type="submit"
-              variant="solid"
-              colorScheme="black"
-              fullWidth
-              loading={signUp.isPending}
-            >
-              {t('auth.signUp.submit')}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              colorScheme="grey"
-              fullWidth
-              onClick={() => setStep('account')}
-            >
-              {t('auth.signUp.back')}
-            </Button>
+            <div className={authStyles.actions}>
+              <Button
+                type="submit"
+                variant="solid"
+                colorScheme="black"
+                fullWidth
+                loading={signUp.isPending}
+              >
+                {t('auth.signUp.submit')}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                colorScheme="grey"
+                fullWidth
+                onClick={() => setStep('account')}
+              >
+                {t('auth.signUp.back')}
+              </Button>
+            </div>
           </Fragment>
         )}
       </form>
