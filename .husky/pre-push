@@ -1,0 +1,3 @@
+# Fast checks that need no browser or API; the full set runs in CI.
+npm run typecheck
+npm test

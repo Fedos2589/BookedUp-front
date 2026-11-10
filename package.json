@@ -3,15 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.22.1"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
+    "lint": "oxlint --deny-warnings",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "api:generate": "orval"
+    "api:generate": "orval",
+    "prepare": "husky || true"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.5",
@@ -37,12 +43,19 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "happy-dom": "^21.0.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "orval": "^8.47.0",
     "oxlint": "^1.90.0",
+    "prettier": "^3.9.10",
     "sass": "^1.108.1",
     "typescript": "~7.0.2",
     "vite": "^8.3.6",
     "vite-plugin-svgr": "^5.2.0",
     "vitest": "^5.1.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs}": "oxlint --fix --deny-warnings --no-error-on-unmatched-pattern",
+    "*": "prettier --write --ignore-unknown"
   }
 }

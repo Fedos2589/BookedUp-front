@@ -2,15 +2,15 @@
 
 SPA на React + TypeScript + Vite. Внутри два продукта: кабинет бизнеса (`/`) и публичная страница записи (`/book/:businessSlug`). Интерфейс — [TedUI](https://github.com/Fedos2589/TedUI).
 
-| Задача | Инструмент |
-| --- | --- |
-| Роутинг | TanStack Router (`src/app/router.tsx`) |
-| API | TanStack Query + Orval (`npm run api:generate` из Swagger бэка) |
-| Формы | react-hook-form + zod |
-| Состояние | Zustand |
-| Даты и переводы | dayjs, i18next |
-| Тесты | Vitest, Playwright |
-| Мониторинг | Sentry, PostHog — включаются через `VITE_SENTRY_DSN`, `VITE_POSTHOG_KEY` |
+| Задача          | Инструмент                                                               |
+| --------------- | ------------------------------------------------------------------------ |
+| Роутинг         | TanStack Router (`src/app/router.tsx`)                                   |
+| API             | TanStack Query + Orval (`npm run api:generate` из Swagger бэка)          |
+| Формы           | react-hook-form + zod                                                    |
+| Состояние       | Zustand                                                                  |
+| Даты и переводы | dayjs, i18next                                                           |
+| Тесты           | Vitest, Playwright                                                       |
+| Мониторинг      | Sentry, PostHog — включаются через `VITE_SENTRY_DSN`, `VITE_POSTHOG_KEY` |
 
 ```bash
 npm install

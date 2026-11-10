@@ -20,14 +20,24 @@ export default defineConfig({
       'ted-ui > react-hot-toast',
       'ted-ui > react-phone-number-input',
       'ted-ui > libphonenumber-js/min',
-      ...['button', 'checkbox', 'combobox', 'dialog', 'popover', 'radio', 'radio-group', 'tabs', 'tooltip'].map(
-        (part) => `ted-ui > @base-ui/react/${part}`,
-      ),
+      ...[
+        'button',
+        'checkbox',
+        'combobox',
+        'dialog',
+        'popover',
+        'radio',
+        'radio-group',
+        'tabs',
+        'tooltip',
+      ].map((part) => `ted-ui > @base-ui/react/${part}`),
       // DatePicker: dayjs is the app's own dependency (TedUI's optional peer).
       'dayjs',
       'dayjs/plugin/customParseFormat',
       'dayjs/plugin/localizedFormat',
-      ...['de', 'es', 'fr', 'id', 'it', 'pl', 'pt', 'ru', 'tr'].map((locale) => `dayjs/locale/${locale}`),
+      ...['de', 'es', 'fr', 'id', 'it', 'pl', 'pt', 'ru', 'tr'].map(
+        (locale) => `dayjs/locale/${locale}`,
+      ),
     ],
   },
   test: {

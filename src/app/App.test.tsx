@@ -6,8 +6,13 @@ import { App } from './App'
 import { router } from './router'
 
 test('renders the public booking page for a business', async () => {
-  await router.navigate({ to: '/book/$businessSlug', params: { businessSlug: 'judo-kids' } })
+  await router.navigate({
+    to: '/book/$businessSlug',
+    params: { businessSlug: 'judo-kids' },
+  })
   render(<App />)
 
-  expect(await screen.findByRole('heading', { name: 'Запись: judo-kids' })).toBeTruthy()
+  expect(
+    await screen.findByRole('heading', { name: 'Запись: judo-kids' }),
+  ).toBeTruthy()
 })
