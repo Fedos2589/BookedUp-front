@@ -36,9 +36,18 @@ SPA на React + TypeScript + Vite. Бэк — репозиторий BookedUp-b
 
 ## Проверки
 
-Перед каждым коммитом:
+Что запускается само:
+
+- **pre-commit** (husky + lint-staged): `oxlint --fix` и Prettier на добавленных в коммит файлах. Ошибку линтера, которую не исправить автоматически, хук не пропустит — чините, а не `--no-verify`.
+- **pre-push**: `npm run typecheck` и `npm test`.
+- **CI** (`.github/workflows/ci.yml`) на каждом PR и на main: `format:check`, `lint`, `typecheck`, `test`, `build`, `test:e2e`. PR мержится с зелёным CI.
+
+Форматирование — Prettier с конфигом TedUI (`.prettierrc` тот же, что в ките): `npm run format`. Хуки ставит `npm install` (скрипт `prepare`). Все файлы в репозитории с LF (`.gitattributes`): с CRLF скрипты хуков не запускаются.
+
+Перед PR вручную то же, что в CI:
 
 ```bash
+npm run format:check
 npm run typecheck
 npm run lint
 npm test
