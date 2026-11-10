@@ -1,3 +1,9 @@
+// Montserrat ships with the app (not Google Fonts): the service worker
+// precaches its files, so the installed app keeps its font offline. The kit
+// uses weights 500, 600 and 700; each file covers every script by unicode-range.
+import '@fontsource/montserrat/500.css'
+import '@fontsource/montserrat/600.css'
+import '@fontsource/montserrat/700.css'
 import 'ted-ui/tokens.scss'
 import './styles/global.scss'
 import './i18n'

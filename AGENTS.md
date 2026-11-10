@@ -54,7 +54,7 @@ SPA на React + TypeScript + Vite. Бэк — репозиторий BookedUp-b
 - `optimizeDeps.exclude: ['ted-ui']` — пакет поставляется исходниками `.tsx`;
 - `optimizeDeps.include` — все пакеты, которые импортирует кит. Без этого в dev-режиме (сборка не ловит!) CommonJS-зависимость падает в браузере с `does not provide an export named …`. При обновлении TedUI сверить список с его импортами и прогнать `npm run test:e2e`;
 - `verbatimModuleSyntax: false` — tsc проверяет исходники кита, а они импортируют типы без `import type`;
-- `import 'ted-ui/tokens.scss'` в `main.tsx`, ресеты в `src/styles/global.scss`, Montserrat в `index.html`;
+- `import 'ted-ui/tokens.scss'` в `main.tsx`, ресеты в `src/styles/global.scss`, Montserrat — `@fontsource/montserrat` (500, 600, 700) в `main.tsx`, а не Google Fonts: файлы шрифта в precache, офлайн приложение не теряет шрифт;
 - `registerUIKitTranslations(i18n)` в `src/i18n.ts`.
 
 Кит ставится по тегу (`github:Fedos2589/TedUI#vX.Y.Z`); `node_modules/ted-ui` не редактировать.

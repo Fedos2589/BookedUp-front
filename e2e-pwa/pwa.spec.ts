@@ -38,14 +38,40 @@ test('once installed, the app opens offline', async ({ page, context }) => {
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
   expect(await page.evaluate(activeWorkerState)).toBe('activated')
 
-  // Offline the shell comes from the precache; the session check cannot reach
-  // the API, so sign in is the page to show. A deep link falls back too.
+  // Offline the shell comes from the precache. The installed app starts at
+  // start_url `/`: the cabinet's session check cannot reach the API (a network
+  // error, not a 401), so its error screen offers to try again.
   await page.unroute('**/api/me')
   await context.setOffline(true)
-  await page.reload()
+  await page.goto('/')
+  await expect(
+    page.getByRole('heading', { name: "Couldn't load your account" }),
+  ).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
+  // Sign in tolerates a failed check: the form is still the page to show.
+  await page.goto('/sign-in')
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+  // A deep link falls back to the shell too.
   await page.goto('/book/judo-kids')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 
   expect(errors).toEqual([])
+})
+
+// The kit is measured in Montserrat; offline it must not fall back to a
+// system font. This page load is the first one the service worker controls.
+test('offline, the app still has its font', async ({ page, context }) => {
+  await page.route('**/api/me', (route) => route.fulfill({ status: 401 }))
+  await page.goto('/sign-in')
+  expect(await page.evaluate(activeWorkerState)).toBe('activated')
+
+  await page.unroute('**/api/me')
+  await context.setOffline(true)
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+
+  const montserratLoaded = `document.fonts.ready.then(() =>
+    [...document.fonts].some((font) =>
+      font.family.replaceAll('"', '') === 'Montserrat' && font.status === 'loaded'))`
+  expect(await page.evaluate(montserratLoaded)).toBe(true)
 })

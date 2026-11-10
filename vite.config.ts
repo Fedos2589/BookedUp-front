@@ -47,29 +47,12 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
-          // The shell (JS, CSS, HTML, icons) is precached; navigations fall
-          // back to index.html offline.
+          // The shell (JS, CSS, HTML, icons, the Montserrat files) is
+          // precached; navigations fall back to index.html offline.
           globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
           navigateFallback: '/index.html',
           // Never the API: its answers are per account and must be fresh.
           navigateFallbackDenylist: [/^\/api(\/|$)/],
-          runtimeCaching: [
-            {
-              // Montserrat (index.html): the stylesheet, then the font files.
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
-              handler: 'StaleWhileRevalidate',
-              options: { cacheName: 'google-fonts-css' },
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'google-fonts-files',
-                expiration: { maxEntries: 20, maxAgeSeconds: 365 * 24 * 3600 },
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-          ],
         },
       }),
     ],
