@@ -1,4 +1,9 @@
-import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router'
+import {
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+} from '@tanstack/react-router'
 
 import { BookingPage } from '../pages/BookingPage'
 import { DashboardPage } from '../pages/DashboardPage'
