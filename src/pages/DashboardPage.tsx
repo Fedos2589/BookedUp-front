@@ -5,6 +5,7 @@ import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
 import { useSessionControllerSignOut } from '../api/auth/auth'
+import styles from './DashboardPage.module.scss'
 import { useMeControllerMeSuspense } from '../api/account/account'
 
 export function DashboardPage() {
@@ -25,19 +26,23 @@ export function DashboardPage() {
   })
 
   return (
-    <main>
-      <Typography variant="h3" component="h1">
-        {business?.name ?? 'BookedUp'}
+    <main className={styles.page}>
+      <header className={styles.header}>
+        <Typography variant="h3" component="h1">
+          {business?.name ?? 'BookedUp'}
+        </Typography>
+        <Button
+          variant="ghost"
+          colorScheme="grey"
+          loading={signOut.isPending}
+          onClick={() => signOut.mutate()}
+        >
+          {t('dashboard.signOut')}
+        </Button>
+      </header>
+      <Typography variant="t3" component="p" color="grey-400">
+        {t('dashboard.subtitle')}
       </Typography>
-      <Typography variant="t3">{t('dashboard.subtitle')}</Typography>
-      <Button
-        variant="ghost"
-        colorScheme="grey"
-        loading={signOut.isPending}
-        onClick={() => signOut.mutate()}
-      >
-        {t('dashboard.signOut')}
-      </Button>
     </main>
   )
 }
