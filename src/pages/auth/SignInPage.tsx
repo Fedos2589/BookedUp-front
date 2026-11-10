@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import type { TFunction } from 'i18next'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -85,6 +85,12 @@ export function SignInPage() {
           {t('auth.signIn.submit')}
         </Button>
       </form>
+      <Typography variant="t5">
+        {t('auth.signIn.noAccount')}{' '}
+        <Link to="/sign-up" className={authStyles.link}>
+          {t('auth.signIn.toSignUp')}
+        </Link>
+      </Typography>
     </AuthLayout>
   )
 }

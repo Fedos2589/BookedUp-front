@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 // No back here (CI has none): pages that ask the API get a stubbed answer.
-for (const path of ['/sign-in', '/book/judo-kids']) {
+for (const path of ['/sign-in', '/sign-up', '/book/judo-kids']) {
   test(`${path} renders without page errors`, async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (error) => errors.push(error.message))

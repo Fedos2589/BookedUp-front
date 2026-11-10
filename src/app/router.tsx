@@ -12,6 +12,7 @@ import { SignInPage } from '../pages/auth/SignInPage'
 import { BookingPage } from '../pages/BookingPage'
 import { DashboardError } from '../pages/DashboardError'
 import { DashboardPage } from '../pages/DashboardPage'
+import { SignUpPage } from '../pages/signUp/SignUpPage'
 
 type RouterContext = { queryClient: QueryClient }
 
@@ -35,6 +36,14 @@ const signInRoute = createRoute({
   component: SignInPage,
 })
 
+// An owner registers with their business.
+const signUpRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/sign-up',
+  beforeLoad: ({ context }) => redirectIfSignedIn(context.queryClient),
+  component: SignUpPage,
+})
+
 // Public booking page of a business, for its clients.
 const bookingRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -45,6 +54,7 @@ const bookingRoute = createRoute({
 export const routeTree = rootRoute.addChildren([
   dashboardRoute,
   signInRoute,
+  signUpRoute,
   bookingRoute,
 ])
 
