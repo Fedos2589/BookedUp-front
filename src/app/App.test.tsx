@@ -13,6 +13,6 @@ test('renders the public booking page for a business', async () => {
   render(<App />)
 
   expect(
-    await screen.findByRole('heading', { name: 'Запись: judo-kids' }),
+    await screen.findByRole('heading', { name: 'Booking: judo-kids' }),
   ).toBeTruthy()
 })

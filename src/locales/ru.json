@@ -1,0 +1,8 @@
+{
+  "dashboard": {
+    "subtitle": "Кабинет бизнеса"
+  },
+  "booking": {
+    "title": "Запись: {{businessSlug}}"
+  }
+}
