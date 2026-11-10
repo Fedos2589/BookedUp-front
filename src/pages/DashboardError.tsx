@@ -14,7 +14,11 @@ export function DashboardError() {
       <Typography variant="h3" component="h1">
         {t('dashboard.loadFailed')}
       </Typography>
-      <Button onClick={() => void router.invalidate()}>
+      <Button
+        variant="solid"
+        colorScheme="black"
+        onClick={() => void router.invalidate()}
+      >
         {t('dashboard.tryAgain')}
       </Button>
     </main>

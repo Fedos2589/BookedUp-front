@@ -103,3 +103,70 @@ test('when the session check fails, the cabinet offers to try again', async () =
 
   expect(await screen.findByRole('heading', { name: 'Judo Kids' })).toBeTruthy()
 })
+
+// Review #1: every retry of the session check is seconds of blank page.
+test('with the back down, the session check asks at most twice', async () => {
+  const api = fakeApi({ 'GET /api/me': [502] })
+  renderApp('/sign-in')
+
+  await screen.findByRole('heading', { name: 'Sign in' })
+  expect(api.calls.filter((c) => c.route === 'GET /api/me').length).toBe(2)
+})
+
+// A 401 is an answer: no retry, so a guest waits for no backoff (once on `/`,
+// once more on /sign-in, whose check finds no account cached).
+test('a guest is redirected after one session check per page', async () => {
+  const api = fakeApi({ 'GET /api/me': [401] })
+  renderApp('/')
+
+  await screen.findByRole('heading', { name: 'Sign in' })
+  expect(api.calls.filter((c) => c.route === 'GET /api/me').length).toBe(2)
+})
+
+// Review #2: a session ended elsewhere (another tab, expiry).
+test('a session that ended elsewhere sends the cabinet to sign in on its next check', async () => {
+  const api = fakeApi({ 'GET /api/me': [200, account] })
+  const { router, queryClient } = renderApp('/')
+  await screen.findByRole('heading', { name: 'Judo Kids' })
+  api.set('GET /api/me', [401])
+
+  await queryClient.invalidateQueries()
+
+  await waitFor(() => expect(router.state.location.pathname).toBe('/sign-in'))
+  expect(queryClient.getQueryData(getMeControllerMeQueryKey())).toBeUndefined()
+})
+
+test('a cached account older than 30 s is checked again before bouncing from sign in', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  try {
+    const api = fakeApi({ 'GET /api/me': [200, account] })
+    const { router } = renderApp('/')
+    await screen.findByRole('heading', { name: 'Judo Kids' })
+    api.set('GET /api/me', [401])
+    vi.setSystemTime(Date.now() + 31_000)
+
+    await router.navigate({ to: '/sign-in' })
+
+    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeTruthy()
+    expect(router.state.location.pathname).toBe('/sign-in')
+  } finally {
+    vi.useRealTimers()
+  }
+})
+
+// Review #3.
+test('a failed sign out is reported and the owner stays', async () => {
+  fakeApi({
+    'GET /api/me': [200, account],
+    'POST /api/auth/sign-out': [503],
+  })
+  const { router } = renderApp('/')
+  await screen.findByRole('heading', { name: 'Judo Kids' })
+
+  fireEvent.click(screen.getByRole('button', { name: 'Sign out' }))
+
+  expect(
+    await screen.findByText('Something went wrong. Try again.'),
+  ).toBeTruthy()
+  expect(router.state.location.pathname).toBe('/')
+})

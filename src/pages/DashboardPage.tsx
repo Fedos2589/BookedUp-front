@@ -40,6 +40,11 @@ export function DashboardPage() {
           {t('dashboard.signOut')}
         </Button>
       </header>
+      {signOut.isError && (
+        <Typography variant="t5" color="red-300" role="alert">
+          {t('auth.failed')}
+        </Typography>
+      )}
       <Typography variant="t3" component="p" color="grey-400">
         {t('dashboard.subtitle')}
       </Typography>

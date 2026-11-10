@@ -3,19 +3,30 @@ import { redirect } from '@tanstack/react-router'
 
 import { getMeControllerMeQueryOptions } from '../api/account/account'
 import { ApiError } from '../apiFetch'
+import { retryServerErrors } from '../app/queryClient'
 
 // GET /me: the signed-in account and its businesses. The cookie is HttpOnly, so
 // this answer is the only way the app learns whether there is a session.
-export const meQueryOptions = () => getMeControllerMeQueryOptions()
+// The route checks retry a server error once, not 3 times with backoff: each
+// retry is seconds of a pending page when the back is down; a 401 never. A
+// cached answer younger than 30 s is trusted; an older one is asked again, so
+// a session ended elsewhere is noticed.
+const sessionCheckOptions = () => ({
+  ...getMeControllerMeQueryOptions(),
+  retry: retryServerErrors(1),
+  staleTime: 30_000,
+})
 
-const isNoSession = (error: unknown) =>
+export const meQueryKey = () => getMeControllerMeQueryOptions().queryKey
+
+export const isNoSession = (error: unknown) =>
   error instanceof ApiError && error.status === 401
 
 // beforeLoad of the cabinet: a guest goes to sign in; any other failure is the
 // route's error to show.
 export async function requireAccount(queryClient: QueryClient) {
   try {
-    return await queryClient.ensureQueryData(meQueryOptions())
+    return await queryClient.fetchQuery(sessionCheckOptions())
   } catch (error) {
     if (isNoSession(error)) throw redirect({ to: '/sign-in', replace: true })
     throw error
@@ -26,7 +37,7 @@ export async function requireAccount(queryClient: QueryClient) {
 // If the check itself fails, the form is still the right page to show.
 export async function redirectIfSignedIn(queryClient: QueryClient) {
   const signedIn = await queryClient
-    .ensureQueryData(meQueryOptions())
+    .fetchQuery(sessionCheckOptions())
     .then(() => true)
     .catch(() => false)
   if (signedIn) throw redirect({ to: '/', replace: true })

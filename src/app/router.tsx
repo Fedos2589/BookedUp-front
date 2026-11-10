@@ -12,6 +12,7 @@ import { SignInPage } from '../pages/auth/SignInPage'
 import { BookingPage } from '../pages/BookingPage'
 import { DashboardError } from '../pages/DashboardError'
 import { DashboardPage } from '../pages/DashboardPage'
+import { PagePending } from '../pages/PagePending'
 import { SignUpPage } from '../pages/signUp/SignUpPage'
 
 type RouterContext = { queryClient: QueryClient }
@@ -62,7 +63,12 @@ export function createAppRouter(
   queryClient: QueryClient,
   history?: RouterHistory,
 ) {
-  return createRouter({ routeTree, context: { queryClient }, history })
+  return createRouter({
+    routeTree,
+    context: { queryClient },
+    history,
+    defaultPendingComponent: PagePending,
+  })
 }
 
 declare module '@tanstack/react-router' {

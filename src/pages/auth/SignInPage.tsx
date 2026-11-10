@@ -11,7 +11,7 @@ import { z } from 'zod'
 
 import { useSessionControllerSignIn } from '../../api/auth/auth'
 import { ApiError } from '../../apiFetch'
-import { meQueryOptions } from '../../auth/session'
+import { meQueryKey } from '../../auth/session'
 import { fieldErrorText } from '../../forms/fieldError'
 import { AuthLayout } from './AuthLayout'
 import authStyles from './AuthLayout.module.scss'
@@ -44,7 +44,7 @@ export function SignInPage() {
     mutation: {
       // The answer is what GET /me would give: cache it, the cabinet needs no refetch.
       onSuccess: async (account) => {
-        queryClient.setQueryData(meQueryOptions().queryKey, account)
+        queryClient.setQueryData(meQueryKey(), account)
         await navigate({ to: '/' })
       },
     },
@@ -81,7 +81,13 @@ export function SignInPage() {
             {signInErrorText(t, signIn.error)}
           </Typography>
         )}
-        <Button type="submit" fullWidth loading={signIn.isPending}>
+        <Button
+          type="submit"
+          variant="solid"
+          colorScheme="black"
+          fullWidth
+          loading={signIn.isPending}
+        >
           {t('auth.signIn.submit')}
         </Button>
       </form>
