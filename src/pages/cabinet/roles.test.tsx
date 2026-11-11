@@ -10,7 +10,9 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-const withRole = (role: 'OWNER' | 'ADMIN' | 'MASTER') => ({
+// A string, not the generated union: the back may add a role before the
+// front regenerates its client (review of #6).
+const withRole = (role: string) => ({
   ...account,
   businesses: [{ ...account.businesses[0], role }],
 })
@@ -85,4 +87,13 @@ test('an admin sees the settings', async () => {
     await screen.findByRole('heading', { name: 'Business settings' }),
   ).toBeTruthy()
   expect(screen.getByRole('link', { name: 'Settings' })).toBeTruthy()
+})
+
+test('a role the front does not know yet sees no settings', async () => {
+  fakeApi({ 'GET /api/me': [200, withRole('RECEPTIONIST')] })
+  const { router } = renderApp('/settings')
+
+  await screen.findByRole('heading', { name: 'Judo Kids' })
+  await waitFor(() => expect(router.state.location.pathname).toBe('/'))
+  expect(screen.queryByRole('link', { name: 'Settings' })).toBeNull()
 })

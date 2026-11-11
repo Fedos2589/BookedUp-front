@@ -4,10 +4,12 @@ export type Role = MeControllerMe200BusinessesItemRole
 
 // What each role sees in the cabinet. The back decides what each role may do
 // (BookedUp-back src/business/roles.ts) and refuses the rest with 403; this
-// only keeps a role from being shown what it may not use.
+// only keeps a role from being shown what it may not use. Each ability names
+// the roles it allows: a role added on the back sees nothing new until it is
+// listed here.
 const abilities = {
   // Business settings: the owner's and the admins' (E3: a master doesn't see them).
-  viewSettings: (role: Role) => role !== 'MASTER',
+  viewSettings: (role: Role) => role === 'OWNER' || role === 'ADMIN',
 } as const satisfies Record<string, (role: Role) => boolean>
 
 export type Ability = keyof typeof abilities
