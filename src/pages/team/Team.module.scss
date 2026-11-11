@@ -76,12 +76,12 @@
   border: 0;
 }
 
-// A name field and its button on one line; the button stays level with the
-// field, not with its label.
+// A name field and its button on one line, level with the field's box (the
+// label sits above it). An error under the field lifts the button: fine.
 .addForm {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: var(--spacing-8);
 }
 
