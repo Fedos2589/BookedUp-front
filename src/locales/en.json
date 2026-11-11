@@ -77,7 +77,17 @@
       "MASTER": "Master"
     },
     "members": {
-      "title": "Members"
-    }
+      "title": "Members",
+      "makeRole": {
+        "ADMIN": "Make admin",
+        "MASTER": "Make master"
+      },
+      "remove": "Remove",
+      "removeTitle": "Remove {{name}} from the team?",
+      "removeText": "They will no longer sign in to {{business}}. Their schedule stays, without an account."
+    },
+    "cancel": "Cancel",
+    "changedMeanwhile": "Someone changed the team meanwhile. Here it is as it is now.",
+    "saveFailed": "Couldn't save. Check the connection and try again."
   }
 }

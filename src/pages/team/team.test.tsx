@@ -1,5 +1,11 @@
 // @vitest-environment happy-dom
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { account, fakeApi } from '@/test/fakeApi'
@@ -96,4 +102,109 @@ test('when the members fail to load, the team offers to try again', async () => 
   fireEvent.click(retry)
 
   expect(await screen.findByRole('list', { name: 'Members' })).toBeTruthy()
+})
+
+const rowOf = (name: string) => {
+  const members = screen.getByRole('list', { name: 'Members' })
+  const row = [...members.querySelectorAll(':scope > li')].find((li) =>
+    li.textContent?.includes(name),
+  )
+  if (!(row instanceof HTMLElement)) throw new Error(`no row for ${name}`)
+  return row
+}
+
+const buttonsIn = (row: HTMLElement) =>
+  [...row.querySelectorAll('button')].map((button) => button.textContent)
+
+test('the owner moves a member to the other role', async () => {
+  const fake = fakeApi({
+    ...team(),
+    [`PATCH ${api(`/members/${admin.userId}`)}`]: [
+      200,
+      { ...admin, role: 'MASTER' },
+    ],
+  })
+  renderApp('/team')
+  await screen.findByRole('list', { name: 'Members' })
+
+  expect(buttonsIn(rowOf('Anna'))).toEqual([])
+  expect(buttonsIn(rowOf('Vera'))).toEqual(['Make admin', 'Remove'])
+
+  fake.set(`GET ${api('/members')}`, [
+    200,
+    [owner, { ...admin, role: 'MASTER' }, master],
+  ])
+  fireEvent.click(
+    within(rowOf('Boris')).getByRole('button', { name: 'Make master' }),
+  )
+
+  await waitFor(() => expect(rowOf('Boris').textContent).toMatch(/Master/))
+  expect(fake.calls).toContainEqual({
+    route: `PATCH ${api(`/members/${admin.userId}`)}`,
+    body: { role: 'MASTER' },
+  })
+})
+
+test('an admin can remove a master, and touch nobody else', async () => {
+  fakeApi(team(withRole('ADMIN')))
+  renderApp('/team')
+  await screen.findByRole('list', { name: 'Members' })
+
+  expect(buttonsIn(rowOf('Anna'))).toEqual([])
+  expect(buttonsIn(rowOf('Boris'))).toEqual([])
+  // Admin → master only: there is no other role to move a master to.
+  expect(buttonsIn(rowOf('Vera'))).toEqual(['Remove'])
+})
+
+test('removing asks first; cancelling sends nothing', async () => {
+  const fake = fakeApi(team())
+  renderApp('/team')
+  await screen.findByRole('list', { name: 'Members' })
+
+  fireEvent.click(within(rowOf('Vera')).getByRole('button', { name: 'Remove' }))
+  const dialog = await screen.findByRole('dialog', {
+    name: 'Remove Vera from the team?',
+  })
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  expect(fake.calls.map((call) => call.route)).not.toContain(
+    `DELETE ${api(`/members/${master.userId}`)}`,
+  )
+})
+
+test('a removed member leaves the list', async () => {
+  const fake = fakeApi({
+    ...team(),
+    [`DELETE ${api(`/members/${master.userId}`)}`]: [204],
+  })
+  renderApp('/team')
+  await screen.findByRole('list', { name: 'Members' })
+
+  fireEvent.click(within(rowOf('Vera')).getByRole('button', { name: 'Remove' }))
+  const dialog = await screen.findByRole('dialog')
+  fake.set(`GET ${api('/members')}`, [200, [owner, admin]])
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Remove' }))
+
+  await waitFor(() => expect(screen.queryByText('Vera')).toBeNull())
+  expect(screen.queryByRole('dialog')).toBeNull()
+})
+
+test('a member changed meanwhile: the list reloads and says so', async () => {
+  const fake = fakeApi({
+    ...team(),
+    [`PATCH ${api(`/members/${admin.userId}`)}`]: [409],
+  })
+  renderApp('/team')
+  await screen.findByRole('list', { name: 'Members' })
+
+  fake.set(`GET ${api('/members')}`, [200, [owner, master]])
+  fireEvent.click(
+    within(rowOf('Boris')).getByRole('button', { name: 'Make master' }),
+  )
+
+  expect((await screen.findByRole('alert')).textContent).toBe(
+    'Someone changed the team meanwhile. Here it is as it is now.',
+  )
+  await waitFor(() => expect(screen.queryByText('Boris')).toBeNull())
 })
