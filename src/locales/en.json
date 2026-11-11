@@ -1,8 +1,7 @@
 {
   "dashboard": {
     "subtitle": "Business dashboard",
-    "loadFailed": "Couldn't load your account",
-    "tryAgain": "Try again"
+    "loadFailed": "Couldn't load your account"
   },
   "booking": {
     "title": "Booking: {{businessSlug}}"
@@ -48,7 +47,8 @@
     "timeZone": "Pick a time zone from the list"
   },
   "common": {
-    "loading": "Loading"
+    "loading": "Loading",
+    "tryAgain": "Try again"
   },
   "settings": {
     "title": "Business settings",

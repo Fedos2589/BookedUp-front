@@ -22,7 +22,7 @@ export function DashboardError() {
         colorScheme="black"
         onClick={() => void router.invalidate()}
       >
-        {t('dashboard.tryAgain')}
+        {t('common.tryAgain')}
       </Button>
     </main>
   )

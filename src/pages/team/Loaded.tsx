@@ -32,7 +32,7 @@ export function Loaded<T>({
           loading={query.isFetching}
           onClick={() => void query.refetch()}
         >
-          {t('dashboard.tryAgain')}
+          {t('common.tryAgain')}
         </Button>
       </div>
     )

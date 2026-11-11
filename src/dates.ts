@@ -4,6 +4,8 @@ import utc from 'dayjs/plugin/utc'
 
 // The back stores and sends UTC; the app shows it in the business's time zone,
 // never the browser's (AGENTS.md). Every date shown goes through here.
+// Arithmetic and numeric formats are dayjs; a month's name is Intl
+// (dateTimeIn), worded in the app's language without loading dayjs locales.
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
