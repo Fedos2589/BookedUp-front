@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
-import styles from './cabinet/Cabinet.module.scss'
+import styles from '@/pages/cabinet/Cabinet.module.scss'
 
 // The cabinet could not check the session (network, 5xx): say so and offer to
 // run the check again, instead of a blank page.

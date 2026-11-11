@@ -3,8 +3,8 @@ import { initReactI18next } from 'react-i18next'
 import { registerUIKitTranslations } from 'ted-ui/i18n/resources'
 
 import { detectLanguage, LANGUAGES } from './language'
-import en from './locales/en.json'
-import ru from './locales/ru.json'
+import en from '@/locales/en.json'
+import ru from '@/locales/ru.json'
 
 export const resources = {
   en: { translation: en },
