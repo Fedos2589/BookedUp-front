@@ -24,7 +24,7 @@ export function SettingsPage() {
       </Typography>
       <dl className={styles.fields}>
         <div className={styles.field}>
-          <Typography variant="t5" component="dt" color="grey-400">
+          <Typography variant="t4" component="dt" color="grey-400">
             {t('settings.name')}
           </Typography>
           <Typography variant="t3" component="dd" className={styles.value}>
@@ -32,7 +32,7 @@ export function SettingsPage() {
           </Typography>
         </div>
         <div className={styles.field}>
-          <Typography variant="t5" component="dt" color="grey-400">
+          <Typography variant="t4" component="dt" color="grey-400">
             {t('settings.bookingPage')}
           </Typography>
           <Typography variant="t3" component="dd" className={styles.value}>
@@ -46,12 +46,12 @@ export function SettingsPage() {
           </Typography>
         </div>
         <div className={styles.field}>
-          <Typography variant="t5" component="dt" color="grey-400">
+          <Typography variant="t4" component="dt" color="grey-400">
             {t('settings.timeZone')}
           </Typography>
           <dd className={styles.value}>
             <Typography variant="t3">{business.timeZone}</Typography>
-            <Typography variant="t5" color="grey-400">
+            <Typography variant="t4" color="grey-400">
               {t('settings.localTime', {
                 time: timeIn(now, business.timeZone),
               })}
