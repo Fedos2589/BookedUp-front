@@ -6,6 +6,7 @@ import {
   useInvitationsControllerList,
   useInvitationsControllerRevoke,
 } from '@/api/invitations/invitations'
+import { useStaffControllerList } from '@/api/staff/staff'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { dateTimeIn } from '@/dates'
 import { Loaded } from './Loaded'
@@ -19,6 +20,11 @@ export function Invitations({ onInvite }: { onInvite: () => void }) {
   const { t, i18n } = useTranslation()
   const business = useCurrentBusiness()
   const invitations = useInvitationsControllerList(business.id)
+  // The same list «Masters without an account» loads: one request for both.
+  // Until it is there, an invitation just doesn't name its schedule.
+  const staff = useStaffControllerList(business.id)
+  const scheduleName = (staffId: string | null) =>
+    staff.data?.find((schedule) => schedule.id === staffId)?.name
   const revoke = useInvitationsControllerRevoke({
     mutation: { onSettled: useReloadTeam() },
   })
@@ -57,6 +63,7 @@ export function Invitations({ onInvite }: { onInvite: () => void }) {
                   business.timeZone,
                   i18n.language,
                 )
+                const schedule = scheduleName(invitation.staffId)
                 return (
                   <li key={invitation.id} className={styles.row}>
                     <div className={styles.who}>
@@ -64,6 +71,11 @@ export function Invitations({ onInvite }: { onInvite: () => void }) {
                         {t(`team.role.${invitation.role}`)}
                         {invitation.note && ` · ${invitation.note}`}
                       </Typography>
+                      {schedule && (
+                        <Typography variant="t4">
+                          {t('team.invite.forSchedule', { name: schedule })}
+                        </Typography>
+                      )}
                       <Typography variant="t4" color="grey-400">
                         {[
                           invitation.invitedBy &&

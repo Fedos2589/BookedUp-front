@@ -642,3 +642,18 @@ test('while a member is being changed, the other changes wait', async () => {
     ),
   )
 })
+
+// Review of #7, finding 10: the schedule comes from the staff list on the page.
+test('an invitation to a schedule names it', async () => {
+  fakeApi({
+    ...team(),
+    [`GET ${api('/invitations')}`]: [
+      200,
+      [{ ...invitation, note: null, staffId: petr.id }],
+    ],
+  })
+  renderApp('/team')
+
+  const list = await screen.findByRole('list', { name: 'Invitations' })
+  await waitFor(() => expect(list.textContent).toMatch(/For Petr’s schedule/))
+})
