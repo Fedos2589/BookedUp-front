@@ -310,6 +310,12 @@ test('the owner invites an admin and copies the link', async () => {
 
   const linkField = await within(dialog).findByLabelText('Invitation link')
   expect((linkField as HTMLInputElement).value).toBe(link)
+  // The copy button sits in the field itself.
+  expect(
+    linkField.parentElement
+      ?.querySelector('button')
+      ?.getAttribute('aria-label'),
+  ).toBe('Copy link')
   expect(fake.calls).toContainEqual({
     route: `POST ${api('/invitations')}`,
     body: { role: 'ADMIN', note: 'Gleb' },
