@@ -33,7 +33,8 @@
       "timeZoneHelper": "Bookings are shown in this time zone",
       "hasAccount": "Already have an account?",
       "toSignIn": "Sign in"
-    }
+    },
+    "showPassword": "Show password"
   },
   "validation": {
     "required": "Required",

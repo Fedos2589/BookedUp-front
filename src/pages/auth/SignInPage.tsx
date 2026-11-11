@@ -14,6 +14,7 @@ import { useSessionControllerSignIn } from '@/api/auth/auth'
 import { ApiError } from '@/apiFetch'
 import { meQueryKey } from '@/auth/session'
 import { fieldErrorText } from '@/forms/fieldError'
+import { PasswordInput } from '@/forms/PasswordInput'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 import { AuthLayout } from './AuthLayout'
 import authStyles from './AuthLayout.module.scss'
@@ -71,9 +72,8 @@ export function SignInPage() {
           errorText={fieldErrorText(t, errors.email)}
           {...form.register('email')}
         />
-        <Input
+        <PasswordInput
           label={t('auth.password')}
-          type="password"
           autoComplete="current-password"
           fullWidth
           error={!!errors.password}

@@ -33,7 +33,8 @@
       "timeZoneHelper": "Записи показываются в этом часовом поясе",
       "hasAccount": "Уже есть аккаунт?",
       "toSignIn": "Войти"
-    }
+    },
+    "showPassword": "Показать пароль"
   },
   "validation": {
     "required": "Обязательное поле",
