@@ -18,3 +18,11 @@ test('follows daylight saving time', () => {
     '13:00',
   )
 })
+
+// The back canonicalises zones with Node's ICU; an older browser's ICU may not
+// know a newer name, and Intl throws RangeError (review of #4).
+test('a zone the browser does not know gives no time instead of throwing', () => {
+  expect(timeIn(new Date('2026-11-11T03:40:00Z'), 'Mars/Olympus_Mons')).toBe(
+    undefined,
+  )
+})

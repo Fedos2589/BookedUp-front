@@ -16,6 +16,7 @@ export function SettingsPage() {
   const { data: account } = useMeControllerMeSuspense()
   const business = currentBusinessOf(account)
   const now = useNow()
+  const localTime = timeIn(now, business.timeZone)
 
   return (
     <main className={styles.page}>
@@ -51,11 +52,11 @@ export function SettingsPage() {
           </Typography>
           <dd className={styles.value}>
             <Typography variant="t3">{business.timeZone}</Typography>
-            <Typography variant="t4" color="grey-400">
-              {t('settings.localTime', {
-                time: timeIn(now, business.timeZone),
-              })}
-            </Typography>
+            {localTime && (
+              <Typography variant="t4" color="grey-400">
+                {t('settings.localTime', { time: localTime })}
+              </Typography>
+            )}
           </dd>
         </div>
       </dl>

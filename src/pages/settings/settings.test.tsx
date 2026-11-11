@@ -71,3 +71,21 @@ test('when the session check fails, the settings offer to try again', async () =
     await screen.findByRole('heading', { name: 'Business settings' }),
   ).toBeTruthy()
 })
+
+test('a time zone this browser does not know still shows, without a time', async () => {
+  const unknownZone = 'Mars/Olympus_Mons'
+  fakeApi({
+    'GET /api/me': [
+      200,
+      {
+        ...account,
+        businesses: [{ ...account.businesses[0], timeZone: unknownZone }],
+      },
+    ],
+  })
+  renderApp('/settings')
+
+  expect(await screen.findByText(unknownZone)).toBeTruthy()
+  expect(screen.getByText('Judo Kids')).toBeTruthy()
+  expect(screen.queryByText(/there now$/)).toBeNull()
+})
