@@ -16,3 +16,13 @@
 .retry {
   align-self: flex-start;
 }
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
+}
+
+.link {
+  color: var(--color-blue-300);
+}

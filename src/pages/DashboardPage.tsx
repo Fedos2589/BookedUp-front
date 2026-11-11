@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
@@ -7,6 +7,7 @@ import { Typography } from 'ted-ui/Typography'
 import { useSessionControllerSignOut } from '../api/auth/auth'
 import styles from './DashboardPage.module.scss'
 import { useMeControllerMeSuspense } from '../api/account/account'
+import { currentBusinessOf } from '../business/currentBusiness'
 
 export function DashboardPage() {
   const { t } = useTranslation()
@@ -14,7 +15,7 @@ export function DashboardPage() {
   const queryClient = useQueryClient()
   // The route's beforeLoad has loaded it, so this never suspends there.
   const { data: account } = useMeControllerMeSuspense()
-  const business = account.businesses[0]
+  const business = currentBusinessOf(account)
   const signOut = useSessionControllerSignOut({
     mutation: {
       // Everything cached belongs to the account that just left.
@@ -29,16 +30,23 @@ export function DashboardPage() {
     <main className={styles.page}>
       <header className={styles.header}>
         <Typography variant="h3" component="h1">
-          {business?.name ?? 'BookedUp'}
+          {business.name}
         </Typography>
-        <Button
-          variant="ghost"
-          colorScheme="grey"
-          loading={signOut.isPending}
-          onClick={() => signOut.mutate()}
-        >
-          {t('dashboard.signOut')}
-        </Button>
+        <nav className={styles.nav}>
+          <Typography variant="t3">
+            <Link to="/settings" className={styles.link}>
+              {t('dashboard.settings')}
+            </Link>
+          </Typography>
+          <Button
+            variant="ghost"
+            colorScheme="grey"
+            loading={signOut.isPending}
+            onClick={() => signOut.mutate()}
+          >
+            {t('dashboard.signOut')}
+          </Button>
+        </nav>
       </header>
       {signOut.isError && (
         <Typography variant="t5" color="red-300" role="alert">

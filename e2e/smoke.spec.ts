@@ -84,3 +84,46 @@ test('the cabinet’s error screen, when the session check fails', async ({
   await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
   await expectClearOfTopEdge(heading)
 })
+
+test('the business settings render for a signed-in owner', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  const business = {
+    id: '00000000-0000-4000-8000-000000000002',
+    name: 'Judo Kids',
+    slug: 'judo-kids',
+    timeZone: 'Asia/Bangkok',
+    role: 'OWNER',
+  }
+  await page.route('**/api/me', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        user: {
+          id: '00000000-0000-4000-8000-000000000001',
+          email: 'anna@example.com',
+          name: 'Anna',
+        },
+        businesses: [business],
+      }),
+    }),
+  )
+  await page.route(`**/api/businesses/${business.id}`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(business),
+    }),
+  )
+  await page.setViewportSize({ width: 390, height: 844 })
+
+  await page.goto('/settings', { waitUntil: 'networkidle' })
+
+  expect(errors).toEqual([])
+  const heading = page.getByRole('heading', { name: 'Business settings' })
+  await expect(heading).toBeVisible()
+  await expect(page.getByText('Asia/Bangkok')).toBeVisible()
+  await expectClearOfTopEdge(heading)
+  expect(await page.evaluate('document.documentElement.scrollWidth')).toBe(390)
+})

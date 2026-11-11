@@ -7,12 +7,15 @@ import {
   Outlet,
 } from '@tanstack/react-router'
 
+import { getBusinessControllerDescribeQueryOptions } from '../api/businesses/businesses'
 import { redirectIfSignedIn, requireAccount } from '../auth/session'
+import { currentBusinessOf } from '../business/currentBusiness'
 import { SignInPage } from '../pages/auth/SignInPage'
 import { BookingPage } from '../pages/BookingPage'
 import { DashboardError } from '../pages/DashboardError'
 import { DashboardPage } from '../pages/DashboardPage'
 import { PagePending } from '../pages/PagePending'
+import { SettingsPage } from '../pages/settings/SettingsPage'
 import { SignUpPage } from '../pages/signUp/SignUpPage'
 
 type RouterContext = { queryClient: QueryClient }
@@ -27,6 +30,26 @@ const dashboardRoute = createRoute({
   path: '/',
   beforeLoad: ({ context }) => requireAccount(context.queryClient),
   component: DashboardPage,
+  errorComponent: DashboardError,
+})
+
+// The business's settings, inside the cabinet.
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings',
+  beforeLoad: async ({ context }) => ({
+    account: await requireAccount(context.queryClient),
+  }),
+  // In the loader, not a suspending component: "Try again" (router.invalidate)
+  // re-runs it, while a failed suspense query would just throw again.
+  loader: async ({ context }) => {
+    const businessId = currentBusinessOf(context.account).id
+    await context.queryClient.ensureQueryData(
+      getBusinessControllerDescribeQueryOptions(businessId),
+    )
+    return { businessId }
+  },
+  component: SettingsPage,
   errorComponent: DashboardError,
 })
 
@@ -54,6 +77,7 @@ const bookingRoute = createRoute({
 
 export const routeTree = rootRoute.addChildren([
   dashboardRoute,
+  settingsRoute,
   signInRoute,
   signUpRoute,
   bookingRoute,

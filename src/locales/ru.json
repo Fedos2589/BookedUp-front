@@ -3,7 +3,8 @@
     "subtitle": "Кабинет бизнеса",
     "signOut": "Выйти",
     "loadFailed": "Не удалось загрузить аккаунт",
-    "tryAgain": "Попробовать снова"
+    "tryAgain": "Попробовать снова",
+    "settings": "Настройки"
   },
   "booking": {
     "title": "Запись: {{businessSlug}}"
@@ -50,5 +51,13 @@
   },
   "common": {
     "loading": "Загрузка"
+  },
+  "settings": {
+    "title": "Настройки бизнеса",
+    "toDashboard": "Кабинет",
+    "name": "Название",
+    "bookingPage": "Страница записи",
+    "timeZone": "Часовой пояс",
+    "localTime": "Там сейчас {{time}}"
   }
 }
