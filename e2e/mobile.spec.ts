@@ -15,8 +15,8 @@ const asGuest = (page: Page) =>
 async function toBusinessStep(page: Page) {
   await page.getByLabel('Ваше имя').fill('Анна')
   await page.getByLabel('Email').fill('anna@example.com')
-  await page.getByLabel('Пароль').fill('long enough')
-  await page.getByLabel('Пароль').press('Enter')
+  await page.getByLabel('Пароль', { exact: true }).fill('long enough')
+  await page.getByLabel('Пароль', { exact: true }).press('Enter')
   await expect(page.getByRole('heading', { name: 'Ваш бизнес' })).toBeVisible()
 }
 
