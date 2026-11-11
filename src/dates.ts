@@ -18,3 +18,25 @@ export function timeIn(moment: Date, timeZone: string): string | undefined {
     throw error
   }
 }
+
+// A day and a time ("Nov 19, 03:30") in an IANA time zone, worded in the
+// app's language; undefined for a zone this browser doesn't know, as timeIn.
+export function dateTimeIn(
+  moment: Date,
+  timeZone: string,
+  language: string,
+): string | undefined {
+  try {
+    return new Intl.DateTimeFormat(language, {
+      timeZone,
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).format(moment)
+  } catch (error) {
+    if (error instanceof RangeError) return undefined
+    throw error
+  }
+}
