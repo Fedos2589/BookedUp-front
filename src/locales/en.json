@@ -88,6 +88,27 @@
     },
     "cancel": "Cancel",
     "changedMeanwhile": "Someone changed the team meanwhile. Here it is as it is now.",
-    "saveFailed": "Couldn't save. Check the connection and try again."
+    "saveFailed": "Couldn't save. Check the connection and try again.",
+    "invitations": {
+      "title": "Invitations",
+      "invite": "Invite",
+      "none": "No pending invitations",
+      "invitedBy": "Invited by {{name}}",
+      "until": "Valid until {{date}}",
+      "revoke": "Revoke"
+    },
+    "invite": {
+      "title": "Invite to the team",
+      "role": "Role",
+      "note": "Who is it for (optional)",
+      "create": "Create link",
+      "link": "Invitation link",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "copyFailed": "Couldn’t copy. Select the link and copy it.",
+      "sendUntil": "Send this link to the person you invite. It works once, until {{date}}, and is shown only now.",
+      "send": "Send this link to the person you invite. It works once and is shown only now.",
+      "done": "Done"
+    }
   }
 }

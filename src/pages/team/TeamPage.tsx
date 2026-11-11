@@ -1,9 +1,12 @@
 import { Navigate } from '@tanstack/react-router'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { roleCan } from '@/business/roles'
+import { InviteDialog } from './InviteDialog'
+import { Invitations } from './Invitations'
 import { Members } from './Members'
 import styles from './Team.module.scss'
 
@@ -12,6 +15,7 @@ import styles from './Team.module.scss'
 export function TeamPage() {
   const { t } = useTranslation()
   const business = useCurrentBusiness()
+  const [inviting, setInviting] = useState(false)
 
   // The navigation has no link here for this role; an address typed by hand
   // lands on the dashboard, without asking the back for what it would refuse.
@@ -23,6 +27,8 @@ export function TeamPage() {
         {t('team.title')}
       </Typography>
       <Members />
+      <Invitations onInvite={() => setInviting(true)} />
+      <InviteDialog open={inviting} onClose={() => setInviting(false)} />
     </main>
   )
 }

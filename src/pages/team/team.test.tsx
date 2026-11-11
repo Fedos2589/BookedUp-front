@@ -46,12 +46,13 @@ const master = {
   staffId: '00000000-0000-4000-8000-000000000021',
 }
 
-const team = (me = account) => ({
+const team = (me: typeof account = account) => ({
   'GET /api/me': [200, me] as [number, unknown],
   [`GET ${api('/members')}`]: [200, [owner, admin, master]] as [
     number,
     unknown,
   ],
+  [`GET ${api('/invitations')}`]: [200, []] as [number, unknown],
 })
 
 test('the owner opens the team from the navigation and sees its members', async () => {
@@ -207,4 +208,166 @@ test('a member changed meanwhile: the list reloads and says so', async () => {
     'Someone changed the team meanwhile. Here it is as it is now.',
   )
   await waitFor(() => expect(screen.queryByText('Boris')).toBeNull())
+})
+
+const invitation = {
+  id: '00000000-0000-4000-8000-000000000031',
+  role: 'MASTER',
+  note: 'Maria, Saturday groups',
+  staffId: null,
+  invitedBy: 'Anna',
+  expiresAt: '2026-11-18T20:30:00.000Z',
+  createdAt: '2026-11-11T20:30:00.000Z',
+}
+
+const withInvitations = (me = account, invitations = [invitation]) => ({
+  ...team(me),
+  [`GET ${api('/invitations')}`]: [200, invitations] as [number, unknown],
+})
+
+test('pending invitations show their role, note, inviter and deadline', async () => {
+  fakeApi(withInvitations())
+  renderApp('/team')
+
+  const list = await screen.findByRole('list', { name: 'Invitations' })
+  // The deadline in the business's zone (Asia/Bangkok), not the browser's.
+  expect(list.textContent).toMatch(
+    /Master.*Maria, Saturday groups.*Invited by Anna.*Valid until Nov 19, 03:30/,
+  )
+})
+
+test('no pending invitations says so', async () => {
+  fakeApi(withInvitations(account, []))
+  renderApp('/team')
+
+  expect(await screen.findByText('No pending invitations')).toBeTruthy()
+})
+
+test('the owner invites an admin and copies the link', async () => {
+  const link = 'http://localhost:5173/invite/tok3n'
+  const created = { ...invitation, role: 'ADMIN', note: 'Gleb' }
+  const fake = fakeApi({
+    ...withInvitations(account, []),
+    [`POST ${api('/invitations')}`]: [201, { invitation: created, link }],
+  })
+  const writeText = vi.fn(async () => {})
+  vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } })
+  renderApp('/team')
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Invite' }))
+  const dialog = await screen.findByRole('dialog', {
+    name: 'Invite to the team',
+  })
+  fireEvent.click(within(dialog).getByRole('radio', { name: 'Admin' }))
+  fireEvent.change(within(dialog).getByLabelText('Who is it for (optional)'), {
+    target: { value: '  Gleb ' },
+  })
+  fake.set(`GET ${api('/invitations')}`, [200, [created]])
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Create link' }))
+
+  const linkField = await within(dialog).findByLabelText('Invitation link')
+  expect((linkField as HTMLInputElement).value).toBe(link)
+  expect(fake.calls).toContainEqual({
+    route: `POST ${api('/invitations')}`,
+    body: { role: 'ADMIN', note: 'Gleb' },
+  })
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Copy link' }))
+  expect(await within(dialog).findByText('Copied')).toBeTruthy()
+  expect(writeText).toHaveBeenCalledWith(link)
+
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Done' }))
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  const list = screen.getByRole('list', { name: 'Invitations' })
+  expect(list.textContent).toMatch(/Admin.*Gleb/)
+
+  // The next invitation starts from a clean form, not the last link.
+  fireEvent.click(screen.getByRole('button', { name: 'Invite' }))
+  const next = await screen.findByRole('dialog')
+  expect(within(next).queryByLabelText('Invitation link')).toBeNull()
+  expect(
+    (
+      within(next).getByLabelText(
+        'Who is it for (optional)',
+      ) as HTMLInputElement
+    ).value,
+  ).toBe('')
+})
+
+test('without a clipboard, the link is there to copy by hand', async () => {
+  const link = 'http://192.168.1.5:5173/invite/tok3n'
+  fakeApi({
+    ...withInvitations(account, []),
+    [`POST ${api('/invitations')}`]: [201, { invitation, link }],
+  })
+  // Plain HTTP over the LAN: no navigator.clipboard at all.
+  vi.stubGlobal('navigator', { ...navigator, clipboard: undefined })
+  renderApp('/team')
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Invite' }))
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Create link' }))
+  fireEvent.click(
+    await within(dialog).findByRole('button', { name: 'Copy link' }),
+  )
+
+  const failed = await within(dialog).findByText(
+    'Couldn’t copy. Select the link and copy it.',
+  )
+  expect(failed.getAttribute('role')).toBe('alert')
+  expect(within(dialog).getByLabelText('Invitation link')).toBeTruthy()
+})
+
+test('an admin invites masters only: no role to choose', async () => {
+  const fake = fakeApi({
+    ...withInvitations(withRole('ADMIN'), []),
+    [`POST ${api('/invitations')}`]: [
+      201,
+      { invitation, link: 'http://localhost:5173/invite/x' },
+    ],
+  })
+  renderApp('/team')
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Invite' }))
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).queryByRole('radio')).toBeNull()
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Create link' }))
+
+  await within(dialog).findByLabelText('Invitation link')
+  expect(fake.calls).toContainEqual({
+    route: `POST ${api('/invitations')}`,
+    body: { role: 'MASTER' },
+  })
+})
+
+test('a revoked invitation leaves the list', async () => {
+  const fake = fakeApi({
+    ...withInvitations(),
+    [`DELETE ${api(`/invitations/${invitation.id}`)}`]: [204],
+  })
+  renderApp('/team')
+  const list = await screen.findByRole('list', { name: 'Invitations' })
+
+  fake.set(`GET ${api('/invitations')}`, [200, []])
+  fireEvent.click(within(list).getByRole('button', { name: 'Revoke' }))
+
+  expect(await screen.findByText('No pending invitations')).toBeTruthy()
+})
+
+test('an invitation accepted meanwhile: both lists reload and say so', async () => {
+  const fake = fakeApi({
+    ...withInvitations(),
+    [`DELETE ${api(`/invitations/${invitation.id}`)}`]: [409],
+  })
+  renderApp('/team')
+  const list = await screen.findByRole('list', { name: 'Invitations' })
+
+  const maria = { ...master, userId: invitation.id, name: 'Maria' }
+  fake.set(`GET ${api('/invitations')}`, [200, []])
+  fake.set(`GET ${api('/members')}`, [200, [owner, admin, master, maria]])
+  fireEvent.click(within(list).getByRole('button', { name: 'Revoke' }))
+
+  expect((await screen.findByRole('alert')).textContent).toBe(
+    'Someone changed the team meanwhile. Here it is as it is now.',
+  )
+  expect(await screen.findByText('Maria')).toBeTruthy()
 })

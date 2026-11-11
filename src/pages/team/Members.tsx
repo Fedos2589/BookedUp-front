@@ -1,5 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query'
-import type { TFunction } from 'i18next'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
@@ -8,51 +6,27 @@ import { Typography } from 'ted-ui/Typography'
 
 import type { MembersControllerList200Item } from '@/api/generated.schemas'
 import {
-  getMembersControllerListQueryKey,
   useMembersControllerChangeRole,
   useMembersControllerList,
   useMembersControllerRemove,
 } from '@/api/members/members'
-import { getStaffControllerListQueryKey } from '@/api/staff/staff'
-import { ApiError } from '@/apiFetch'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { roleManages, rolesManagedBy } from '@/business/roles'
 import { Loaded } from './Loaded'
+import { changeErrorText, useReloadTeam } from './teamChanges'
 import styles from './Team.module.scss'
 
 type Member = MembersControllerList200Item
-
-// 404 and 409: the member was removed or changed by someone else since the
-// list was loaded. The list is reloaded either way; this says why it moved.
-function changeErrorText(t: TFunction, error: unknown) {
-  if (
-    error instanceof ApiError &&
-    (error.status === 404 || error.status === 409)
-  )
-    return t('team.changedMeanwhile')
-  return t('team.saveFailed')
-}
 
 // Who signs in to the business, oldest first, with their role; the members
 // this account manages (roles.ts) can be moved to another role or removed.
 export function Members() {
   const { t } = useTranslation()
   const business = useCurrentBusiness()
-  const queryClient = useQueryClient()
   const members = useMembersControllerList(business.id)
   const [removing, setRemoving] = useState<Member>()
 
-  // The back is the truth after any change, failed ones included. A removed
-  // member's schedule stays, without an account: the staff list moves too.
-  const reload = () =>
-    Promise.all([
-      queryClient.invalidateQueries({
-        queryKey: getMembersControllerListQueryKey(business.id),
-      }),
-      queryClient.invalidateQueries({
-        queryKey: getStaffControllerListQueryKey(business.id),
-      }),
-    ])
+  const reload = useReloadTeam()
   const changeRole = useMembersControllerChangeRole({
     mutation: { onSettled: reload },
   })
