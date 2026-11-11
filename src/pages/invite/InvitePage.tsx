@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { hashKey, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import type { TFunction } from 'i18next'
 import { useForm } from 'react-hook-form'
@@ -10,24 +10,24 @@ import { Input } from 'ted-ui/Input'
 import { Typography } from 'ted-ui/Typography'
 import { z } from 'zod'
 
-import { getMeControllerMeQueryOptions } from '@/api/account/account'
 import { useSessionControllerSignOut } from '@/api/auth/auth'
 import type { InvitationLinkControllerPreview200 } from '@/api/generated.schemas'
 import {
+  getInvitationLinkControllerPreviewQueryKey,
   getInvitationLinkControllerPreviewQueryOptions,
   useInvitationLinkControllerAccept,
   useInvitationLinkControllerSignUp,
 } from '@/api/invitations/invitations'
 import { ApiError } from '@/apiFetch'
 import { retryServerErrors } from '@/app/queryClient'
-import { meQueryKey } from '@/auth/session'
+import { isNoSession, meQueryKey, sessionCheckOptions } from '@/auth/session'
 import { fieldErrorText } from '@/forms/fieldError'
 import { PasswordInput } from '@/forms/PasswordInput'
 import { AuthLayout } from '@/pages/auth/AuthLayout'
 import authStyles from '@/pages/auth/AuthLayout.module.scss'
 import { PagePending } from '@/pages/PagePending'
-import { fieldsFromBadRequest } from '@/pages/signUp/badRequest'
-import { ACCOUNT_FIELDS, signUpSchema } from '@/pages/signUp/signUpSchema'
+import { fieldsOfSignUpError } from '@/pages/signUp/badRequest'
+import { signUpSchema } from '@/pages/signUp/signUpSchema'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 
 type Preview = InvitationLinkControllerPreview200
@@ -40,8 +40,10 @@ const joinSchema = signUpSchema.pick({
 })
 type JoinForm = z.infer<typeof joinSchema>
 
+// 404: used, revoked, expired or never issued. 400: not even shaped like a
+// token (cut short or glued to text by a messenger) — retrying never helps.
 const isGone = (error: unknown) =>
-  error instanceof ApiError && error.status === 404
+  error instanceof ApiError && (error.status === 404 || error.status === 400)
 
 // Accepting and signing up fail the same few ways. A 409 is either "already in
 // this team" or "the offered schedule is taken" — the back tells them apart
@@ -57,7 +59,22 @@ function joinErrorText(t: TFunction, error: unknown) {
 
 // What a link from «Invite» on the Team page opens. Public: the person may have
 // no account yet. A guest signs up here; someone signed in joins with a button.
-export function InvitePage({ token }: { token: string }) {
+// No token: the route found none of the back's shape in the address — the
+// generated client puts it into the API path as is, so such a one is never sent.
+export function InvitePage({ token }: { token: string | undefined }) {
+  return token ? <Invitation token={token} /> : <InvitationGone />
+}
+
+function InvitationGone() {
+  const { t } = useTranslation()
+  return (
+    <AuthLayout title={t('invite.goneTitle')}>
+      <Typography variant="t3">{t('invite.goneText')}</Typography>
+    </AuthLayout>
+  )
+}
+
+function Invitation({ token }: { token: string }) {
   const { t } = useTranslation()
   const preview = useQuery({
     ...getInvitationLinkControllerPreviewQueryOptions(token),
@@ -65,17 +82,13 @@ export function InvitePage({ token }: { token: string }) {
   })
   // Any failure to learn the session reads as a guest: the form is still the
   // right thing to show, and a registered email is told to sign in.
-  const me = useQuery({
-    ...getMeControllerMeQueryOptions(),
-    retry: retryServerErrors(1),
-  })
+  // The same check as the routes': an answer sign in has just cached is trusted.
+  const me = useQuery(sessionCheckOptions())
 
   if (preview.isPending || me.isPending) return <PagePending />
   if (preview.isError)
     return isGone(preview.error) ? (
-      <AuthLayout title={t('invite.goneTitle')}>
-        <Typography variant="t3">{t('invite.goneText')}</Typography>
-      </AuthLayout>
+      <InvitationGone />
     ) : (
       <AuthLayout title={t('invite.loadFailed')}>
         <Button
@@ -124,13 +137,28 @@ function Accept({ token, email }: { token: string; email: string }) {
   const queryClient = useQueryClient()
   const openCabinet = useOpenCabinet()
   const accept = useInvitationLinkControllerAccept({
-    mutation: { onSuccess: openCabinet },
+    mutation: {
+      onSuccess: openCabinet,
+      // The session ended while the page was open: forget the account, so the
+      // page asks again and shows the guest's form. Reset, not refetch — a
+      // 401 with an account still cached sends the app to sign in, and the
+      // invitation would be lost.
+      onError: (error) => {
+        if (isNoSession(error))
+          void queryClient.resetQueries({ queryKey: meQueryKey() })
+      },
+    },
   })
+  const previewHash = hashKey(getInvitationLinkControllerPreviewQueryKey(token))
   const signOut = useSessionControllerSignOut({
     mutation: {
-      // Everything cached belonged to the account that left; the page asks
-      // again and shows the guest's form.
-      onSuccess: () => queryClient.resetQueries(),
+      // Everything cached belonged to the account that left, except the
+      // invitation itself: it is nobody's. The page asks GET /me again and
+      // shows the guest's form, without loading the invitation anew.
+      onSuccess: () =>
+        queryClient.resetQueries({
+          predicate: (query) => query.queryHash !== previewHash,
+        }),
     },
   })
 
@@ -265,15 +293,8 @@ function SignUp({ token }: { token: string }) {
   )
 }
 
-// The fields a 409 (the email is registered) or a 400 (invalid fields) names.
-function fieldsOf(error: unknown): (keyof JoinForm)[] {
-  if (!(error instanceof ApiError)) return []
-  const body = error.body as { field?: unknown; message?: unknown } | undefined
-  if (error.status === 409) return body?.field === 'email' ? ['email'] : []
-  if (error.status === 400 && Array.isArray(body?.message))
-    return fieldsFromBadRequest(body.message.map(String)).filter(
-      (field): field is keyof JoinForm =>
-        (ACCOUNT_FIELDS as readonly string[]).includes(field),
-    )
-  return []
-}
+// The fields a 409 or a 400 names, of the three this form has.
+const fieldsOf = (error: unknown) =>
+  fieldsOfSignUpError(error).filter(
+    (field): field is keyof JoinForm => field in joinSchema.shape,
+  )

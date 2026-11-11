@@ -11,7 +11,7 @@ import { retryServerErrors } from '@/app/queryClient'
 // retry is seconds of a pending page when the back is down; a 401 never. A
 // cached answer younger than 30 s is trusted; an older one is asked again, so
 // a session ended elsewhere is noticed.
-const sessionCheckOptions = () => ({
+export const sessionCheckOptions = () => ({
   ...getMeControllerMeQueryOptions(),
   retry: retryServerErrors(1),
   staleTime: 30_000,

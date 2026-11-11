@@ -295,3 +295,137 @@ test('someone already signed in opening sign in for an invitation goes to it', a
   expect(await screen.findByRole('button', { name: 'Join' })).toBeTruthy()
   expect(router.state.location.pathname).toBe(`/invite/${TOKEN}`)
 })
+
+// Review of #8 — finding 1: the generated client puts the token into the URL
+// unencoded, so a token out of the back's shape must never reach it.
+test.each([
+  ['a path in it', '..%2Fbusinesses%2Fx'],
+  ['longer than the back takes', 'a'.repeat(70)],
+])('a token with %s is a dead link, asked nowhere', async (_, token) => {
+  const api = fakeApi({ 'GET /api/me': [401] })
+  renderApp(`/invite/${token}`)
+
+  expect(
+    await screen.findByRole('heading', {
+      name: 'This invitation no longer works',
+    }),
+  ).toBeTruthy()
+  expect(api.calls).toEqual([])
+})
+
+test('a 400 on the preview is a dead link too, not a retry that never helps', async () => {
+  fakeApi({ 'GET /api/me': [401], [PREVIEW]: [400] })
+  renderApp(`/invite/${TOKEN}`)
+
+  expect(
+    await screen.findByRole('heading', {
+      name: 'This invitation no longer works',
+    }),
+  ).toBeTruthy()
+})
+
+// Finding 2.
+test('creating an account from sign in goes back to the invitation', async () => {
+  fakeApi({ 'GET /api/me': [401], [PREVIEW]: [200, preview] })
+  const { router } = renderApp(`/sign-in?invitation=${TOKEN}`)
+  await screen.findByRole('heading', { name: 'Sign in' })
+
+  fireEvent.click(screen.getByRole('link', { name: 'Create an account' }))
+
+  expect(
+    await screen.findByRole('button', { name: 'Create account and join' }),
+  ).toBeTruthy()
+  expect(router.state.location.pathname).toBe(`/invite/${TOKEN}`)
+})
+
+// Finding 4: between signing up and the cabinet, the page must not turn into
+// the signed-in one with a live «Join» for the invitation just spent.
+test('signing up goes to the cabinet without showing «Join» on the way', async () => {
+  const api = fakeApi({
+    'GET /api/me': [401],
+    [PREVIEW]: [200, preview],
+    [`POST /api/invitations/${TOKEN}/sign-up`]: () => {
+      api.set('GET /api/me', [200, borisInJudoKids])
+      return [
+        201,
+        { user: boris.user, business: borisInJudoKids.businesses[0] },
+      ]
+    },
+  })
+  renderApp(`/invite/${TOKEN}`)
+  await screen.findByRole('heading', { name: 'Join Judo Kids' })
+  let joinShown = false
+  const watch = new MutationObserver(() => {
+    if (screen.queryByRole('button', { name: 'Join' })) joinShown = true
+  })
+  watch.observe(document.body, { childList: true, subtree: true })
+
+  fill('Your name', 'Boris')
+  fill('Email', 'boris@example.com')
+  fill('Password', 'long enough pass')
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Create account and join' }),
+  )
+  await screen.findByRole('heading', { name: 'Judo Kids' })
+  watch.disconnect()
+
+  expect(joinShown).toBe(false)
+})
+
+// Finding 6: the session ended while the page was open.
+test('joining after the session ended shows the guest form', async () => {
+  const api = fakeApi({
+    'GET /api/me': [200, boris],
+    [PREVIEW]: [200, preview],
+    [`POST /api/invitations/${TOKEN}/accept`]: () => {
+      api.set('GET /api/me', [401])
+      return [401]
+    },
+  })
+  renderApp(`/invite/${TOKEN}`)
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Join' }))
+
+  expect(
+    await screen.findByRole('button', { name: 'Create account and join' }),
+  ).toBeTruthy()
+})
+
+// Finding 7: the preview belongs to no account; signing out keeps it.
+test('signing out does not load the invitation again', async () => {
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [PREVIEW]: [200, preview],
+    'POST /api/auth/sign-out': () => {
+      api.set('GET /api/me', [401])
+      return [204]
+    },
+  })
+  renderApp(`/invite/${TOKEN}`)
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
+  await screen.findByRole('button', { name: 'Create account and join' })
+
+  expect(api.calls.filter((c) => c.route === PREVIEW)).toHaveLength(1)
+})
+
+// Finding 8: sign in has just cached the account; the page trusts it.
+test('back from sign in, the page asks GET /me no more', async () => {
+  const api = fakeApi({
+    'GET /api/me': [401],
+    [PREVIEW]: [200, preview],
+    'POST /api/auth/sign-in': [200, boris],
+  })
+  renderApp(`/sign-in?invitation=${TOKEN}`)
+  await screen.findByRole('heading', { name: 'Sign in' })
+  const before = api.calls.filter((c) => c.route === 'GET /api/me').length
+
+  fill('Email', 'boris@example.com')
+  fill('Password', 'long enough pass')
+  fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+  await screen.findByRole('button', { name: 'Join' })
+
+  expect(api.calls.filter((c) => c.route === 'GET /api/me')).toHaveLength(
+    before,
+  )
+})

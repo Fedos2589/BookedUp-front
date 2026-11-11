@@ -104,9 +104,20 @@ export function SignInPage() {
       </form>
       <Typography variant="t4">
         {t('auth.signIn.noAccount')}{' '}
-        <Link to="/sign-up" className={authStyles.link}>
-          {t('auth.signIn.toSignUp')}
-        </Link>
+        {invitation ? (
+          // Came from an invitation: an account is made there, joining it.
+          <Link
+            to="/invite/$token"
+            params={{ token: invitation }}
+            className={authStyles.link}
+          >
+            {t('auth.signIn.toSignUp')}
+          </Link>
+        ) : (
+          <Link to="/sign-up" className={authStyles.link}>
+            {t('auth.signIn.toSignUp')}
+          </Link>
+        )}
       </Typography>
     </AuthLayout>
   )

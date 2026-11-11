@@ -80,6 +80,11 @@ const signUpRoute = createRoute({
 const inviteRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/invite/$token',
+  // Only a token of the back's shape gets through; any other is a dead link.
+  params: {
+    parse: ({ token }) => ({ token: invitationTokenOf(token) }),
+    stringify: ({ token }) => ({ token: token ?? '' }),
+  },
   component: function Invite() {
     const { token } = inviteRoute.useParams()
     return <InvitePage token={token} />
