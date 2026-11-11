@@ -5,11 +5,13 @@ import { Modal } from 'ted-ui/Modal'
 import { Typography } from 'ted-ui/Typography'
 
 import type { MembersControllerList200Item } from '@/api/generated.schemas'
+import { useMeControllerMeSuspense } from '@/api/account/account'
 import {
   useMembersControllerChangeRole,
   useMembersControllerList,
   useMembersControllerRemove,
 } from '@/api/members/members'
+import { useStaffControllerCreate } from '@/api/staff/staff'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { roleManages, rolesManagedBy } from '@/business/roles'
 import { Loaded } from './Loaded'
@@ -23,6 +25,7 @@ type Member = MembersControllerList200Item
 export function Members() {
   const { t } = useTranslation()
   const business = useCurrentBusiness()
+  const { data: account } = useMeControllerMeSuspense()
   const members = useMembersControllerList(business.id)
   const [removing, setRemoving] = useState<Member>()
 
@@ -33,7 +36,21 @@ export function Members() {
   const remove = useMembersControllerRemove({
     mutation: { onSettled: reload, onSuccess: () => setRemoving(undefined) },
   })
-  const failed = changeRole.error ?? remove.error
+  const addSchedule = useStaffControllerCreate({
+    mutation: { onSettled: reload },
+  })
+  const failed = changeRole.error ?? remove.error ?? addSchedule.error
+  const resetErrors = () => {
+    changeRole.reset()
+    remove.reset()
+    addSchedule.reset()
+  }
+  // The back's rule for a schedule (staff.service.ts): your own, or one of a
+  // member you manage.
+  const mayAddSchedule = (member: Member) =>
+    member.staffId === null &&
+    (member.userId === account.user.id ||
+      roleManages(business.role, member.role))
 
   return (
     <section className={styles.section} aria-labelledby="team-members">
@@ -55,11 +72,36 @@ export function Members() {
                   <Typography variant="t4" color="grey-400">
                     {member.email}
                   </Typography>
+                  {member.staffId && (
+                    <Typography variant="t4" color="grey-400">
+                      {t('team.members.takesClients')}
+                    </Typography>
+                  )}
                 </div>
                 <div className={styles.actions}>
                   <Typography variant="t4">
                     {t(`team.role.${member.role}`)}
                   </Typography>
+                  {mayAddSchedule(member) && (
+                    <Button
+                      variant="ghost"
+                      colorScheme="grey"
+                      size="small"
+                      loading={
+                        addSchedule.isPending &&
+                        addSchedule.variables.data.userId === member.userId
+                      }
+                      onClick={() => {
+                        resetErrors()
+                        addSchedule.mutate({
+                          businessId: business.id,
+                          data: { name: member.name, userId: member.userId },
+                        })
+                      }}
+                    >
+                      {t('team.members.addSchedule')}
+                    </Button>
+                  )}
                   {roleManages(business.role, member.role) && (
                     <>
                       {rolesManagedBy(business.role)
@@ -75,7 +117,7 @@ export function Members() {
                               changeRole.variables.userId === member.userId
                             }
                             onClick={() => {
-                              remove.reset()
+                              resetErrors()
                               changeRole.mutate({
                                 businessId: business.id,
                                 userId: member.userId,
@@ -91,8 +133,7 @@ export function Members() {
                         colorScheme="red"
                         size="small"
                         onClick={() => {
-                          changeRole.reset()
-                          remove.reset()
+                          resetErrors()
                           setRemoving(member)
                         }}
                       >

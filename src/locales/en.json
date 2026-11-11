@@ -84,7 +84,9 @@
       },
       "remove": "Remove",
       "removeTitle": "Remove {{name}} from the team?",
-      "removeText": "They will no longer sign in to {{business}}. Their schedule stays, without an account."
+      "removeText": "They will no longer sign in to {{business}}. Their schedule stays, without an account.",
+      "takesClients": "Takes clients",
+      "addSchedule": "Add a schedule"
     },
     "cancel": "Cancel",
     "changedMeanwhile": "Someone changed the team meanwhile. Here it is as it is now.",
@@ -108,7 +110,14 @@
       "copyFailed": "Couldn’t copy. Select the link and copy it.",
       "sendUntil": "Send this link to the person you invite. It works once, until {{date}}, and is shown only now.",
       "send": "Send this link to the person you invite. It works once and is shown only now.",
-      "done": "Done"
+      "done": "Done",
+      "forSchedule": "For {{name}}’s schedule"
+    },
+    "staff": {
+      "title": "Masters without an account",
+      "text": "Clients can be booked to them, but they don’t sign in. Invite one to link the schedule to their account.",
+      "name": "Name",
+      "add": "Add"
     }
   }
 }

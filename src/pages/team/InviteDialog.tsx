@@ -16,6 +16,7 @@ import { dateTimeIn } from '@/dates'
 import { fieldErrorText } from '@/forms/fieldError'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 import { CopyLink } from './CopyLink'
+import type { Staff } from './StaffWithoutAccount'
 import { changeErrorText, useReloadTeam } from './teamChanges'
 import styles from './Team.module.scss'
 
@@ -29,11 +30,14 @@ type InviteForm = z.infer<typeof inviteSchema>
 
 // Creates an invitation and shows its link, once: the back keeps only the
 // token's hash, so a link closed unseen is revoked and made again.
+// `staff`: a schedule without an account, linked to whoever accepts.
 export function InviteDialog({
   open,
+  staff,
   onClose,
 }: {
   open: boolean
+  staff?: Staff
   onClose: () => void
 }) {
   const { t, i18n } = useTranslation()
@@ -71,6 +75,7 @@ export function InviteDialog({
     <Modal
       isVisible={open}
       title={t('team.invite.title')}
+      subtitle={staff && t('team.invite.forSchedule', { name: staff.name })}
       onClose={close}
       buttons={
         link
@@ -117,7 +122,11 @@ export function InviteDialog({
           onSubmit={form.handleSubmit(({ role, note }) =>
             create.mutate({
               businessId: business.id,
-              data: { role, ...(note && { note }) },
+              data: {
+                role,
+                ...(note && { note }),
+                ...(staff && { staffId: staff.id }),
+              },
             }),
           )}
         >

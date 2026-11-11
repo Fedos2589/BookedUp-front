@@ -8,6 +8,7 @@ import { roleCan } from '@/business/roles'
 import { InviteDialog } from './InviteDialog'
 import { Invitations } from './Invitations'
 import { Members } from './Members'
+import { type Staff, StaffWithoutAccount } from './StaffWithoutAccount'
 import styles from './Team.module.scss'
 
 // Who works in the business and who is invited to: the owner's and the
@@ -15,7 +16,8 @@ import styles from './Team.module.scss'
 export function TeamPage() {
   const { t } = useTranslation()
   const business = useCurrentBusiness()
-  const [inviting, setInviting] = useState(false)
+  // Open with no schedule, or for one without an account.
+  const [inviting, setInviting] = useState<{ staff?: Staff }>()
 
   // The navigation has no link here for this role; an address typed by hand
   // lands on the dashboard, without asking the back for what it would refuse.
@@ -27,8 +29,13 @@ export function TeamPage() {
         {t('team.title')}
       </Typography>
       <Members />
-      <Invitations onInvite={() => setInviting(true)} />
-      <InviteDialog open={inviting} onClose={() => setInviting(false)} />
+      <Invitations onInvite={() => setInviting({})} />
+      <StaffWithoutAccount onInvite={(staff) => setInviting({ staff })} />
+      <InviteDialog
+        open={!!inviting}
+        staff={inviting?.staff}
+        onClose={() => setInviting(undefined)}
+      />
     </main>
   )
 }

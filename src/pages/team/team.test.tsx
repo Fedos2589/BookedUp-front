@@ -46,6 +46,31 @@ const master = {
   staffId: '00000000-0000-4000-8000-000000000021',
 }
 
+// An admin signed in as Boris, the admin in the members list.
+const asAdmin = () => ({
+  ...withRole('ADMIN'),
+  user: { id: admin.userId, email: admin.email, name: admin.name },
+})
+
+const staffOfVera = {
+  id: master.staffId,
+  name: 'Vera',
+  userId: master.userId,
+  archived: false,
+}
+const petr = {
+  id: '00000000-0000-4000-8000-000000000022',
+  name: 'Petr',
+  userId: null,
+  archived: false,
+}
+const gone = {
+  id: '00000000-0000-4000-8000-000000000023',
+  name: 'Gone',
+  userId: null,
+  archived: true,
+}
+
 const team = (me: typeof account = account) => ({
   'GET /api/me': [200, me] as [number, unknown],
   [`GET ${api('/members')}`]: [200, [owner, admin, master]] as [
@@ -53,6 +78,10 @@ const team = (me: typeof account = account) => ({
     unknown,
   ],
   [`GET ${api('/invitations')}`]: [200, []] as [number, unknown],
+  [`GET ${api('/staff')}`]: [200, [staffOfVera, petr, gone]] as [
+    number,
+    unknown,
+  ],
 })
 
 test('the owner opens the team from the navigation and sees its members', async () => {
@@ -74,7 +103,7 @@ test('the owner opens the team from the navigation and sees its members', async 
 })
 
 test('an admin sees the team too', async () => {
-  fakeApi(team(withRole('ADMIN')))
+  fakeApi(team(asAdmin()))
   renderApp('/team')
 
   expect(await screen.findByRole('list', { name: 'Members' })).toBeTruthy()
@@ -114,6 +143,10 @@ const rowOf = (name: string) => {
   return row
 }
 
+// Fields keep an empty live region of their own: find the alert by its text.
+const alertSaying = async (text: string) =>
+  expect((await screen.findByText(text)).getAttribute('role')).toBe('alert')
+
 const buttonsIn = (row: HTMLElement) =>
   [...row.querySelectorAll('button')].map((button) => button.textContent)
 
@@ -128,7 +161,8 @@ test('the owner moves a member to the other role', async () => {
   renderApp('/team')
   await screen.findByRole('list', { name: 'Members' })
 
-  expect(buttonsIn(rowOf('Anna'))).toEqual([])
+  // Nobody moves or removes the owner; her own schedule she may add.
+  expect(buttonsIn(rowOf('Anna'))).toEqual(['Add a schedule'])
   expect(buttonsIn(rowOf('Vera'))).toEqual(['Make admin', 'Remove'])
 
   fake.set(`GET ${api('/members')}`, [
@@ -147,12 +181,13 @@ test('the owner moves a member to the other role', async () => {
 })
 
 test('an admin can remove a master, and touch nobody else', async () => {
-  fakeApi(team(withRole('ADMIN')))
+  fakeApi(team(asAdmin()))
   renderApp('/team')
   await screen.findByRole('list', { name: 'Members' })
 
   expect(buttonsIn(rowOf('Anna'))).toEqual([])
-  expect(buttonsIn(rowOf('Boris'))).toEqual([])
+  // Their own schedule, yes; their own role, no.
+  expect(buttonsIn(rowOf('Boris'))).toEqual(['Add a schedule'])
   // Admin → master only: there is no other role to move a master to.
   expect(buttonsIn(rowOf('Vera'))).toEqual(['Remove'])
 })
@@ -204,7 +239,7 @@ test('a member changed meanwhile: the list reloads and says so', async () => {
     within(rowOf('Boris')).getByRole('button', { name: 'Make master' }),
   )
 
-  expect((await screen.findByRole('alert')).textContent).toBe(
+  await alertSaying(
     'Someone changed the team meanwhile. Here it is as it is now.',
   )
   await waitFor(() => expect(screen.queryByText('Boris')).toBeNull())
@@ -219,6 +254,13 @@ const invitation = {
   expiresAt: '2026-11-18T20:30:00.000Z',
   createdAt: '2026-11-11T20:30:00.000Z',
 }
+
+// «Invite» of the invitations section, not of a master without an account.
+const inviteButton = async () =>
+  within(await screen.findByRole('region', { name: 'Invitations' })).getByRole(
+    'button',
+    { name: 'Invite' },
+  )
 
 const withInvitations = (me = account, invitations = [invitation]) => ({
   ...team(me),
@@ -254,7 +296,7 @@ test('the owner invites an admin and copies the link', async () => {
   vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } })
   renderApp('/team')
 
-  fireEvent.click(await screen.findByRole('button', { name: 'Invite' }))
+  fireEvent.click(await inviteButton())
   const dialog = await screen.findByRole('dialog', {
     name: 'Invite to the team',
   })
@@ -281,7 +323,7 @@ test('the owner invites an admin and copies the link', async () => {
   expect(list.textContent).toMatch(/Admin.*Gleb/)
 
   // The next invitation starts from a clean form, not the last link.
-  fireEvent.click(screen.getByRole('button', { name: 'Invite' }))
+  fireEvent.click(await inviteButton())
   const next = await screen.findByRole('dialog')
   expect(within(next).queryByLabelText('Invitation link')).toBeNull()
   expect(
@@ -303,7 +345,7 @@ test('without a clipboard, the link is there to copy by hand', async () => {
   vi.stubGlobal('navigator', { ...navigator, clipboard: undefined })
   renderApp('/team')
 
-  fireEvent.click(await screen.findByRole('button', { name: 'Invite' }))
+  fireEvent.click(await inviteButton())
   const dialog = await screen.findByRole('dialog')
   fireEvent.click(within(dialog).getByRole('button', { name: 'Create link' }))
   fireEvent.click(
@@ -319,7 +361,7 @@ test('without a clipboard, the link is there to copy by hand', async () => {
 
 test('an admin invites masters only: no role to choose', async () => {
   const fake = fakeApi({
-    ...withInvitations(withRole('ADMIN'), []),
+    ...withInvitations(asAdmin(), []),
     [`POST ${api('/invitations')}`]: [
       201,
       { invitation, link: 'http://localhost:5173/invite/x' },
@@ -327,7 +369,7 @@ test('an admin invites masters only: no role to choose', async () => {
   })
   renderApp('/team')
 
-  fireEvent.click(await screen.findByRole('button', { name: 'Invite' }))
+  fireEvent.click(await inviteButton())
   const dialog = await screen.findByRole('dialog')
   expect(within(dialog).queryByRole('radio')).toBeNull()
   fireEvent.click(within(dialog).getByRole('button', { name: 'Create link' }))
@@ -366,8 +408,127 @@ test('an invitation accepted meanwhile: both lists reload and say so', async () 
   fake.set(`GET ${api('/members')}`, [200, [owner, admin, master, maria]])
   fireEvent.click(within(list).getByRole('button', { name: 'Revoke' }))
 
-  expect((await screen.findByRole('alert')).textContent).toBe(
+  await alertSaying(
     'Someone changed the team meanwhile. Here it is as it is now.',
   )
   expect(await screen.findByText('Maria')).toBeTruthy()
+})
+
+test('masters without an account: neither the linked nor the archived ones', async () => {
+  fakeApi(team())
+  renderApp('/team')
+
+  const list = await screen.findByRole('list', {
+    name: 'Masters without an account',
+  })
+  const rows = [...list.querySelectorAll(':scope > li')]
+  expect(rows.map((row) => row.textContent)).toEqual([
+    expect.stringMatching(/^Petr/),
+  ])
+  // The members list says who takes clients.
+  expect(rowOf('Vera').textContent).toMatch(/Takes clients/)
+  expect(rowOf('Boris').textContent).not.toMatch(/Takes clients/)
+})
+
+test('a master without an account is added by name', async () => {
+  const ivan = {
+    ...petr,
+    id: '00000000-0000-4000-8000-000000000024',
+    name: 'Ivan',
+  }
+  const fake = fakeApi({
+    ...team(),
+    [`POST ${api('/staff')}`]: [201, ivan],
+  })
+  renderApp('/team')
+  await screen.findByRole('list', { name: 'Masters without an account' })
+
+  const name = screen.getByLabelText('Name')
+  fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+  expect(await screen.findByText('Required')).toBeTruthy()
+
+  fireEvent.change(name, { target: { value: ' Ivan ' } })
+  fake.set(`GET ${api('/staff')}`, [200, [staffOfVera, petr, gone, ivan]])
+  fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+
+  expect(await screen.findByText('Ivan')).toBeTruthy()
+  expect((name as HTMLInputElement).value).toBe('')
+  expect(fake.calls.filter((call) => call.route.startsWith('POST'))).toEqual([
+    { route: `POST ${api('/staff')}`, body: { name: 'Ivan' } },
+  ])
+})
+
+test('inviting a master without an account links the invitation to their schedule', async () => {
+  const fake = fakeApi({
+    ...team(),
+    [`POST ${api('/invitations')}`]: [
+      201,
+      {
+        invitation: { ...invitation, staffId: petr.id },
+        link: 'http://x/invite/t',
+      },
+    ],
+  })
+  renderApp('/team')
+  const list = await screen.findByRole('list', {
+    name: 'Masters without an account',
+  })
+
+  fireEvent.click(within(list).getByRole('button', { name: 'Invite' }))
+  const dialog = await screen.findByRole('dialog', {
+    name: 'Invite to the team',
+  })
+  expect(within(dialog).getByText('For Petr’s schedule')).toBeTruthy()
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Create link' }))
+
+  await within(dialog).findByLabelText('Invitation link')
+  expect(fake.calls).toContainEqual({
+    route: `POST ${api('/invitations')}`,
+    body: { role: 'MASTER', staffId: petr.id },
+  })
+
+  // The plain «Invite» afterwards is for no schedule.
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Done' }))
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  fireEvent.click(await inviteButton())
+  expect(
+    within(await screen.findByRole('dialog')).queryByText(/schedule/),
+  ).toBeNull()
+})
+
+test('a member without a schedule gets one under their name', async () => {
+  const fake = fakeApi({
+    ...team(),
+    [`POST ${api('/staff')}`]: [
+      201,
+      {
+        id: '00000000-0000-4000-8000-000000000025',
+        name: 'Boris',
+        userId: admin.userId,
+        archived: false,
+      },
+    ],
+  })
+  renderApp('/team')
+  await screen.findByRole('list', { name: 'Members' })
+
+  fake.set(`GET ${api('/members')}`, [
+    200,
+    [
+      owner,
+      { ...admin, staffId: '00000000-0000-4000-8000-000000000025' },
+      master,
+    ],
+  ])
+  fireEvent.click(
+    within(rowOf('Boris')).getByRole('button', { name: 'Add a schedule' }),
+  )
+
+  await waitFor(() =>
+    expect(rowOf('Boris').textContent).toMatch(/Takes clients/),
+  )
+  expect(fake.calls).toContainEqual({
+    route: `POST ${api('/staff')}`,
+    body: { name: 'Boris', userId: admin.userId },
+  })
 })

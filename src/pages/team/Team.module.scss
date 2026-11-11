@@ -75,3 +75,16 @@
   padding: 0;
   border: 0;
 }
+
+// A name field and its button on one line; the button stays level with the
+// field, not with its label.
+.addForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--spacing-8);
+}
+
+.addName {
+  flex: 1 1 240px;
+}
