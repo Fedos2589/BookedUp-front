@@ -4,6 +4,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import type { TFunction } from 'i18next'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { ActionBar } from 'ted-ui/ActionBar'
 import { Button } from 'ted-ui/Button'
 import { Input } from 'ted-ui/Input'
 import { Typography } from 'ted-ui/Typography'
@@ -13,6 +14,7 @@ import { useSessionControllerSignIn } from '../../api/auth/auth'
 import { ApiError } from '../../apiFetch'
 import { meQueryKey } from '../../auth/session'
 import { fieldErrorText } from '../../forms/fieldError'
+import { useUnsavedInput } from '../../pwa/unsavedInput'
 import { AuthLayout } from './AuthLayout'
 import authStyles from './AuthLayout.module.scss'
 
@@ -50,6 +52,8 @@ export function SignInPage() {
     },
   })
   const { errors } = form.formState
+  // Typed input holds back a new app version's reload (src/pwa).
+  useUnsavedInput(form.formState.isDirty)
 
   return (
     <AuthLayout title={t('auth.signIn.title')}>
@@ -81,7 +85,7 @@ export function SignInPage() {
             {signInErrorText(t, signIn.error)}
           </Typography>
         )}
-        <div className={authStyles.actions}>
+        <ActionBar className={authStyles.actions}>
           <Button
             type="submit"
             variant="solid"
@@ -91,7 +95,7 @@ export function SignInPage() {
           >
             {t('auth.signIn.submit')}
           </Button>
-        </div>
+        </ActionBar>
       </form>
       <Typography variant="t5">
         {t('auth.signIn.noAccount')}{' '}

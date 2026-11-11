@@ -23,6 +23,9 @@
     "vite.config.ts",
     "orval.config.ts",
     "playwright.config.ts",
-    "e2e"
+    "playwright.pwa.config.ts",
+    "e2e",
+    "e2e-pwa",
+    "scripts"
   ]
 }

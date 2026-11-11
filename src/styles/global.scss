@@ -1,3 +1,5 @@
+@use 'ted-ui/styles/breakpoints' as *;
+
 // Base resets TedUI components are measured against.
 *,
 *::before,
@@ -8,6 +10,39 @@
 body {
   margin: 0;
   font-family: 'Montserrat', sans-serif;
+  // Wherever a page doesn't reach (the strip an installed app leaves below
+  // 100dvh, overscroll), the body shows: the same colour as the pages.
+  background-color: var(--color-bw-white);
+}
+
+// iOS 26+ blurs page content scrolled under the top edge of an installed web
+// app, unless a fixed, full-width, solid box sits at that edge — then it
+// extends the box's colour instead. Works with the `default` status bar style
+// (index.html). Only iOS (the touch-callout check matches iOS WebKit), only
+// installed; it never takes a tap. Found in intch-web (commit 4d703415e).
+.pwa-top-edge {
+  display: none;
+
+  @include isPwa {
+    @supports (-webkit-touch-callout: none) {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 8px;
+      background-color: var(--color-bw-white);
+      z-index: 1300;
+      pointer-events: none;
+    }
+  }
+}
+
+// The app shell fills the screen as it is now: dvh follows the browser bars
+// and, with interactive-widget=resizes-content (index.html), the keyboard.
+// Never vh (scripts/viewportUnits.test.ts).
+#root {
+  min-height: 100dvh;
 }
 
 input,

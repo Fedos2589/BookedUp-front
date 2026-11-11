@@ -34,6 +34,19 @@ SPA на React + TypeScript + Vite. Бэк — репозиторий BookedUp-b
 - С телефона: `npm run dev -- --host`, в `.env` бэка `SESSION_COOKIE_SECURE=false` (иначе Secure-кука по HTTP не сохранится), открыть `http://<IP компьютера>:5173`.
 - Ошибку запроса разбираем по `error.status` и `error.body` (`ApiError`); 4xx запросы не повторяют.
 
+## PWA и экран телефона
+
+Приложение ставится на главный экран и открывается без адресной строки (E20). Правила для каждой страницы:
+
+- **Главное действие формы или шага — в `ActionBar` из кита**, внутри `<form>`, после полей. На мобильном панель прижата к низу, над полоской «Домой» и над экранной клавиатурой (iOS кладёт клавиатуру поверх страницы — самодельный `position: sticky; bottom: 0` уходит под клавиши). Что-то ещё прижатое к низу — через `useKeyboardInset()` из `ted-ui/hooks/useKeyboardInset`.
+- **Высота — `dvh`, никогда `vh`**: `100vh` выше экрана, пока видны панели браузера, и не знает о клавиатуре. Каркас `#root` уже `min-height: 100dvh`. `scripts/viewportUnits.test.ts` падает на `vh` в `src/`.
+- **Верхний край установленного приложения на iOS 26+**: `.pwa-top-edge` в `index.html` (стили в `src/styles/global.scss`) — фиксированная белая полоса 8px, без неё система размывает контент под краем. Не удалять; у страниц сверху не меньше 8px отступа, иначе полоса закроет их край. Всё, что открывается поверх (модалки, popover), — выше её `z-index: 1300`; выпадающий список `Combobox` (1100) — ниже, у самого верха экрана его край уйдёт под полосу.
+- **viewport meta в `index.html` не трогать**: `viewport-fit=cover` (без него `env(safe-area-inset-*)` = 0) и `interactive-widget=resizes-content` (Chrome сжимает раскладку и `dvh` под клавиатуру). `maximum-scale` / `user-scalable=no` не добавлять — поля кита на мобильном 16px, iOS не зумит.
+- **Service worker** (`vite-plugin-pwa` в `vite.config.ts`) кэширует только каркас: JS, CSS, HTML, иконки, шрифты. **`/api` не кэшируется никогда** — ответы привязаны к аккаунту. Регистрирует его `src/pwa/registerAppUpdates.ts`.
+- **Обновление установленного приложения** (`src/pwa/updatePolicy.ts`): iOS и Android возвращают приложение из фона без перезагрузки, поэтому при каждом возврате на экран оно само проверяет новую версию, а переключается на неё только уходя в фон и только если ни в одной форме нет введённых данных. **Каждая форма** сообщает о них: `useUnsavedInput(form.formState.isDirty)` из `src/pwa/unsavedInput.ts` — иначе обновление может перезагрузить её с данными пользователя.
+- **Иконки** — из `public/favicon.svg` (скруглённая) и `pwa/icon-full-bleed.svg` (до краёв: maskable и iOS сами режут форму); после правки источника `npm run pwa:icons`.
+- **Проверка**: `npm run test:e2e` гоняет мобильный экран (`e2e/mobile.spec.ts`: 390px, клавиатура iOS подделана через `visualViewport`); `npm run build && npm run test:pwa` — manifest и работа офлайн на собранной версии (service worker есть только в сборке).
+
 ## TedUI в Vite — не «чистить»
 
 Эти настройки выглядят лишними, но без них кит не работает:
@@ -42,7 +55,7 @@ SPA на React + TypeScript + Vite. Бэк — репозиторий BookedUp-b
 - `optimizeDeps.exclude: ['ted-ui']` — пакет поставляется исходниками `.tsx`;
 - `optimizeDeps.include` — все пакеты, которые импортирует кит. Без этого в dev-режиме (сборка не ловит!) CommonJS-зависимость падает в браузере с `does not provide an export named …`. При обновлении TedUI сверить список с его импортами и прогнать `npm run test:e2e`;
 - `verbatimModuleSyntax: false` — tsc проверяет исходники кита, а они импортируют типы без `import type`;
-- `import 'ted-ui/tokens.scss'` в `main.tsx`, ресеты в `src/styles/global.scss`, Montserrat в `index.html`;
+- `import 'ted-ui/tokens.scss'` в `main.tsx`, ресеты в `src/styles/global.scss`, Montserrat — `@fontsource/montserrat` (500, 600, 700) в `main.tsx`, а не Google Fonts: файлы шрифта в precache, офлайн приложение не теряет шрифт;
 - `registerUIKitTranslations(i18n)` в `src/i18n.ts`.
 
 Кит ставится по тегу (`github:Fedos2589/TedUI#vX.Y.Z`); `node_modules/ted-ui` не редактировать.
@@ -65,6 +78,7 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
+npm run test:pwa
 ```
 
 `npm run test:e2e` — Playwright на dev-сервере, падает на любой ошибке страницы (один раз нужен `npx playwright install chromium --only-shell`). Обязателен после изменений `vite.config.ts` и обновления TedUI: `build` проблемы dev-режима не видит.

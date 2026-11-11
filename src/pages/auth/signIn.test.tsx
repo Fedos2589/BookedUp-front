@@ -3,6 +3,7 @@ import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { getMeControllerMeQueryKey } from '../../api/account/account'
+import { hasUnsavedInput } from '../../pwa/unsavedInput'
 import { account, fakeApi } from '../../test/fakeApi'
 import { renderApp } from '../../test/renderApp'
 
@@ -169,4 +170,23 @@ test('a failed sign out is reported and the owner stays', async () => {
     await screen.findByText('Something went wrong. Try again.'),
   ).toBeTruthy()
   expect(router.state.location.pathname).toBe('/')
+})
+
+// A new app version reloads the page: typed input holds it back (src/pwa).
+test('typed input holds back an app update until the form is gone', async () => {
+  fakeApi({
+    'GET /api/me': [401],
+    'POST /api/auth/sign-in': [200, account],
+  })
+  renderApp('/sign-in')
+  await screen.findByRole('heading', { name: 'Sign in' })
+  expect(hasUnsavedInput()).toBe(false)
+
+  fill('Email', 'anna@example.com')
+  expect(hasUnsavedInput()).toBe(true)
+
+  fill('Password', 'correct horse')
+  fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+  await screen.findByRole('heading', { name: 'Judo Kids' })
+  expect(hasUnsavedInput()).toBe(false)
 })

@@ -51,3 +51,41 @@ test('on a short screen the main action is pinned to the bottom', async ({
     .boundingBox()
   expect(submit!.y + submit!.height).toBeLessThanOrEqual(420)
 })
+
+// iOS Safari lays the keyboard over the page: only the visual viewport
+// shrinks. Chromium can't show a keyboard, so the visual viewport is faked.
+test('with the keyboard open the main action sits above it', async ({
+  page,
+}) => {
+  // Short enough that the unlifted button would sit under the keys.
+  await page.setViewportSize({ width: 390, height: 600 })
+  // A string: e2e has no DOM types.
+  await page.addInitScript(`(() => {
+    const fake = Object.assign(new EventTarget(), {
+      height: window.innerHeight,
+      offsetTop: 0,
+      scale: 1,
+    })
+    Object.defineProperty(window, 'visualViewport', { get: () => fake })
+    window.__keyboard = fake
+  })()`)
+  await asGuest(page)
+  await page.goto('/sign-up')
+  await page.getByLabel('Ваше имя').focus()
+
+  await page.evaluate(`(() => {
+    const fake = window.__keyboard
+    fake.height = window.innerHeight - 300
+    fake.dispatchEvent(new Event('resize'))
+  })()`)
+
+  const keyboardTop = 600 - 300
+  await expect
+    .poll(async () => {
+      const box = await page
+        .getByRole('button', { name: 'Продолжить' })
+        .boundingBox()
+      return box!.y + box!.height
+    })
+    .toBeLessThanOrEqual(keyboardTop)
+})

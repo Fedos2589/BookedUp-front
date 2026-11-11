@@ -11,6 +11,7 @@ import {
 } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { ActionBar } from 'ted-ui/ActionBar'
 import { Button } from 'ted-ui/Button'
 import { Combobox } from 'ted-ui/Combobox'
 import { Input } from 'ted-ui/Input'
@@ -19,6 +20,7 @@ import { Typography } from 'ted-ui/Typography'
 import { useSignUpControllerSignUp } from '../../api/auth/auth'
 import { ApiError } from '../../apiFetch'
 import { fieldErrorText } from '../../forms/fieldError'
+import { useUnsavedInput } from '../../pwa/unsavedInput'
 import { AuthLayout } from '../auth/AuthLayout'
 import authStyles from '../auth/AuthLayout.module.scss'
 import { fieldsFromBadRequest, type SignUpField } from './badRequest'
@@ -70,6 +72,8 @@ export function SignUpPage() {
     },
   })
   const { errors } = form.formState
+  // Typed input holds back a new app version's reload (src/pwa).
+  useUnsavedInput(form.formState.isDirty)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   // A step change moves focus to the new step's first invalid field (a 409 on
@@ -195,7 +199,7 @@ export function SignUpPage() {
               errorText={fieldErrorText(t, errors.password)}
               {...form.register('password')}
             />
-            <div className={authStyles.actions}>
+            <ActionBar className={authStyles.actions}>
               <Button
                 type="submit"
                 variant="solid"
@@ -204,7 +208,7 @@ export function SignUpPage() {
               >
                 {t('auth.signUp.continue')}
               </Button>
-            </div>
+            </ActionBar>
           </Fragment>
         ) : (
           <Fragment key="business">
@@ -262,7 +266,7 @@ export function SignUpPage() {
                 {signUpErrorText(t, signUp.error)}
               </Typography>
             )}
-            <div className={authStyles.actions}>
+            <ActionBar className={authStyles.actions}>
               <Button
                 type="submit"
                 variant="solid"
@@ -281,7 +285,7 @@ export function SignUpPage() {
               >
                 {t('auth.signUp.back')}
               </Button>
-            </div>
+            </ActionBar>
           </Fragment>
         )}
       </form>

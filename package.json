@@ -17,9 +17,12 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "api:generate": "orval",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "pwa:icons": "node scripts/pwa-icons.mjs",
+    "test:pwa": "playwright test --config playwright.pwa.config.ts"
   },
   "dependencies": {
+    "@fontsource/montserrat": "^5.3.0",
     "@hookform/resolvers": "^7.0.5",
     "@sentry/react": "^11.11.0",
     "@tanstack/react-query": "^5.107.1",
@@ -31,7 +34,7 @@
     "react-dom": "^19.3.1",
     "react-hook-form": "^7.91.0",
     "react-i18next": "^17.1.13",
-    "ted-ui": "github:Fedos2589/TedUI#v0.1.0",
+    "ted-ui": "github:Fedos2589/TedUI#v0.2.0",
     "zod": "^4.6.7",
     "zustand": "^5.1.0"
   },
@@ -51,6 +54,7 @@
     "sass": "^1.108.1",
     "typescript": "~7.0.2",
     "vite": "^8.3.6",
+    "vite-plugin-pwa": "^2.0.0",
     "vite-plugin-svgr": "^5.2.0",
     "vitest": "^5.1.0"
   },

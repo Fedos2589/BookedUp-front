@@ -35,6 +35,8 @@ jobs:
       # The headless shell is all the smoke tests need (as in AGENTS.md).
       - run: npx playwright install --with-deps --only-shell chromium
       - run: npm run test:e2e
+      # The service worker exists only in the build above: offline and manifest.
+      - run: npm run test:pwa
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
