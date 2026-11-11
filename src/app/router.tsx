@@ -13,6 +13,7 @@ import { CabinetLayout } from '@/pages/cabinet/CabinetLayout'
 import { BookingPage } from '@/pages/BookingPage'
 import { DashboardError } from '@/pages/DashboardError'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { InvitationGone } from '@/pages/invite/InvitationGone'
 import { InvitePage } from '@/pages/invite/InvitePage'
 import { invitationTokenOf } from '@/pages/invite/invitationToken'
 import { PagePending } from '@/pages/PagePending'
@@ -87,7 +88,9 @@ const inviteRoute = createRoute({
   },
   component: function Invite() {
     const { token } = inviteRoute.useParams()
-    return <InvitePage token={token} />
+    // No token of the back's shape in the address: a dead link. The generated
+    // client puts the token into the API path as is, so such a one is never sent.
+    return token ? <InvitePage token={token} /> : <InvitationGone />
   },
 })
 
