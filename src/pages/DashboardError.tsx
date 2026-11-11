@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
-import styles from './DashboardPage.module.scss'
+import styles from './cabinet/Cabinet.module.scss'
 
 // The cabinet could not check the session (network, 5xx): say so and offer to
 // run the check again, instead of a blank page.
@@ -12,7 +12,7 @@ export function DashboardError() {
   const router = useRouter()
 
   return (
-    <main className={styles.page}>
+    <main className={styles.shell}>
       <Typography variant="h3" component="h1">
         {t('dashboard.loadFailed')}
       </Typography>

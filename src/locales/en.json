@@ -1,7 +1,6 @@
 {
   "dashboard": {
     "subtitle": "Business dashboard",
-    "signOut": "Sign out",
     "loadFailed": "Couldn't load your account",
     "tryAgain": "Try again"
   },
@@ -50,5 +49,18 @@
   },
   "common": {
     "loading": "Loading"
+  },
+  "settings": {
+    "title": "Business settings",
+    "name": "Name",
+    "bookingPage": "Booking page",
+    "timeZone": "Time zone",
+    "localTime": "It’s {{time}} there now"
+  },
+  "cabinet": {
+    "navigation": "Cabinet",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "signOut": "Sign out"
   }
 }

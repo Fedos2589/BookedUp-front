@@ -95,6 +95,9 @@ export default defineConfig(({ mode }) => {
         'dayjs',
         'dayjs/plugin/customParseFormat',
         'dayjs/plugin/localizedFormat',
+        // src/dates.ts: dates in the business's time zone.
+        'dayjs/plugin/utc',
+        'dayjs/plugin/timezone',
         ...['de', 'es', 'fr', 'id', 'it', 'pl', 'pt', 'ru', 'tr'].map(
           (locale) => `dayjs/locale/${locale}`,
         ),

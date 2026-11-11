@@ -81,7 +81,7 @@ export function SignInPage() {
           {...form.register('password')}
         />
         {signIn.isError && (
-          <Typography variant="t5" color="red-300" role="alert">
+          <Typography variant="t4" color="red-300" role="alert">
             {signInErrorText(t, signIn.error)}
           </Typography>
         )}
@@ -97,7 +97,7 @@ export function SignInPage() {
           </Button>
         </ActionBar>
       </form>
-      <Typography variant="t5">
+      <Typography variant="t4">
         {t('auth.signIn.noAccount')}{' '}
         <Link to="/sign-up" className={authStyles.link}>
           {t('auth.signIn.toSignUp')}

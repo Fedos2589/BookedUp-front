@@ -161,7 +161,7 @@ export function SignUpPage() {
           : t('auth.signUp.businessTitle')
       }
     >
-      <Typography variant="t5" color="grey-400">
+      <Typography variant="t4" color="grey-400">
         {t('auth.signUp.step', { step: step === 'account' ? 1 : 2 })}
       </Typography>
       <form
@@ -262,7 +262,7 @@ export function SignUpPage() {
               )}
             />
             {unexplained && (
-              <Typography variant="t5" color="red-300" role="alert">
+              <Typography variant="t4" color="red-300" role="alert">
                 {signUpErrorText(t, signUp.error)}
               </Typography>
             )}
@@ -289,7 +289,7 @@ export function SignUpPage() {
           </Fragment>
         )}
       </form>
-      <Typography variant="t5">
+      <Typography variant="t4">
         {t('auth.signUp.hasAccount')}{' '}
         <Link to="/sign-in" className={authStyles.link}>
           {t('auth.signUp.toSignIn')}

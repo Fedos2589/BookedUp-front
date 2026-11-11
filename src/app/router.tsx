@@ -9,10 +9,12 @@ import {
 
 import { redirectIfSignedIn, requireAccount } from '../auth/session'
 import { SignInPage } from '../pages/auth/SignInPage'
+import { CabinetLayout } from '../pages/cabinet/CabinetLayout'
 import { BookingPage } from '../pages/BookingPage'
 import { DashboardError } from '../pages/DashboardError'
 import { DashboardPage } from '../pages/DashboardPage'
 import { PagePending } from '../pages/PagePending'
+import { SettingsPage } from '../pages/settings/SettingsPage'
 import { SignUpPage } from '../pages/signUp/SignUpPage'
 
 type RouterContext = { queryClient: QueryClient }
@@ -21,13 +23,27 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
   component: Outlet,
 })
 
-// Business cabinet: owner, admin, master. Signed-in only.
-const dashboardRoute = createRoute({
+// The business cabinet (owner, admin, master): signed-in only, checked once
+// here for every page inside it. Its error screen covers a failed check.
+const cabinetRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
+  id: 'cabinet',
   beforeLoad: ({ context }) => requireAccount(context.queryClient),
-  component: DashboardPage,
+  component: CabinetLayout,
   errorComponent: DashboardError,
+})
+
+const dashboardRoute = createRoute({
+  getParentRoute: () => cabinetRoute,
+  path: '/',
+  component: DashboardPage,
+})
+
+// The business's settings.
+const settingsRoute = createRoute({
+  getParentRoute: () => cabinetRoute,
+  path: '/settings',
+  component: SettingsPage,
 })
 
 const signInRoute = createRoute({
@@ -53,7 +69,7 @@ const bookingRoute = createRoute({
 })
 
 export const routeTree = rootRoute.addChildren([
-  dashboardRoute,
+  cabinetRoute.addChildren([dashboardRoute, settingsRoute]),
   signInRoute,
   signUpRoute,
   bookingRoute,
