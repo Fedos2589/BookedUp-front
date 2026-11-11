@@ -61,10 +61,23 @@
     "navigation": "Cabinet",
     "dashboard": "Dashboard",
     "settings": "Settings",
+    "team": "Team",
     "signOut": "Sign out",
     "noBusiness": {
       "title": "You’re not in a business",
       "text": "This account is no longer a member of any business. To join one, open the invitation link someone on its team sends you."
+    }
+  },
+  "team": {
+    "title": "Team",
+    "loadFailed": "Couldn't load this list",
+    "role": {
+      "OWNER": "Owner",
+      "ADMIN": "Admin",
+      "MASTER": "Master"
+    },
+    "members": {
+      "title": "Members"
     }
   }
 }

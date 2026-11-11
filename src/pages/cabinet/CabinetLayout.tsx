@@ -36,6 +36,13 @@ export function CabinetLayout() {
                 </Link>
               </Typography>
             )}
+            {roleCan(business.role, 'viewTeam') && (
+              <Typography variant="t3">
+                <Link to="/team" className={styles.link}>
+                  {t('cabinet.team')}
+                </Link>
+              </Typography>
+            )}
           </nav>
         )}
         <SignOut />
