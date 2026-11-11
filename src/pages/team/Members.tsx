@@ -34,12 +34,15 @@ export function Members() {
     mutation: { onSettled: reload },
   })
   const remove = useMembersControllerRemove({
-    mutation: { onSettled: reload, onSuccess: () => setRemoving(undefined) },
+    mutation: { onSettled: reload },
   })
   const addSchedule = useStaffControllerCreate({
     mutation: { onSettled: reload },
   })
   const failed = changeRole.error ?? remove.error ?? addSchedule.error
+  // One change at a time: each mutation shows the spinner and the error of its
+  // last call only, so a second click would hide the first (review of #7).
+  const busy = changeRole.isPending || addSchedule.isPending
   const resetErrors = () => {
     changeRole.reset()
     remove.reset()
@@ -87,6 +90,7 @@ export function Members() {
                       variant="ghost"
                       colorScheme="grey"
                       size="small"
+                      disabled={busy}
                       loading={
                         addSchedule.isPending &&
                         addSchedule.variables.data.userId === member.userId
@@ -112,6 +116,7 @@ export function Members() {
                             variant="ghost"
                             colorScheme="grey"
                             size="small"
+                            disabled={busy}
                             loading={
                               changeRole.isPending &&
                               changeRole.variables.userId === member.userId
@@ -132,6 +137,7 @@ export function Members() {
                         variant="ghost"
                         colorScheme="red"
                         size="small"
+                        disabled={busy}
                         onClick={() => {
                           resetErrors()
                           setRemoving(member)
@@ -165,10 +171,12 @@ export function Members() {
             loading: remove.isPending,
             onClick: () =>
               removing &&
-              remove.mutate({
-                businessId: business.id,
-                userId: removing.userId,
-              }),
+              // Closed on any answer: the error shows above the list, and a
+              // member gone meanwhile can't be removed again (review of #7).
+              remove.mutate(
+                { businessId: business.id, userId: removing.userId },
+                { onSettled: () => setRemoving(undefined) },
+              ),
           },
         ]}
       >
