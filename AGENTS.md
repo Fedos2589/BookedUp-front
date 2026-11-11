@@ -26,6 +26,7 @@ SPA на React + TypeScript + Vite. Бэк — репозиторий BookedUp-b
 - Данные с сервера — только через сгенерированные хуки TanStack Query. Zustand — для состояния клиента (UI, черновики), не кэш серверных данных.
 - Формы — react-hook-form + zod; схема валидации рядом с формой.
 - Даты — dayjs с utc/timezone. С бэка время приходит в UTC, показывается в часовом поясе бизнеса, а не браузера.
+- Импорты из другой папки `src/` — через `@/` (`import { currentBusinessOf } from '@/business/currentBusiness'`), не `../`; из своей папки — `./` (стили страницы, соседний модуль). `@/` = `src/` в `tsconfig.app.json` (`paths`) и `vite.config.ts` (`resolve.alias`) — нужны оба. `../` запрещает oxlint (`no-restricted-imports`). Сгенерированный `src/api/` не трогаем: его импорты пишет Orval.
 - Env — только `VITE_*`, объявлены в `src/vite-env.d.ts`.
 - Тексты — через `useTranslation()`, ключ в **обоих** `src/locales/en.json` и `ru.json` (тест сверяет наборы ключей). Язык — первый из предпочитаемых браузером, который знает приложение (`src/language.ts`), иначе английский; `<html lang>` следует за ним. Переключателя пока нет. Ключи типизированы по `en.json`: опечатка — ошибка typecheck. Сообщения валидации в zod-схемах — ключи `validation.*`, на экран их выводит `fieldErrorText`.
 
