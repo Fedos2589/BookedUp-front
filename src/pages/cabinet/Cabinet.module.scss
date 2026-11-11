@@ -39,6 +39,13 @@
   gap: var(--spacing-4);
 }
 
+// A page's own column: its heading, then its content.
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
 // The error screen's retry button: its own width, not the column's.
 .retry {
   align-self: flex-start;
