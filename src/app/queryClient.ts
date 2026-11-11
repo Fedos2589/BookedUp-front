@@ -1,6 +1,6 @@
 import { QueryCache, QueryClient } from '@tanstack/react-query'
 
-import { ApiError } from '../apiFetch'
+import { ApiError } from '@/apiFetch'
 
 // A 4xx is an answer, not a glitch: retrying a 401 only delays the redirect to
 // sign in. Network errors and 5xx are retried up to `limit` times.

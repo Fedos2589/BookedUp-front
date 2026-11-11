@@ -1,6 +1,6 @@
 import type { RouterHistory } from '@tanstack/react-router'
 
-import { isNoSession, meQueryKey } from '../auth/session'
+import { isNoSession, meQueryKey } from '@/auth/session'
 import { createQueryClient } from './queryClient'
 import { createAppRouter } from './router'
 

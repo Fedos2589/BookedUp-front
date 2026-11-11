@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
-import { useSessionControllerSignOut } from '../../api/auth/auth'
+import { useSessionControllerSignOut } from '@/api/auth/auth'
 import styles from './Cabinet.module.scss'
 
 // Every page of the business cabinet: its navigation and sign out, then the

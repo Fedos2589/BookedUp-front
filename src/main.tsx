@@ -5,16 +5,16 @@ import '@fontsource/montserrat/500.css'
 import '@fontsource/montserrat/600.css'
 import '@fontsource/montserrat/700.css'
 import 'ted-ui/tokens.scss'
-import './styles/global.scss'
+import '@/styles/global.scss'
 import './i18n'
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { App } from './app/App'
-import { createApp } from './app/createApp'
+import { App } from '@/app/App'
+import { createApp } from '@/app/createApp'
 import { initMonitoring } from './monitoring'
-import { registerAppUpdates } from './pwa/registerAppUpdates'
+import { registerAppUpdates } from '@/pwa/registerAppUpdates'
 
 initMonitoring()
 registerAppUpdates()

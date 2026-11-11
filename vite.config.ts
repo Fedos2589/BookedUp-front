@@ -10,6 +10,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
+    resolve: {
+      // @/… is src/: Vite reads it from tsconfig.app.json "paths", the one
+      // place it is defined (oxlint forbids relative imports across folders).
+      tsconfigPaths: true,
+    },
     plugins: [
       react(),
       // TedUI imports `.svg` as React components without the `?react` suffix.

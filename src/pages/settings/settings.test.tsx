@@ -2,8 +2,8 @@
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
-import { account, fakeApi } from '../../test/fakeApi'
-import { renderApp } from '../../test/renderApp'
+import { account, fakeApi } from '@/test/fakeApi'
+import { renderApp } from '@/test/renderApp'
 
 afterEach(() => {
   cleanup()

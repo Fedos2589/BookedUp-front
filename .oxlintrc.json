@@ -6,5 +6,28 @@
   "rules": {
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+  },
+  // Inside src/ only: e2e/ and scripts/ have no @/ (Playwright and
+  // tsconfig.node.json don't know the alias).
+  "overrides": [
+    {
+      "files": ["src/**"],
+      "rules": {
+        // Another folder of src/ is imported as @/… (tsconfig paths), never
+        // relatively: the path reads the same from every file and survives
+        // moves. ./ is for the file's own folder only — not a subfolder.
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["..", "../**", "./*/**"],
+                "message": "Import from another folder of src/ as @/… (e.g. @/business/currentBusiness); ./ only for the same folder."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }

@@ -1,9 +1,9 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { redirect } from '@tanstack/react-router'
 
-import { getMeControllerMeQueryOptions } from '../api/account/account'
-import { ApiError } from '../apiFetch'
-import { retryServerErrors } from '../app/queryClient'
+import { getMeControllerMeQueryOptions } from '@/api/account/account'
+import { ApiError } from '@/apiFetch'
+import { retryServerErrors } from '@/app/queryClient'
 
 // GET /me: the signed-in account and its businesses. The cookie is HttpOnly, so
 // this answer is the only way the app learns whether there is a session.

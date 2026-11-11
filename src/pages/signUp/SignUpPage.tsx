@@ -17,12 +17,12 @@ import { Combobox } from 'ted-ui/Combobox'
 import { Input } from 'ted-ui/Input'
 import { Typography } from 'ted-ui/Typography'
 
-import { useSignUpControllerSignUp } from '../../api/auth/auth'
-import { ApiError } from '../../apiFetch'
-import { fieldErrorText } from '../../forms/fieldError'
-import { useUnsavedInput } from '../../pwa/unsavedInput'
-import { AuthLayout } from '../auth/AuthLayout'
-import authStyles from '../auth/AuthLayout.module.scss'
+import { useSignUpControllerSignUp } from '@/api/auth/auth'
+import { ApiError } from '@/apiFetch'
+import { fieldErrorText } from '@/forms/fieldError'
+import { useUnsavedInput } from '@/pwa/unsavedInput'
+import { AuthLayout } from '@/pages/auth/AuthLayout'
+import authStyles from '@/pages/auth/AuthLayout.module.scss'
 import { fieldsFromBadRequest, type SignUpField } from './badRequest'
 import {
   ACCOUNT_FIELDS,

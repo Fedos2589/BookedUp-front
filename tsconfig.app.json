@@ -21,6 +21,8 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    // @/… is src/ — defined only here: Vite reads it (resolve.tsconfigPaths).
+    "paths": { "@/*": ["./src/*"] },
 
     /* Linting */
     "noUnusedLocals": true,
