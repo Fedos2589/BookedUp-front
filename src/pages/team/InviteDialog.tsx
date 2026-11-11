@@ -51,15 +51,14 @@ export function InviteDialog({
     defaultValues: { role: 'MASTER', note: '' },
   })
   const [link, setLink] = useState<{ url: string; expiresAt: string }>()
+  // The team reloads after any answer; the link goes only to the dialog that
+  // asked for it (see the submit below).
   const create = useInvitationsControllerCreate({
-    mutation: {
-      onSettled: useReloadTeam(),
-      onSuccess: ({ link: url, invitation }) =>
-        setLink({ url, expiresAt: invitation.expiresAt }),
-    },
+    mutation: { onSettled: useReloadTeam() },
   })
-  // Typed input holds back a new app version's reload (src/pwa).
-  useUnsavedInput(form.formState.isDirty && !link)
+  // Typed input holds back a new app version's reload (src/pwa), and so does
+  // a link on screen: it exists nowhere else (review of #7).
+  useUnsavedInput(form.formState.isDirty || !!link)
 
   const close = () => {
     onClose()
@@ -120,14 +119,23 @@ export function InviteDialog({
           className={styles.form}
           noValidate
           onSubmit={form.handleSubmit(({ role, note }) =>
-            create.mutate({
-              businessId: business.id,
-              data: {
-                role,
-                ...(note && { note }),
-                ...(staff && { staffId: staff.id }),
+            create.mutate(
+              {
+                businessId: business.id,
+                data: {
+                  role,
+                  ...(note && { note }),
+                  ...(staff && { staffId: staff.id }),
+                },
               },
-            }),
+              // A callback of this call, not of the hook: close() resets the
+              // mutation, and an answer arriving after it is not shown in the
+              // next opening of the dialog (review of #7).
+              {
+                onSuccess: ({ link: url, invitation }) =>
+                  setLink({ url, expiresAt: invitation.expiresAt }),
+              },
+            ),
           )}
         >
           {roles.length > 1 && (

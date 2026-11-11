@@ -8,7 +8,8 @@ import {
 } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
-import { account, fakeApi } from '@/test/fakeApi'
+import { hasUnsavedInput } from '@/pwa/unsavedInput'
+import { account, deferredAnswer, fakeApi } from '@/test/fakeApi'
 import { renderApp } from '@/test/renderApp'
 
 afterEach(() => {
@@ -531,4 +532,113 @@ test('a member without a schedule gets one under their name', async () => {
     route: `POST ${api('/staff')}`,
     body: { name: 'Boris', userId: admin.userId },
   })
+})
+
+// Review of #7, finding 1.
+test('a link that arrives after the dialog closed is not shown next time', async () => {
+  const later = deferredAnswer()
+  const fake = fakeApi({
+    ...team(),
+    [`POST ${api('/invitations')}`]: later.answer,
+  })
+  renderApp('/team')
+
+  fireEvent.click(await inviteButton())
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Create link' }))
+  await waitFor(() =>
+    expect(fake.calls.map((call) => call.route)).toContain(
+      `POST ${api('/invitations')}`,
+    ),
+  )
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+  later.send([201, { invitation, link: 'http://x/invite/stale' }])
+  // The team reloads after it, as after any change.
+  await waitFor(() =>
+    expect(
+      fake.calls.filter((call) => call.route === `GET ${api('/invitations')}`),
+    ).toHaveLength(2),
+  )
+  const staffList = screen.getByRole('list', {
+    name: 'Masters without an account',
+  })
+  fireEvent.click(within(staffList).getByRole('button', { name: 'Invite' }))
+  const next = await screen.findByRole('dialog')
+  expect(within(next).queryByLabelText('Invitation link')).toBeNull()
+  expect(within(next).getByRole('button', { name: 'Create link' })).toBeTruthy()
+})
+
+// Review of #7, finding 2.
+test('a removal that fails closes the dialog and says why', async () => {
+  const fake = fakeApi({
+    ...team(),
+    [`DELETE ${api(`/members/${master.userId}`)}`]: [404],
+  })
+  renderApp('/team')
+  await screen.findByRole('list', { name: 'Members' })
+
+  fireEvent.click(within(rowOf('Vera')).getByRole('button', { name: 'Remove' }))
+  const dialog = await screen.findByRole('dialog')
+  fake.set(`GET ${api('/members')}`, [200, [owner, admin]])
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Remove' }))
+
+  await alertSaying(
+    'Someone changed the team meanwhile. Here it is as it is now.',
+  )
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+})
+
+// Review of #7, finding 3: the link exists nowhere else.
+test('a link on screen holds back an app update, like typed input', async () => {
+  fakeApi({
+    ...team(),
+    [`POST ${api('/invitations')}`]: [
+      201,
+      { invitation, link: 'http://x/invite/t' },
+    ],
+  })
+  renderApp('/team')
+
+  fireEvent.click(await inviteButton())
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Create link' }))
+  await within(dialog).findByLabelText('Invitation link')
+  expect(hasUnsavedInput()).toBe(true)
+
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Done' }))
+  await waitFor(() => expect(hasUnsavedInput()).toBe(false))
+})
+
+// Review of #7, finding 4: one request at a time keeps its spinner and error.
+test('while a member is being changed, the other changes wait', async () => {
+  const later = deferredAnswer()
+  fakeApi({
+    ...team(),
+    [`PATCH ${api(`/members/${admin.userId}`)}`]: later.answer,
+  })
+  renderApp('/team')
+  await screen.findByRole('list', { name: 'Members' })
+
+  fireEvent.click(
+    within(rowOf('Boris')).getByRole('button', { name: 'Make master' }),
+  )
+  const others = [
+    within(rowOf('Vera')).getByRole('button', { name: 'Make admin' }),
+    within(rowOf('Vera')).getByRole('button', { name: 'Remove' }),
+    within(rowOf('Anna')).getByRole('button', { name: 'Add a schedule' }),
+  ]
+  await waitFor(() =>
+    others.forEach((button) =>
+      expect(button.hasAttribute('disabled')).toBe(true),
+    ),
+  )
+
+  later.send([200, { ...admin, role: 'MASTER' }])
+  await waitFor(() =>
+    others.forEach((button) =>
+      expect(button.hasAttribute('disabled')).toBe(false),
+    ),
+  )
 })
