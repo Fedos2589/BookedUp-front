@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { getRouteApi, Link, useNavigate } from '@tanstack/react-router'
 import type { TFunction } from 'i18next'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -27,6 +27,8 @@ const signInSchema = z.object({
 
 type SignInForm = z.infer<typeof signInSchema>
 
+const route = getRouteApi('/sign-in')
+
 function signInErrorText(t: TFunction, error: unknown) {
   if (error instanceof ApiError && error.status === 401)
     return t('auth.signIn.invalidCredentials')
@@ -39,6 +41,7 @@ export function SignInPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { invitation } = route.useSearch()
   const form = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
@@ -48,7 +51,9 @@ export function SignInPage() {
       // The answer is what GET /me would give: cache it, the cabinet needs no refetch.
       onSuccess: async (account) => {
         queryClient.setQueryData(meQueryKey(), account)
-        await navigate({ to: '/' })
+        await (invitation
+          ? navigate({ to: '/invite/$token', params: { token: invitation } })
+          : navigate({ to: '/' }))
       },
     },
   })

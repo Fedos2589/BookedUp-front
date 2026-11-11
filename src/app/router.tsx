@@ -13,6 +13,8 @@ import { CabinetLayout } from '@/pages/cabinet/CabinetLayout'
 import { BookingPage } from '@/pages/BookingPage'
 import { DashboardError } from '@/pages/DashboardError'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { InvitePage } from '@/pages/invite/InvitePage'
+import { invitationTokenOf } from '@/pages/invite/invitationToken'
 import { PagePending } from '@/pages/PagePending'
 import { SettingsPage } from '@/pages/settings/SettingsPage'
 import { SignUpPage } from '@/pages/signUp/SignUpPage'
@@ -54,10 +56,15 @@ const teamRoute = createRoute({
   component: TeamPage,
 })
 
+// `?invitation=<token>`: signed in, go back to that invitation, not the cabinet.
 const signInRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sign-in',
-  beforeLoad: ({ context }) => redirectIfSignedIn(context.queryClient),
+  validateSearch: (search): { invitation?: string } => ({
+    invitation: invitationTokenOf(search.invitation),
+  }),
+  beforeLoad: ({ context, search }) =>
+    redirectIfSignedIn(context.queryClient, search.invitation),
   component: SignInPage,
 })
 
@@ -67,6 +74,16 @@ const signUpRoute = createRoute({
   path: '/sign-up',
   beforeLoad: ({ context }) => redirectIfSignedIn(context.queryClient),
   component: SignUpPage,
+})
+
+// The page an invitation link opens: join the team, signed in or by signing up.
+const inviteRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/invite/$token',
+  component: function Invite() {
+    const { token } = inviteRoute.useParams()
+    return <InvitePage token={token} />
+  },
 })
 
 // Public booking page of a business, for its clients.
@@ -80,6 +97,7 @@ export const routeTree = rootRoute.addChildren([
   cabinetRoute.addChildren([dashboardRoute, settingsRoute, teamRoute]),
   signInRoute,
   signUpRoute,
+  inviteRoute,
   bookingRoute,
 ])
 
