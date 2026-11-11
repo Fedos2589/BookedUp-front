@@ -1,35 +1,27 @@
-import { getRouteApi, Link } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
-import { useBusinessControllerDescribeSuspense } from '../../api/businesses/businesses'
+import { useMeControllerMeSuspense } from '../../api/account/account'
+import { currentBusinessOf } from '../../business/currentBusiness'
 import { timeIn } from '../../dates'
 import { useNow } from '../../useNow'
 import styles from './SettingsPage.module.scss'
 
-const route = getRouteApi('/settings')
-
 // What the business is set up with: read-only for now (E2 asks to see the time
-// zone; editing comes with its own PATCH endpoint).
+// zone). All of it comes with GET /me; editing will bring its own endpoint.
 export function SettingsPage() {
   const { t } = useTranslation()
-  const { businessId } = route.useLoaderData()
-  // The route's loader has fetched it, so this never suspends there.
-  const { data: business } = useBusinessControllerDescribeSuspense(businessId)
+  // The cabinet route's beforeLoad has loaded it, so this never suspends.
+  const { data: account } = useMeControllerMeSuspense()
+  const business = currentBusinessOf(account)
   const now = useNow()
 
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
-        <Typography variant="h3" component="h1">
-          {t('settings.title')}
-        </Typography>
-        <Typography variant="t3">
-          <Link to="/" className={styles.link}>
-            {t('settings.toDashboard')}
-          </Link>
-        </Typography>
-      </header>
+      <Typography variant="h3" component="h1">
+        {t('settings.title')}
+      </Typography>
       <dl className={styles.fields}>
         <div className={styles.field}>
           <Typography variant="t5" component="dt" color="grey-400">

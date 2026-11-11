@@ -1,0 +1,45 @@
+// The cabinet's frame: every signed-in page sits in it (CabinetLayout), and its
+// error screen uses the same padding. Page padding keeps the first line clear
+// of the installed iOS app's 8px top strip (AGENTS.md).
+.shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-24);
+  padding: var(--spacing-24) var(--spacing-16);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-8) var(--spacing-16);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
+}
+
+.link {
+  color: var(--color-blue-300);
+
+  // The router marks the page you are on (aria-current="page").
+  &[aria-current='page'] {
+    color: var(--color-bw-black);
+    text-decoration: none;
+  }
+}
+
+.signOut {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-4);
+}
+
+// The error screen's retry button: its own width, not the column's.
+.retry {
+  align-self: flex-start;
+}

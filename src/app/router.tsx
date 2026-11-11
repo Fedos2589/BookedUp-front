@@ -7,10 +7,9 @@ import {
   Outlet,
 } from '@tanstack/react-router'
 
-import { getBusinessControllerDescribeQueryOptions } from '../api/businesses/businesses'
 import { redirectIfSignedIn, requireAccount } from '../auth/session'
-import { currentBusinessOf } from '../business/currentBusiness'
 import { SignInPage } from '../pages/auth/SignInPage'
+import { CabinetLayout } from '../pages/cabinet/CabinetLayout'
 import { BookingPage } from '../pages/BookingPage'
 import { DashboardError } from '../pages/DashboardError'
 import { DashboardPage } from '../pages/DashboardPage'
@@ -24,33 +23,27 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
   component: Outlet,
 })
 
-// Business cabinet: owner, admin, master. Signed-in only.
-const dashboardRoute = createRoute({
+// The business cabinet (owner, admin, master): signed-in only, checked once
+// here for every page inside it. Its error screen covers a failed check.
+const cabinetRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
+  id: 'cabinet',
   beforeLoad: ({ context }) => requireAccount(context.queryClient),
-  component: DashboardPage,
+  component: CabinetLayout,
   errorComponent: DashboardError,
 })
 
-// The business's settings, inside the cabinet.
+const dashboardRoute = createRoute({
+  getParentRoute: () => cabinetRoute,
+  path: '/',
+  component: DashboardPage,
+})
+
+// The business's settings.
 const settingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => cabinetRoute,
   path: '/settings',
-  beforeLoad: async ({ context }) => ({
-    account: await requireAccount(context.queryClient),
-  }),
-  // In the loader, not a suspending component: "Try again" (router.invalidate)
-  // re-runs it, while a failed suspense query would just throw again.
-  loader: async ({ context }) => {
-    const businessId = currentBusinessOf(context.account).id
-    await context.queryClient.ensureQueryData(
-      getBusinessControllerDescribeQueryOptions(businessId),
-    )
-    return { businessId }
-  },
   component: SettingsPage,
-  errorComponent: DashboardError,
 })
 
 const signInRoute = createRoute({
@@ -76,8 +69,7 @@ const bookingRoute = createRoute({
 })
 
 export const routeTree = rootRoute.addChildren([
-  dashboardRoute,
-  settingsRoute,
+  cabinetRoute.addChildren([dashboardRoute, settingsRoute]),
   signInRoute,
   signUpRoute,
   bookingRoute,

@@ -1,18 +1,8 @@
-@use 'ted-ui/styles/breakpoints' as *;
-
 .page {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-24);
-  padding: var(--spacing-24) var(--spacing-16);
   max-width: 640px;
-}
-
-.header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--spacing-16);
 }
 
 .fields {

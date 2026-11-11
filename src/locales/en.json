@@ -1,10 +1,8 @@
 {
   "dashboard": {
     "subtitle": "Business dashboard",
-    "signOut": "Sign out",
     "loadFailed": "Couldn't load your account",
-    "tryAgain": "Try again",
-    "settings": "Settings"
+    "tryAgain": "Try again"
   },
   "booking": {
     "title": "Booking: {{businessSlug}}"
@@ -54,10 +52,15 @@
   },
   "settings": {
     "title": "Business settings",
-    "toDashboard": "Dashboard",
     "name": "Name",
     "bookingPage": "Booking page",
     "timeZone": "Time zone",
     "localTime": "It’s {{time}} there now"
+  },
+  "cabinet": {
+    "navigation": "Cabinet",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "signOut": "Sign out"
   }
 }

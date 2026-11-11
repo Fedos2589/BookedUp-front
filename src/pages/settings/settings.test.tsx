@@ -10,13 +10,9 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-const [business] = account.businesses
-const businessRoute = `GET /api/businesses/${business.id}`
-
 test('the settings show the business, its booking page and its time zone', async () => {
   const api = fakeApi({
     'GET /api/me': [200, account],
-    [businessRoute]: [200, business],
   })
   renderApp('/settings')
 
@@ -30,13 +26,17 @@ test('the settings show the business, its booking page and its time zone', async
   expect(bookingPage.getAttribute('href')).toBe('/book/judo-kids')
   expect(screen.getByText('Asia/Bangkok')).toBeTruthy()
   expect(screen.getByText(/^It’s \d\d:\d\d there now$/)).toBeTruthy()
-  expect(api.calls.map((call) => call.route)).toContain(businessRoute)
+  // Everything shown comes with GET /me (review of #4): no other request.
+  await waitFor(() =>
+    expect(new Set(api.calls.map((call) => call.route))).toEqual(
+      new Set(['GET /api/me']),
+    ),
+  )
 })
 
 test('the cabinet links to the settings and back', async () => {
   fakeApi({
     'GET /api/me': [200, account],
-    [businessRoute]: [200, business],
   })
   const { router } = renderApp('/')
   await screen.findByRole('heading', { name: 'Judo Kids' })
@@ -57,16 +57,15 @@ test('a guest opening the settings is sent to sign in', async () => {
   expect(router.state.location.pathname).toBe('/sign-in')
 })
 
-test('when the business cannot be loaded, the settings offer to try again', async () => {
-  const api = fakeApi({
-    'GET /api/me': [200, account],
-    [businessRoute]: [502],
-  })
+test('when the session check fails, the settings offer to try again', async () => {
+  const api = fakeApi({ 'GET /api/me': [502] })
   renderApp('/settings')
 
-  const retry = await screen.findByRole('button', { name: 'Try again' })
-  api.set(businessRoute, [200, business])
-  fireEvent.click(retry)
+  expect(
+    await screen.findByRole('heading', { name: "Couldn't load your account" }),
+  ).toBeTruthy()
+  api.set('GET /api/me', [200, account])
+  fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
 
   expect(
     await screen.findByRole('heading', { name: 'Business settings' }),
