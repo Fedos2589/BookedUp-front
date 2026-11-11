@@ -7,15 +7,15 @@ import {
   Outlet,
 } from '@tanstack/react-router'
 
-import { redirectIfSignedIn, requireAccount } from '../auth/session'
-import { SignInPage } from '../pages/auth/SignInPage'
-import { CabinetLayout } from '../pages/cabinet/CabinetLayout'
-import { BookingPage } from '../pages/BookingPage'
-import { DashboardError } from '../pages/DashboardError'
-import { DashboardPage } from '../pages/DashboardPage'
-import { PagePending } from '../pages/PagePending'
-import { SettingsPage } from '../pages/settings/SettingsPage'
-import { SignUpPage } from '../pages/signUp/SignUpPage'
+import { redirectIfSignedIn, requireAccount } from '@/auth/session'
+import { SignInPage } from '@/pages/auth/SignInPage'
+import { CabinetLayout } from '@/pages/cabinet/CabinetLayout'
+import { BookingPage } from '@/pages/BookingPage'
+import { DashboardError } from '@/pages/DashboardError'
+import { DashboardPage } from '@/pages/DashboardPage'
+import { PagePending } from '@/pages/PagePending'
+import { SettingsPage } from '@/pages/settings/SettingsPage'
+import { SignUpPage } from '@/pages/signUp/SignUpPage'
 
 type RouterContext = { queryClient: QueryClient }
 

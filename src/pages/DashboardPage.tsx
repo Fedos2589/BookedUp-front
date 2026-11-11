@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
-import { useMeControllerMeSuspense } from '../api/account/account'
-import { currentBusinessOf } from '../business/currentBusiness'
+import { useMeControllerMeSuspense } from '@/api/account/account'
+import { currentBusinessOf } from '@/business/currentBusiness'
 import styles from './DashboardPage.module.scss'
 
 export function DashboardPage() {

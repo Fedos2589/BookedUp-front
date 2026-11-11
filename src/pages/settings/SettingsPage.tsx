@@ -2,10 +2,10 @@ import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
-import { useMeControllerMeSuspense } from '../../api/account/account'
-import { currentBusinessOf } from '../../business/currentBusiness'
-import { timeIn } from '../../dates'
-import { useNow } from '../../useNow'
+import { useMeControllerMeSuspense } from '@/api/account/account'
+import { currentBusinessOf } from '@/business/currentBusiness'
+import { timeIn } from '@/dates'
+import { useNow } from '@/useNow'
 import styles from './SettingsPage.module.scss'
 
 // What the business is set up with: read-only for now (E2 asks to see the time

@@ -21,6 +21,8 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    // @/… is src/ (Vite resolves it too: vite.config.ts resolve.alias).
+    "paths": { "@/*": ["./src/*"] },
 
     /* Linting */
     "noUnusedLocals": true,

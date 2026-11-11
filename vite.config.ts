@@ -1,4 +1,6 @@
 import react from '@vitejs/plugin-react'
+import { fileURLToPath } from 'node:url'
+
 import { loadEnv } from 'vite'
 import { defineConfig } from 'vitest/config'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -10,6 +12,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
+    resolve: {
+      // @/… is src/, as in tsconfig.app.json "paths" (oxlint forbids ../).
+      alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    },
     plugins: [
       react(),
       // TedUI imports `.svg` as React components without the `?react` suffix.

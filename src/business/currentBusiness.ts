@@ -1,4 +1,4 @@
-import type { MeControllerMe200 } from '../api/generated.schemas'
+import type { MeControllerMe200 } from '@/api/generated.schemas'
 
 type Account = MeControllerMe200
 

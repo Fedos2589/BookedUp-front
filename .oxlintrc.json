@@ -5,6 +5,20 @@
   "ignorePatterns": ["src/api/**"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    // Another folder of src/ is imported as @/… (tsconfig paths + Vite alias),
+    // never ../: the path reads the same from every file and survives moves.
+    // Same-folder imports stay ./ (a page's own styles, a sibling module).
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["../**"],
+            "message": "Import from another folder of src/ as @/… (e.g. @/business/currentBusiness)."
+          }
+        ]
+      }
+    ]
   }
 }
