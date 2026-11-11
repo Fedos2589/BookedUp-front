@@ -33,13 +33,16 @@
 }
 
 .signOut {
+  // At the right with or without the navigation: on the «no business»
+  // screen it is the header's only child, and space-between would put it left.
+  margin-left: auto;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: var(--spacing-4);
 }
 
-// A page's own column: its heading, then its content.
+// A cabinet page's own column: its heading, then its content.
 .page {
   display: flex;
   flex-direction: column;

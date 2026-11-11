@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
 import { useCurrentBusiness } from '@/business/currentBusiness'
-import styles from './DashboardPage.module.scss'
+import styles from '@/pages/cabinet/Cabinet.module.scss'
 
 export function DashboardPage() {
   const { t } = useTranslation()

@@ -127,3 +127,38 @@ test('the business settings render for a signed-in owner', async ({ page }) => {
   await expectClearOfTopEdge(heading)
   expect(await page.evaluate('document.documentElement.scrollWidth')).toBe(390)
 })
+
+// An account removed from its last business: no navigation, and sign out
+// stays where it is on every other cabinet screen — at the right (review of #6).
+test('the «no business» screen keeps sign out at the right', async ({
+  page,
+}) => {
+  await page.route('**/api/me', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        user: {
+          id: '00000000-0000-4000-8000-000000000001',
+          email: 'anna@example.com',
+          name: 'Anna',
+        },
+        businesses: [],
+      }),
+    }),
+  )
+  await page.setViewportSize({ width: 390, height: 844 })
+
+  await page.goto('/', { waitUntil: 'networkidle' })
+
+  const heading = page.getByRole('heading', {
+    name: 'You’re not in a business',
+  })
+  await expect(heading).toBeVisible()
+  await expectClearOfTopEdge(heading)
+  const signOut = await page
+    .getByRole('button', { name: 'Sign out' })
+    .boundingBox()
+  // The cabinet's side padding is 16px.
+  expect(Math.round(signOut!.x + signOut!.width)).toBe(390 - 16)
+})
