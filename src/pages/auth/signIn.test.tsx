@@ -190,3 +190,22 @@ test('typed input holds back an app update until the form is gone', async () => 
   await screen.findByRole('heading', { name: 'Judo Kids' })
   expect(hasUnsavedInput()).toBe(false)
 })
+
+test('the password can be shown and hidden, without submitting', async () => {
+  const api = fakeApi({ 'GET /api/me': [401] })
+  renderApp('/sign-in')
+  await screen.findByRole('heading', { name: 'Sign in' })
+
+  const password = screen.getByLabelText('Password')
+  const toggle = screen.getByRole('button', { name: 'Show password' })
+  expect(password.getAttribute('type')).toBe('password')
+  expect(toggle.getAttribute('aria-pressed')).toBe('false')
+
+  fireEvent.click(toggle)
+  expect(password.getAttribute('type')).toBe('text')
+  expect(toggle.getAttribute('aria-pressed')).toBe('true')
+
+  fireEvent.click(toggle)
+  expect(password.getAttribute('type')).toBe('password')
+  expect(api.calls.map((call) => call.route)).toEqual(['GET /api/me'])
+})

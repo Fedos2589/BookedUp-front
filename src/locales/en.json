@@ -1,8 +1,7 @@
 {
   "dashboard": {
     "subtitle": "Business dashboard",
-    "loadFailed": "Couldn't load your account",
-    "tryAgain": "Try again"
+    "loadFailed": "Couldn't load your account"
   },
   "booking": {
     "title": "Booking: {{businessSlug}}"
@@ -34,7 +33,8 @@
       "timeZoneHelper": "Bookings are shown in this time zone",
       "hasAccount": "Already have an account?",
       "toSignIn": "Sign in"
-    }
+    },
+    "showPassword": "Show password"
   },
   "validation": {
     "required": "Required",
@@ -48,7 +48,8 @@
     "timeZone": "Pick a time zone from the list"
   },
   "common": {
-    "loading": "Loading"
+    "loading": "Loading",
+    "tryAgain": "Try again"
   },
   "settings": {
     "title": "Business settings",
@@ -61,10 +62,63 @@
     "navigation": "Cabinet",
     "dashboard": "Dashboard",
     "settings": "Settings",
+    "team": "Team",
     "signOut": "Sign out",
     "noBusiness": {
       "title": "You’re not in a business",
       "text": "This account is no longer a member of any business. To join one, open the invitation link someone on its team sends you."
+    }
+  },
+  "team": {
+    "title": "Team",
+    "loadFailed": "Couldn't load this list",
+    "role": {
+      "OWNER": "Owner",
+      "ADMIN": "Admin",
+      "MASTER": "Master"
+    },
+    "members": {
+      "title": "Members",
+      "makeRole": {
+        "ADMIN": "Make admin",
+        "MASTER": "Make master"
+      },
+      "remove": "Remove",
+      "removeTitle": "Remove {{name}} from the team?",
+      "removeText": "They will no longer sign in to {{business}}. Their schedule stays, without an account.",
+      "takesClients": "Takes clients",
+      "addSchedule": "Add a schedule"
+    },
+    "cancel": "Cancel",
+    "changedMeanwhile": "Someone changed the team meanwhile. Here it is as it is now.",
+    "saveFailed": "Couldn't save. Check the connection and try again.",
+    "invitations": {
+      "title": "Invitations",
+      "invite": "Invite",
+      "none": "No pending invitations",
+      "invitedBy": "Invited by {{name}}",
+      "until": "Valid until {{date}}",
+      "revoke": "Revoke"
+    },
+    "invite": {
+      "title": "Invite to the team",
+      "role": "Role",
+      "note": "Who is it for (optional)",
+      "create": "Create link",
+      "link": "Invitation link",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "copyFailed": "Couldn’t copy. Select the link and copy it.",
+      "sendUntil": "Send this link to the person you invite. It works once, until {{date}}, and is shown only now.",
+      "send": "Send this link to the person you invite. It works once and is shown only now.",
+      "done": "Done",
+      "forSchedule": "For {{name}}’s schedule"
+    },
+    "staff": {
+      "title": "Masters without an account",
+      "text": "Clients can be booked to them, but they don’t sign in. Invite one to link the schedule to their account.",
+      "name": "Name",
+      "add": "Add"
     }
   }
 }

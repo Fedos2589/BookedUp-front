@@ -20,6 +20,7 @@ import { Typography } from 'ted-ui/Typography'
 import { useSignUpControllerSignUp } from '@/api/auth/auth'
 import { ApiError } from '@/apiFetch'
 import { fieldErrorText } from '@/forms/fieldError'
+import { PasswordInput } from '@/forms/PasswordInput'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 import { AuthLayout } from '@/pages/auth/AuthLayout'
 import authStyles from '@/pages/auth/AuthLayout.module.scss'
@@ -190,9 +191,8 @@ export function SignUpPage() {
               errorText={fieldErrorText(t, errors.email)}
               {...form.register('email')}
             />
-            <Input
+            <PasswordInput
               label={t('auth.password')}
-              type="password"
               autoComplete="new-password"
               fullWidth
               error={!!errors.password}

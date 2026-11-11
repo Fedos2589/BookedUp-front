@@ -16,6 +16,7 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { PagePending } from '@/pages/PagePending'
 import { SettingsPage } from '@/pages/settings/SettingsPage'
 import { SignUpPage } from '@/pages/signUp/SignUpPage'
+import { TeamPage } from '@/pages/team/TeamPage'
 
 type RouterContext = { queryClient: QueryClient }
 
@@ -46,6 +47,13 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 })
 
+// Who works in the business, and the invitations to it.
+const teamRoute = createRoute({
+  getParentRoute: () => cabinetRoute,
+  path: '/team',
+  component: TeamPage,
+})
+
 const signInRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sign-in',
@@ -69,7 +77,7 @@ const bookingRoute = createRoute({
 })
 
 export const routeTree = rootRoute.addChildren([
-  cabinetRoute.addChildren([dashboardRoute, settingsRoute]),
+  cabinetRoute.addChildren([dashboardRoute, settingsRoute, teamRoute]),
   signInRoute,
   signUpRoute,
   bookingRoute,

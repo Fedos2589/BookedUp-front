@@ -259,3 +259,12 @@ test('a taken address stops being reported once the name changes it', async () =
   )
   expect(field('Booking page address').value).toBe('judo-kids-phuket')
 })
+
+test('the new password can be shown', async () => {
+  fakeApi({ 'GET /api/me': [401] })
+  renderApp('/sign-up')
+
+  const password = await screen.findByLabelText('Password')
+  fireEvent.click(screen.getByRole('button', { name: 'Show password' }))
+  expect(password.getAttribute('type')).toBe('text')
+})

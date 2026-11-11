@@ -1,0 +1,90 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-32);
+  max-width: 720px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// One person or invitation: who on the left, what can be done on the right;
+// on a narrow screen the actions wrap under the name.
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-8) var(--spacing-16);
+  padding: var(--spacing-12) 0;
+  border-bottom: 1px solid var(--color-grey-100);
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.failed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.sectionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-8);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+// A name field and its button on one line, level with the field's box (the
+// label sits above it). An error under the field lifts the button: fine.
+.addForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--spacing-8);
+}
+
+.addName {
+  flex: 1 1 240px;
+}

@@ -198,3 +198,392 @@ export type BusinessControllerDescribe200 = {
   role: BusinessControllerDescribe200Role;
 };
 
+export type StaffControllerList200Item = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  userId: string | null;
+  archived: boolean;
+};
+
+export type StaffControllerCreateBody = {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  userId?: string;
+};
+
+export type StaffControllerCreate201 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  userId: string | null;
+  archived: boolean;
+};
+
+export type StaffControllerCreate400StatusCode = typeof StaffControllerCreate400StatusCode[keyof typeof StaffControllerCreate400StatusCode];
+
+
+export const StaffControllerCreate400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type StaffControllerCreate400 = {
+  statusCode: StaffControllerCreate400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type StaffControllerCreate409StatusCode = typeof StaffControllerCreate409StatusCode[keyof typeof StaffControllerCreate409StatusCode];
+
+
+export const StaffControllerCreate409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type StaffControllerCreate409Error = typeof StaffControllerCreate409Error[keyof typeof StaffControllerCreate409Error];
+
+
+export const StaffControllerCreate409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type StaffControllerCreate409Field = typeof StaffControllerCreate409Field[keyof typeof StaffControllerCreate409Field];
+
+
+export const StaffControllerCreate409Field = {
+  userId: 'userId',
+} as const;
+
+export type StaffControllerCreate409 = {
+  statusCode: StaffControllerCreate409StatusCode;
+  error: StaffControllerCreate409Error;
+  message: string;
+  field: StaffControllerCreate409Field;
+};
+
+export type StaffControllerUpdateBody = {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name?: string;
+  archived?: boolean;
+};
+
+export type StaffControllerUpdate200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  userId: string | null;
+  archived: boolean;
+};
+
+export type StaffControllerUpdate400StatusCode = typeof StaffControllerUpdate400StatusCode[keyof typeof StaffControllerUpdate400StatusCode];
+
+
+export const StaffControllerUpdate400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type StaffControllerUpdate400 = {
+  statusCode: StaffControllerUpdate400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type MembersControllerList200ItemRole = typeof MembersControllerList200ItemRole[keyof typeof MembersControllerList200ItemRole];
+
+
+export const MembersControllerList200ItemRole = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MASTER: 'MASTER',
+} as const;
+
+export type MembersControllerList200Item = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  userId: string;
+  name: string;
+  email: string;
+  role: MembersControllerList200ItemRole;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  staffId: string | null;
+};
+
+export type MembersControllerChangeRoleBodyRole = typeof MembersControllerChangeRoleBodyRole[keyof typeof MembersControllerChangeRoleBodyRole];
+
+
+export const MembersControllerChangeRoleBodyRole = {
+  ADMIN: 'ADMIN',
+  MASTER: 'MASTER',
+} as const;
+
+export type MembersControllerChangeRoleBody = {
+  role: MembersControllerChangeRoleBodyRole;
+};
+
+export type MembersControllerChangeRole200Role = typeof MembersControllerChangeRole200Role[keyof typeof MembersControllerChangeRole200Role];
+
+
+export const MembersControllerChangeRole200Role = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MASTER: 'MASTER',
+} as const;
+
+export type MembersControllerChangeRole200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  userId: string;
+  name: string;
+  email: string;
+  role: MembersControllerChangeRole200Role;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  staffId: string | null;
+};
+
+export type MembersControllerChangeRole400StatusCode = typeof MembersControllerChangeRole400StatusCode[keyof typeof MembersControllerChangeRole400StatusCode];
+
+
+export const MembersControllerChangeRole400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type MembersControllerChangeRole400 = {
+  statusCode: MembersControllerChangeRole400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type InvitationsControllerCreateBodyRole = typeof InvitationsControllerCreateBodyRole[keyof typeof InvitationsControllerCreateBodyRole];
+
+
+export const InvitationsControllerCreateBodyRole = {
+  ADMIN: 'ADMIN',
+  MASTER: 'MASTER',
+} as const;
+
+export type InvitationsControllerCreateBody = {
+  role: InvitationsControllerCreateBodyRole;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  note?: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId?: string;
+};
+
+export type InvitationsControllerCreate201InvitationRole = typeof InvitationsControllerCreate201InvitationRole[keyof typeof InvitationsControllerCreate201InvitationRole];
+
+
+export const InvitationsControllerCreate201InvitationRole = {
+  ADMIN: 'ADMIN',
+  MASTER: 'MASTER',
+} as const;
+
+export type InvitationsControllerCreate201Invitation = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  role: InvitationsControllerCreate201InvitationRole;
+  /** @nullable */
+  note: string | null;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  staffId: string | null;
+  /** @nullable */
+  invitedBy: string | null;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  expiresAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  createdAt: string;
+};
+
+export type InvitationsControllerCreate201 = {
+  invitation: InvitationsControllerCreate201Invitation;
+  link: string;
+};
+
+export type InvitationsControllerCreate400StatusCode = typeof InvitationsControllerCreate400StatusCode[keyof typeof InvitationsControllerCreate400StatusCode];
+
+
+export const InvitationsControllerCreate400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type InvitationsControllerCreate400 = {
+  statusCode: InvitationsControllerCreate400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type InvitationsControllerList200ItemRole = typeof InvitationsControllerList200ItemRole[keyof typeof InvitationsControllerList200ItemRole];
+
+
+export const InvitationsControllerList200ItemRole = {
+  ADMIN: 'ADMIN',
+  MASTER: 'MASTER',
+} as const;
+
+export type InvitationsControllerList200Item = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  role: InvitationsControllerList200ItemRole;
+  /** @nullable */
+  note: string | null;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  staffId: string | null;
+  /** @nullable */
+  invitedBy: string | null;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  expiresAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  createdAt: string;
+};
+
+export type InvitationLinkControllerPreview200Role = typeof InvitationLinkControllerPreview200Role[keyof typeof InvitationLinkControllerPreview200Role];
+
+
+export const InvitationLinkControllerPreview200Role = {
+  ADMIN: 'ADMIN',
+  MASTER: 'MASTER',
+} as const;
+
+export type InvitationLinkControllerPreview200 = {
+  businessName: string;
+  role: InvitationLinkControllerPreview200Role;
+  /** @nullable */
+  invitedBy: string | null;
+};
+
+export type InvitationLinkControllerAccept200Role = typeof InvitationLinkControllerAccept200Role[keyof typeof InvitationLinkControllerAccept200Role];
+
+
+export const InvitationLinkControllerAccept200Role = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MASTER: 'MASTER',
+} as const;
+
+export type InvitationLinkControllerAccept200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  slug: string;
+  timeZone: string;
+  role: InvitationLinkControllerAccept200Role;
+};
+
+export type InvitationLinkControllerSignUpBody = {
+  /** @maxLength 254 */
+  email: string;
+  /**
+     * @minLength 8
+     * @maxLength 256
+     */
+  password: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+};
+
+export type InvitationLinkControllerSignUp201User = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$ */
+  email: string;
+  name: string;
+};
+
+export type InvitationLinkControllerSignUp201BusinessRole = typeof InvitationLinkControllerSignUp201BusinessRole[keyof typeof InvitationLinkControllerSignUp201BusinessRole];
+
+
+export const InvitationLinkControllerSignUp201BusinessRole = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MASTER: 'MASTER',
+} as const;
+
+export type InvitationLinkControllerSignUp201Business = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  slug: string;
+  timeZone: string;
+  role: InvitationLinkControllerSignUp201BusinessRole;
+};
+
+export type InvitationLinkControllerSignUp201 = {
+  user: InvitationLinkControllerSignUp201User;
+  business: InvitationLinkControllerSignUp201Business;
+};
+
+export type InvitationLinkControllerSignUp400StatusCode = typeof InvitationLinkControllerSignUp400StatusCode[keyof typeof InvitationLinkControllerSignUp400StatusCode];
+
+
+export const InvitationLinkControllerSignUp400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type InvitationLinkControllerSignUp400 = {
+  statusCode: InvitationLinkControllerSignUp400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type InvitationLinkControllerSignUp409StatusCode = typeof InvitationLinkControllerSignUp409StatusCode[keyof typeof InvitationLinkControllerSignUp409StatusCode];
+
+
+export const InvitationLinkControllerSignUp409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type InvitationLinkControllerSignUp409Error = typeof InvitationLinkControllerSignUp409Error[keyof typeof InvitationLinkControllerSignUp409Error];
+
+
+export const InvitationLinkControllerSignUp409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type InvitationLinkControllerSignUp409Field = typeof InvitationLinkControllerSignUp409Field[keyof typeof InvitationLinkControllerSignUp409Field];
+
+
+export const InvitationLinkControllerSignUp409Field = {
+  email: 'email',
+} as const;
+
+export type InvitationLinkControllerSignUp409 = {
+  statusCode: InvitationLinkControllerSignUp409StatusCode;
+  error: InvitationLinkControllerSignUp409Error;
+  message: string;
+  field: InvitationLinkControllerSignUp409Field;
+};
+

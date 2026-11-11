@@ -1,8 +1,12 @@
 import { vi } from 'vitest'
 
 type Answer = [status: number, body?: unknown]
-// 'POST /api/auth/sign-in' → an answer, or a function of the request body.
-type Routes = Record<string, Answer | ((body: unknown) => Answer)>
+// 'POST /api/auth/sign-in' → an answer, or a function of the request body
+// (which may answer later: a promise holds the request in flight).
+type Routes = Record<
+  string,
+  Answer | ((body: unknown) => Answer | Promise<Answer>)
+>
 
 export type ApiCall = { route: string; body: unknown }
 
@@ -21,7 +25,7 @@ export function fakeApi(routes: Routes) {
       const handler = routes[route]
       if (!handler) throw new Error(`fakeApi: no answer for ${route}`)
       const [status, answer] =
-        typeof handler === 'function' ? handler(body) : handler
+        typeof handler === 'function' ? await handler(body) : handler
       return new Response(
         answer === undefined ? null : JSON.stringify(answer),
         { status, headers: { 'Content-Type': 'application/json' } },
@@ -36,6 +40,17 @@ export function fakeApi(routes: Routes) {
       routes[route] = answer
     },
   }
+}
+
+// An answer the test sends when it chooses: `route: later.answer`, then
+// `later.send([201, body])` while the request is in flight.
+export function deferredAnswer() {
+  let send: (answer: Answer) => void = () => {}
+  const answer = () =>
+    new Promise<Answer>((resolve) => {
+      send = resolve
+    })
+  return { answer, send: (answer: Answer) => send(answer) }
 }
 
 export const account = {
