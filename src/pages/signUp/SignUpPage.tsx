@@ -24,7 +24,7 @@ import { PasswordInput } from '@/forms/PasswordInput'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 import { AuthLayout } from '@/pages/auth/AuthLayout'
 import authStyles from '@/pages/auth/AuthLayout.module.scss'
-import { fieldsFromBadRequest, type SignUpField } from './badRequest'
+import { fieldsOfSignUpError, type SignUpField } from './badRequest'
 import {
   ACCOUNT_FIELDS,
   type SignUpFormInput,
@@ -102,7 +102,7 @@ export function SignUpPage() {
       // query with no data is fetched anew.
       onSuccess: () => navigate({ to: '/' }),
       onError: (error) => {
-        const fields = conflictOrInvalidFields(error)
+        const fields = fieldsOfSignUpError(error)
         if (fields.length === 0) return
         for (const field of fields) {
           form.setError(
@@ -151,7 +151,7 @@ export function SignUpPage() {
   const slug = useWatch({ control: form.control, name: 'slug' })
   // A form-level message only for failures no field explains.
   const unexplained =
-    signUp.isError && conflictOrInvalidFields(signUp.error).length === 0
+    signUp.isError && fieldsOfSignUpError(signUp.error).length === 0
 
   return (
     <AuthLayout
@@ -297,15 +297,4 @@ export function SignUpPage() {
       </Typography>
     </AuthLayout>
   )
-}
-
-// The fields a 409 (taken email or slug) or a 400 (invalid fields) points at.
-function conflictOrInvalidFields(error: unknown): SignUpField[] {
-  if (!(error instanceof ApiError)) return []
-  const body = error.body as { field?: unknown; message?: unknown } | undefined
-  if (error.status === 409)
-    return body?.field === 'email' || body?.field === 'slug' ? [body.field] : []
-  if (error.status === 400 && Array.isArray(body?.message))
-    return fieldsFromBadRequest(body.message.map(String))
-  return []
 }

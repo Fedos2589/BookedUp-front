@@ -5,7 +5,10 @@
   "ignorePatterns": ["src/api/**"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    // One component per file: a page's parts (a form, a dialog, a section)
+    // are files of its folder, named after the component (AGENTS.md).
+    "react/no-multi-comp": "error"
   },
   // Inside src/ only: e2e/ and scripts/ have no @/ (Playwright and
   // tsconfig.node.json don't know the alias).

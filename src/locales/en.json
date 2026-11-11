@@ -120,5 +120,23 @@
       "name": "Name",
       "add": "Add"
     }
+  },
+  "invite": {
+    "title": "Join {{business}}",
+    "byInviter": "{{inviter}} invites you as {{role}}",
+    "anonymous": "You're invited as {{role}}",
+    "asRole": {
+      "OWNER": "an owner",
+      "ADMIN": "an admin",
+      "MASTER": "a master"
+    },
+    "signUp": "Create account and join",
+    "accept": "Join",
+    "signedInAs": "Signed in as {{email}}",
+    "conflict": "Couldn't join: you may already be in this team, or the schedule offered to you is taken. Ask for a new invitation.",
+    "gone": "This invitation no longer works. Ask for a new one.",
+    "goneTitle": "This invitation no longer works",
+    "goneText": "It was used, cancelled or has expired. Ask the person who invited you for a new link.",
+    "loadFailed": "Couldn't load the invitation"
   }
 }

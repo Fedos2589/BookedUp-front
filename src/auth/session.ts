@@ -11,7 +11,7 @@ import { retryServerErrors } from '@/app/queryClient'
 // retry is seconds of a pending page when the back is down; a 401 never. A
 // cached answer younger than 30 s is trusted; an older one is asked again, so
 // a session ended elsewhere is noticed.
-const sessionCheckOptions = () => ({
+export const sessionCheckOptions = () => ({
   ...getMeControllerMeQueryOptions(),
   retry: retryServerErrors(1),
   staleTime: 30_000,
@@ -33,12 +33,23 @@ export async function requireAccount(queryClient: QueryClient) {
   }
 }
 
-// beforeLoad of sign in / sign up: someone already signed in goes to the cabinet.
-// If the check itself fails, the form is still the right page to show.
-export async function redirectIfSignedIn(queryClient: QueryClient) {
+// beforeLoad of sign in / sign up: someone already signed in goes to the cabinet,
+// or to the invitation they came from. If the check itself fails, the form is
+// still the right page to show.
+export async function redirectIfSignedIn(
+  queryClient: QueryClient,
+  invitation?: string,
+) {
   const signedIn = await queryClient
     .fetchQuery(sessionCheckOptions())
     .then(() => true)
     .catch(() => false)
-  if (signedIn) throw redirect({ to: '/', replace: true })
+  if (!signedIn) return
+  throw invitation
+    ? redirect({
+        to: '/invite/$token',
+        params: { token: invitation },
+        replace: true,
+      })
+    : redirect({ to: '/', replace: true })
 }

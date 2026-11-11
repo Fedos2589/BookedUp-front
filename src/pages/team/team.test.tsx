@@ -224,7 +224,9 @@ test('a removed member leaves the list', async () => {
   fireEvent.click(within(dialog).getByRole('button', { name: 'Remove' }))
 
   await waitFor(() => expect(screen.queryByText('Vera')).toBeNull())
-  expect(screen.queryByRole('dialog')).toBeNull()
+  // The list reloads first, then the modal closes and plays its exit: on a
+  // slow machine it is still mounted the moment Vera is gone.
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
 })
 
 test('a member changed meanwhile: the list reloads and says so', async () => {
