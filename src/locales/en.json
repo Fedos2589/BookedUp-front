@@ -61,6 +61,10 @@
     "navigation": "Cabinet",
     "dashboard": "Dashboard",
     "settings": "Settings",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "noBusiness": {
+      "title": "You’re not in a business",
+      "text": "This account is no longer a member of any business. To join one, open the invitation link someone on its team sends you."
+    }
   }
 }

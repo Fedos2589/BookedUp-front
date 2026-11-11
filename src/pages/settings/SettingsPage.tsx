@@ -1,21 +1,26 @@
-import { Link } from '@tanstack/react-router'
+import { Link, Navigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
-import { useMeControllerMeSuspense } from '@/api/account/account'
-import { currentBusinessOf } from '@/business/currentBusiness'
+import { useCurrentBusiness } from '@/business/currentBusiness'
+import { roleCan } from '@/business/roles'
 import { timeIn } from '@/dates'
 import { useNow } from '@/useNow'
 import styles from './SettingsPage.module.scss'
 
 // What the business is set up with: read-only for now (E2 asks to see the time
 // zone). All of it comes with GET /me; editing will bring its own endpoint.
+// The owner's and the admins' page, not a master's (roles.ts).
 export function SettingsPage() {
   const { t } = useTranslation()
-  // The cabinet route's beforeLoad has loaded it, so this never suspends.
-  const { data: account } = useMeControllerMeSuspense()
-  const business = currentBusinessOf(account)
+  const business = useCurrentBusiness()
   const now = useNow()
+
+  // The navigation has no link here for this role; an address typed by hand
+  // lands on the dashboard.
+  if (!roleCan(business.role, 'viewSettings'))
+    return <Navigate to="/" replace />
+
   const localTime = timeIn(now, business.timeZone)
 
   return (

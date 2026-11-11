@@ -1,15 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
-import { useMeControllerMeSuspense } from '@/api/account/account'
-import { currentBusinessOf } from '@/business/currentBusiness'
-import styles from './DashboardPage.module.scss'
+import { useCurrentBusiness } from '@/business/currentBusiness'
+import styles from '@/pages/cabinet/Cabinet.module.scss'
 
 export function DashboardPage() {
   const { t } = useTranslation()
-  // The cabinet route's beforeLoad has loaded it, so this never suspends.
-  const { data: account } = useMeControllerMeSuspense()
-  const business = currentBusinessOf(account)
+  const business = useCurrentBusiness()
 
   return (
     <main className={styles.page}>
