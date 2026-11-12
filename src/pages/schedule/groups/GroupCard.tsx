@@ -9,9 +9,11 @@ import { whenText } from './groupText'
 
 export function GroupCard({
   group,
+  onEdit,
   onDelete,
 }: {
   group: GroupsControllerList200Item
+  onEdit: () => void
   onDelete: () => void
 }) {
   const { t, i18n } = useTranslation()
@@ -64,6 +66,16 @@ export function GroupCard({
           )}
         </>
       )}
+      <Button
+        type="button"
+        variant="ghost"
+        colorScheme="black"
+        size="small"
+        aria-label={t('schedule.groups.edit', { title: group.title })}
+        onClick={onEdit}
+      >
+        {t('schedule.groups.editShort')}
+      </Button>
       <Button
         type="button"
         variant="ghost"

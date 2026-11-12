@@ -14,6 +14,8 @@ import {
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { GroupCard } from './GroupCard'
+import { GroupDialog } from './GroupDialog'
+import type { GroupsControllerList200Item } from '@/api/generated.schemas'
 
 // «Groups»: a group is a recurring session with a seat limit.
 export function Groups({ staffId }: { staffId: string }) {
@@ -21,6 +23,8 @@ export function Groups({ staffId }: { staffId: string }) {
   const { id: businessId } = useCurrentBusiness()
   const queryClient = useQueryClient()
   const list = useGroupsControllerList(businessId, staffId)
+  // The group being changed, or `true` for a new one.
+  const [editing, setEditing] = useState<GroupsControllerList200Item | true>()
   const [removing, setRemoving] = useState<{ id: string; title: string }>()
   const remove = useGroupsControllerRemove({
     mutation: {
@@ -63,6 +67,7 @@ export function Groups({ staffId }: { staffId: string }) {
           <GroupCard
             key={group.id}
             group={group}
+            onEdit={() => setEditing(group)}
             onDelete={() => {
               remove.reset()
               setRemoving({ id: group.id, title: group.title })
@@ -70,10 +75,29 @@ export function Groups({ staffId }: { staffId: string }) {
           />
         ))}
       </ul>
+      <Button
+        type="button"
+        variant="ghost"
+        colorScheme="black"
+        size="small"
+        onClick={() => {
+          remove.reset()
+          setEditing(true)
+        }}
+      >
+        {t('schedule.groups.add')}
+      </Button>
       {remove.isError && (
         <Typography variant="t4" color="red-300" role="alert">
           {t('schedule.groups.deleteFailed')}
         </Typography>
+      )}
+      {editing && (
+        <GroupDialog
+          staffId={staffId}
+          group={editing === true ? undefined : editing}
+          onClose={() => setEditing(undefined)}
+        />
       )}
       {removing && (
         <ConfirmDialog
