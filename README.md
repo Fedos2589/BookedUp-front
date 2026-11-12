@@ -1,16 +1,16 @@
 # BookedUp — front
 
-SPA на React + TypeScript + Vite. Внутри два продукта: кабинет бизнеса (`/`) и публичная страница записи (`/book/:businessSlug`). Интерфейс — [TedUI](https://github.com/Fedos2589/TedUI).
+A SPA on React + TypeScript + Vite. It holds two products: the business cabinet (`/`) and the public booking page (`/book/:businessSlug`). The UI is [TedUI](https://github.com/Fedos2589/TedUI).
 
-| Задача          | Инструмент                                                               |
-| --------------- | ------------------------------------------------------------------------ |
-| Роутинг         | TanStack Router (`src/app/router.tsx`)                                   |
-| API             | TanStack Query + Orval (`npm run api:generate` из Swagger бэка)          |
-| Формы           | react-hook-form + zod                                                    |
-| Состояние       | Zustand                                                                  |
-| Даты и переводы | dayjs, i18next                                                           |
-| Тесты           | Vitest, Playwright                                                       |
-| Мониторинг      | Sentry, PostHog — включаются через `VITE_SENTRY_DSN`, `VITE_POSTHOG_KEY` |
+| Task           | Tool                                                                    |
+| -------------- | ----------------------------------------------------------------------- |
+| Routing        | TanStack Router (`src/app/router.tsx`)                                  |
+| API            | TanStack Query + Orval (`npm run api:generate` from the back's Swagger) |
+| Forms          | react-hook-form + zod                                                   |
+| State          | Zustand                                                                 |
+| Dates and i18n | dayjs, i18next                                                          |
+| Tests          | Vitest, Playwright                                                      |
+| Monitoring     | Sentry, PostHog — enabled by `VITE_SENTRY_DSN`, `VITE_POSTHOG_KEY`      |
 
 ```bash
 npm install
@@ -19,17 +19,17 @@ npm run build
 npm run typecheck
 npm run lint
 npm test
-npm run test:e2e      # dev-сервер + браузер, ловит ошибки страницы; один раз: npx playwright install chromium --only-shell
-npm run api:generate  # бэк должен быть запущен, см. orval.config.ts
+npm run test:e2e      # dev server + browser, catches page errors; once: npx playwright install chromium --only-shell
+npm run api:generate  # the back must be running, see orval.config.ts
 ```
 
-## TedUI в Vite
+## TedUI in Vite
 
-Кит ставится исходниками по тегу (`github:Fedos2589/TedUI#v0.1.0`). Для Vite нужно:
+The kit is installed as source by tag (`github:Fedos2589/TedUI#v0.1.0`). Vite needs:
 
-- `vite-plugin-svgr` с `include: '**/*.svg'` — кит импортирует SVG без суффикса `?react`;
-- `optimizeDeps.exclude: ['ted-ui']` — пакет из `.tsx`, его компилирует Vite;
-- `optimizeDeps.include` со всеми пакетами, которые импортирует кит (`classnames`, `@base-ui/react/*`, dayjs…) — иначе в dev их CommonJS приходит в браузер как есть: `does not provide an export named 'default'`;
-- `verbatimModuleSyntax: false` в `tsconfig.app.json` — tsc проверяет и исходники кита, а кит импортирует типы без `import type`;
-- `sass`, `import 'ted-ui/tokens.scss'`, шрифт Montserrat, базовые ресеты (`src/styles/global.scss`);
+- `vite-plugin-svgr` with `include: '**/*.svg'` — the kit imports SVGs without the `?react` suffix;
+- `optimizeDeps.exclude: ['ted-ui']` — the package is `.tsx`, Vite compiles it;
+- `optimizeDeps.include` with every package the kit imports (`classnames`, `@base-ui/react/*`, dayjs…) — otherwise in dev their CommonJS reaches the browser as is: `does not provide an export named 'default'`;
+- `verbatimModuleSyntax: false` in `tsconfig.app.json` — tsc also checks the kit's sources, and the kit imports types without `import type`;
+- `sass`, `import 'ted-ui/tokens.scss'`, the Montserrat font, base resets (`src/styles/global.scss`);
 - `registerUIKitTranslations(i18n)` (`src/i18n.ts`).
