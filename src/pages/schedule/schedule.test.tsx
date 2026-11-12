@@ -368,7 +368,7 @@ test('weekly hours: a failed submit moves focus to the field with the error', as
   expect(document.activeElement?.getAttribute('aria-invalid')).toBe('true')
 })
 
-test('separate dates: a refused past date is shown on the date field', async () => {
+test('separate dates: a date that has passed under an open «Change» is said in the dialog', async () => {
   const { set } = withOverrides()
   renderApp('/schedule')
 
@@ -379,7 +379,10 @@ test('separate dates: a refused past date is shown on the date field', async () 
     { statusCode: 400, error: 'Bad Request', message: ['date: In the past'] },
   ])
   fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-  expect(await screen.findByText('This date is in the past')).toBeTruthy()
+  expect(
+    (await screen.findAllByText(/date has already passed/)).length,
+  ).toBeGreaterThan(0)
+  expect(screen.queryByText('This date is in the past')).toBeNull()
 
   // Any other refusal is the generic one.
   set(`PUT ${api(`${overridesRoute(vera.id)}/${friday.date}`)}`, [
@@ -388,7 +391,36 @@ test('separate dates: a refused past date is shown on the date field', async () 
   ])
   fireEvent.click(screen.getByRole('button', { name: 'Save' }))
   expect(await screen.findByText(/Couldn.t save the date/)).toBeTruthy()
-  expect(screen.queryByText('This date is in the past')).toBeNull()
+  expect(screen.queryByText(/date has already passed/)).toBeNull()
+})
+
+test('separate dates: a new date the back calls past is shown on the date field', async () => {
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+  }).format(new Date())
+  fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+    [`GET ${api(overridesRoute(vera.id))}`]: [200, []],
+    [`PUT ${api(`${overridesRoute(vera.id)}/${today}`)}`]: [
+      400,
+      { statusCode: 400, error: 'Bad Request', message: ['date: In the past'] },
+    ],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Date' }))
+  fireEvent.keyDown(await screen.findByLabelText('Date'), { key: 'Enter' })
+  await pickDay(today)
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(
+    (await screen.findAllByText('This date is in the past')).length,
+  ).toBeGreaterThan(0)
+  await waitFor(() =>
+    expect(document.activeElement).toBe(screen.getByLabelText('Date')),
+  )
 })
 
 test('separate dates: a list that fails to load can be retried', async () => {
@@ -712,5 +744,84 @@ test('weekly hours: removing the only interval of a day makes it a day off', asy
     expect(calls.find((c) => c.route.startsWith('PUT'))?.body).toEqual({
       windows: [],
     }),
+  )
+})
+
+const twoIntervals = {
+  windows: [
+    { ...monday, startMinute: 540, durationMinutes: 240 },
+    { ...monday, startMinute: 780, durationMinutes: 120 },
+  ],
+}
+
+test('weekly hours: after a failed save an interval fixed without saving again loses its error', async () => {
+  fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+  })
+  renderApp('/schedule')
+
+  const to = await screen.findByLabelText('Monday: to')
+  fireEvent.change(to, { target: { value: '09:00' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  expect(
+    (await screen.findAllByText('The end must be after the start')).length,
+  ).toBeGreaterThan(0)
+
+  fireEvent.change(to, { target: { value: '17:00' } })
+  await waitFor(() =>
+    expect(
+      screen.queryAllByText('The end must be after the start'),
+    ).toHaveLength(0),
+  )
+  expect(to.getAttribute('aria-invalid')).not.toBe('true')
+})
+
+test('weekly hours: an overlap shown on the later interval goes when the earlier one is moved away', async () => {
+  fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, twoIntervals],
+  })
+  renderApp('/schedule')
+
+  const [firstTo] = await screen.findAllByLabelText('Monday: to')
+  fireEvent.change(firstTo, { target: { value: '14:00' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  expect(
+    (await screen.findAllByText('Overlaps another interval')).length,
+  ).toBeGreaterThan(0)
+
+  fireEvent.change(firstTo, { target: { value: '12:00' } })
+  await waitFor(() =>
+    expect(screen.queryAllByText('Overlaps another interval')).toHaveLength(0),
+  )
+})
+
+test('weekly hours: a step longer than an interval is reported after save and goes when the step is shortened', async () => {
+  fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [
+      200,
+      { windows: [{ ...monday, durationMinutes: 20, slotMinutes: 15 }] },
+    ],
+  })
+  renderApp('/schedule')
+
+  await screen.findByLabelText('Monday: from')
+  fireEvent.click(screen.getByRole('button', { name: '30 min' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  expect(
+    (await screen.findAllByText('The booking step is longer than the interval'))
+      .length,
+  ).toBeGreaterThan(0)
+
+  fireEvent.click(screen.getByRole('button', { name: '15 min' }))
+  await waitFor(() =>
+    expect(
+      screen.queryAllByText('The booking step is longer than the interval'),
+    ).toHaveLength(0),
   )
 })

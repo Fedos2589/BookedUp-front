@@ -24,32 +24,33 @@ const issuesOf = (week: Week) => {
     : result.error.issues.map((i) => ({ path: i.path, message: i.message }))
 }
 
-const withWeek = (make: () => Week) => make()
+// A week from windows, then a change to it.
+const weekOf = (
+  windows: WindowDto[],
+  change: (week: Week) => void = () => {},
+) => {
+  const week = fromWindows(windows)
+  change(week)
+  return week
+}
+
 const cases: Record<string, Week> = {
-  valid: fromWindows([win(1, 540, 240), win(1, 840, 60)]),
-  endBeforeStart: withWeek(() => {
-    const w = fromWindows([win(1, 540, 60)])
+  valid: weekOf([win(1, 540, 240), win(1, 840, 60)]),
+  endBeforeStart: weekOf([win(1, 540, 60)], (w) => {
     w.days[0].intervals[0].end = 540
-    return w
   }),
-  touching: fromWindows([win(1, 540, 60), win(1, 600, 60)]),
-  overlapping: fromWindows([win(1, 540, 90), win(1, 600, 60)]),
-  ring: fromWindows([win(7, 1380, 120), win(1, 30, 60)]),
-  emptyWorkingDay: withWeek(() => {
-    const w = fromWindows([])
+  touching: weekOf([win(1, 540, 60), win(1, 600, 60)]),
+  overlapping: weekOf([win(1, 540, 90), win(1, 600, 60)]),
+  ring: weekOf([win(7, 1380, 120), win(1, 30, 60)]),
+  emptyWorkingDay: weekOf([], (w) => {
     w.days[2].working = true
-    return w
   }),
-  slotTooLong: withWeek(() => {
-    const w = fromWindows([win(1, 540, 20, 15)])
+  slotTooLong: weekOf([win(1, 540, 20, 15)], (w) => {
     w.slotMinutes = 30
-    return w
   }),
-  dayOffNotValidated: withWeek(() => {
-    const w = fromWindows([win(1, 540, 60)])
+  dayOffNotValidated: weekOf([win(1, 540, 60)], (w) => {
     w.days[0].working = false
     w.days[0].intervals[0].end = 0
-    return w
   }),
 }
 

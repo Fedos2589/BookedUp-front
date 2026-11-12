@@ -1,4 +1,5 @@
 import type { StaffScheduleControllerReplaceWeeklyBodyWindowsItem as WindowDto } from '@/api/generated.schemas'
+import { endFromInput, endToInput } from '@/dates'
 
 export type { WindowDto }
 
@@ -8,14 +9,22 @@ const WEEK = 7 * MINUTES_PER_DAY
 
 // Minutes after midnight; `end` may pass 1440 for a window running into the
 // next day (the back allows it). The title is carried, not edited here.
-// The interval a working day starts with, and the length of one added after it.
-export const DEFAULT_INTERVAL: Interval = { start: 540, end: 1080, title: null }
-const NEW_INTERVAL_LENGTH = 120
-
 export type Interval = { start: number; end: number; title: string | null }
 export type Day = { working: boolean; intervals: Interval[] }
 // days[0] is Monday (ISO weekday 1).
 export type Week = { days: Day[]; slotMinutes: number }
+
+// The interval a working day starts with, and the length of one added after it.
+export const DEFAULT_INTERVAL: Interval = { start: 540, end: 1080, title: null }
+const NEW_INTERVAL_LENGTH = 120
+
+// The end stays what the form shows (the clock), so moving the start gives the
+// same interval as typing that end after it: night when it falls before.
+export const moveStart = (interval: Interval, start: number): Interval => ({
+  ...interval,
+  start,
+  end: endFromInput(start, endToInput(interval.end)),
+})
 
 // The interval added after `last`: on the clock, so after one ending at
 // midnight the next starts at 00:00.

@@ -205,7 +205,8 @@
       "loadFailed": "Couldn't load the separate dates",
       "deleteFailed": "Couldn't delete the date. Try again.",
       "saveFailed": "Couldn't save the date. Try again.",
-      "confirmDelete": "Delete this date?"
+      "confirmDelete": "Delete this date?",
+      "pastEdit": "This date has already passed and can't be changed."
     },
     "timeOff": {
       "title": "Time off",

@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 
 import {
   fromWindows,
+  moveStart,
   nextInterval,
   toWindows,
   type Week,
@@ -94,6 +95,24 @@ test('the first interval of a day is the usual 09:00–18:00', () => {
   expect(nextInterval(undefined)).toEqual({
     start: 540,
     end: 1080,
+    title: null,
+  })
+})
+
+test('moving the start keeps the end on the clock: a night interval stays one', () => {
+  // 22:00–01:00, start to 00:30: 00:30–01:00, not a 25-hour window.
+  expect(moveStart({ start: 1320, end: 1500, title: null }, 30)).toEqual({
+    start: 30,
+    end: 60,
+    title: null,
+  })
+})
+
+test('a start after the end on the clock turns the interval into a night one, as the end field does', () => {
+  // 09:00–18:00, start to 19:00: 19:00–18:00 next day.
+  expect(moveStart({ start: 540, end: 1080, title: null }, 1140)).toEqual({
+    start: 1140,
+    end: 1080 + 1440,
     title: null,
   })
 })

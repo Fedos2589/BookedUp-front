@@ -17,6 +17,7 @@ import styles from '@/pages/schedule/Schedule.module.scss'
 import { DayRow } from './DayRow'
 import { focusFirstInvalid } from './focusFirstInvalid'
 import { SlotStep } from './SlotStep'
+import { useRevalidateAll } from './useRevalidateAll'
 import { fromWindows, toWindows, type Week, type WindowDto } from './weekModel'
 import { weekSchema } from './weekSchema'
 
@@ -37,6 +38,7 @@ export function WeekForm({
     defaultValues: fromWindows(windows),
   })
   const save = useStaffScheduleControllerReplaceWeekly()
+  useRevalidateAll(form)
   const formRef = useRef<HTMLFormElement>(null)
 
   const dirty = form.formState.isDirty

@@ -12,7 +12,6 @@ import {
   getStaffScheduleControllerDayOverridesQueryKey,
   useStaffScheduleControllerPutDayOverride,
 } from '@/api/schedule/schedule'
-import { ApiError } from '@/apiFetch'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { dateIn } from '@/dates'
 import { fieldErrorText } from '@/forms/fieldError'
@@ -26,16 +25,9 @@ import {
   weekOfOverride,
 } from './overrideModel'
 import { overrideSchema, type OverrideForm } from './overrideSchema'
+import { isPastDateAnswer } from './pastDateAnswer'
 import { SlotStep } from './SlotStep'
-
-// The back's word on a date that is in the past (the picker stops those; this
-// is for a day that changed under an open dialog).
-const isPastDateAnswer = (error: unknown) =>
-  error instanceof ApiError &&
-  error.status === 400 &&
-  (error.body as { message?: string[] } | undefined)?.message?.some((m) =>
-    m.startsWith('date:'),
-  ) === true
+import { useRevalidateAll } from './useRevalidateAll'
 
 // Adds or edits one date. A new date starts as a working day with the usual
 // default interval; unticking «Working» makes it a day off. The date of an
@@ -67,6 +59,7 @@ export function DayOverrideDialog({
   })
   const working = useWatch({ control: form.control, name: 'days.0.working' })
   const put = useStaffScheduleControllerPutDayOverride()
+  useRevalidateAll(form)
 
   useUnsavedInput(true)
 
@@ -89,7 +82,9 @@ export function DayOverrideDialog({
           onClose()
         },
         onError: (error) => {
-          if (!isPastDateAnswer(error)) return
+          // The date of an existing override cannot be edited, so there the
+          // dialog says it instead of marking a disabled field.
+          if (!isPastDateAnswer(error) || override) return
           form.setError('date', { message: 'validation.pastDate' })
           focusFirstInvalid(formRef.current)
         },
@@ -154,9 +149,13 @@ export function DayOverrideDialog({
           <DayRow index={0} name={t('schedule.overrides.day')} />
           {working && <SlotStep />}
         </FormProvider>
-        {put.isError && !isPastDateAnswer(put.error) && (
+        {put.isError && (override || !isPastDateAnswer(put.error)) && (
           <Typography variant="t4" color="red-300" role="alert">
-            {t('schedule.overrides.saveFailed')}
+            {t(
+              isPastDateAnswer(put.error)
+                ? 'schedule.overrides.pastEdit'
+                : 'schedule.overrides.saveFailed',
+            )}
           </Typography>
         )}
       </form>
