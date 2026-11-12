@@ -200,6 +200,20 @@
       "deleteFailed": "Couldn't delete the date. Try again.",
       "saveFailed": "Couldn't save the date. Try again.",
       "dateTaken": "This date is already in the list. Change it there."
+    },
+    "timeOff": {
+      "title": "Time off",
+      "empty": "No time off planned.",
+      "add": "+ Time off",
+      "addTitle": "Add time off",
+      "range": "Days off (from – to)",
+      "rangeRequired": "Pick the first and the last day",
+      "note": "Note (optional)",
+      "delete": "Delete time off {{range}}",
+      "deleteShort": "Delete",
+      "loadFailed": "Couldn't load the time off",
+      "deleteFailed": "Couldn't delete the time off. Try again.",
+      "saveFailed": "Couldn't save the time off. Try again."
     }
   }
 }

@@ -230,6 +230,7 @@ function withOverrides(extra: Parameters<typeof fakeApi>[0] = {}) {
     [`GET ${api('/staff')}`]: [200, [vera]],
     [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
     [`GET ${api(overridesRoute(vera.id))}`]: [200, [friday, holiday]],
+    [`GET ${api(`/staff/${vera.id}/time-off`)}`]: [200, []],
   })
 }
 
@@ -427,4 +428,116 @@ test('separate dates: adding a date that is already in the list is refused, not 
 
   expect(await screen.findByText(/already in the list/)).toBeTruthy()
   expect(calls.some((c) => c.route.startsWith('PUT'))).toBe(false)
+})
+
+const timeOffRoute = (id: string) => `/staff/${id}/time-off`
+// Whole days in Bangkok (UTC+7): 16th and 17th = 15th 17:00Z to 17th 17:00Z.
+const vacation = {
+  id: '00000000-0000-4000-8000-000000000031',
+  staffId: vera.id,
+  startsAt: '2099-05-15T17:00:00.000Z',
+  endsAt: '2099-05-17T17:00:00.000Z',
+  note: 'Sea',
+}
+
+function withTimeOff(extra: Parameters<typeof fakeApi>[0] = {}) {
+  return fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+    [`GET ${api(overridesRoute(vera.id))}`]: [200, []],
+    [`GET ${api(timeOffRoute(vera.id))}`]: [200, [vacation]],
+    ...extra,
+  })
+}
+
+test('time off: listed as days on the business clock, with the note', async () => {
+  withTimeOff()
+  renderApp('/schedule')
+
+  expect(await screen.findByText(/^Sat, May 16 – Sun, May 17$/)).toBeTruthy()
+  expect(screen.getByText('Sea')).toBeTruthy()
+})
+
+test('time off: a record off the midnights shows its times', async () => {
+  withTimeOff({
+    [`GET ${api(timeOffRoute(vera.id))}`]: [
+      200,
+      [{ ...vacation, startsAt: '2099-05-16T03:30:00.000Z' }],
+    ],
+  })
+  renderApp('/schedule')
+
+  expect(await screen.findByText(/May 16, 10:30 – May 18, 00:00/)).toBeTruthy()
+})
+
+test('time off: delete removes the record', async () => {
+  const { calls } = withTimeOff({
+    [`DELETE ${api(`${timeOffRoute(vera.id)}/${vacation.id}`)}`]: [204],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: /^Delete time off Sat/ }),
+  )
+
+  await waitFor(() =>
+    expect(
+      calls.some(
+        (c) =>
+          c.route ===
+          `DELETE ${api(`${timeOffRoute(vera.id)}/${vacation.id}`)}`,
+      ),
+    ).toBe(true),
+  )
+})
+
+test('time off: picked days go to the back as the business midnights, note trimmed', async () => {
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+  }).format(new Date())
+  const { calls } = withTimeOff({
+    [`POST ${api(timeOffRoute(vera.id))}`]: [201, vacation],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Time off' }))
+  fireEvent.keyDown(await screen.findByLabelText(/^Days off/), {
+    key: 'Enter',
+  })
+  const pick = async () =>
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: new RegExp(`^${Number(today.slice(8))}\\b`),
+      }),
+    )
+  await pick()
+  await pick()
+  fireEvent.change(screen.getByLabelText('Note (optional)'), {
+    target: { value: '  Sea  ' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  const start = new Date(`${today}T00:00:00+07:00`)
+  await waitFor(() =>
+    expect(calls.find((c) => c.route.startsWith('POST'))?.body).toEqual({
+      startsAt: start.toISOString(),
+      endsAt: new Date(start.getTime() + 24 * 3600_000).toISOString(),
+      note: 'Sea',
+    }),
+  )
+})
+
+test('time off: saving without picking days asks for them and sends nothing', async () => {
+  const { calls } = withTimeOff()
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Time off' }))
+  await screen.findByLabelText(/^Days off/)
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(
+    await screen.findByText(/Pick the first and the last day/),
+  ).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('POST'))).toBe(false)
 })

@@ -15,6 +15,7 @@ import styles from './Schedule.module.scss'
 import { StaffPicker } from './StaffPicker'
 import { DayOverrides } from '@/pages/schedule/hours/DayOverrides'
 import { WeeklyHours } from '@/pages/schedule/hours/WeeklyHours'
+import { TimeOff } from '@/pages/schedule/timeOff/TimeOff'
 
 // A master's schedule: someone sees their own, whoever manages others also
 // picks among them (editableStaff). Under the mode switch goes the mode's
@@ -92,6 +93,7 @@ export function SchedulePage() {
                 <DayOverrides staffId={current.id} />
               </>
             )}
+            <TimeOff staffId={current.id} />
           </Fragment>
         </>
       )}
