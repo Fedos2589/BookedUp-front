@@ -1,50 +1,30 @@
 import { describe, expect, it } from 'vitest'
 
-import { cancelledFrom, nextMeetings } from './groupDays'
+import { cancelProblem } from './groupDays'
 
-// 2026-11-16 is a Monday.
-const tueThu = { weekdays: [2, 4], cancellations: [] as string[] }
+// 2026-11-17 is a Tuesday.
+const tueThu = { weekdays: [2, 4], cancellations: ['2026-11-26'] }
 
-describe('nextMeetings', () => {
-  it('lists the days the group meets, from today on, today included', () => {
-    expect(nextMeetings(tueThu, '2026-11-17', 3)).toEqual([
-      '2026-11-17',
-      '2026-11-19',
-      '2026-11-24',
-    ])
+describe('cancelProblem', () => {
+  it('is none for a day the group meets and has not cancelled', () => {
+    expect(cancelProblem(tueThu, '2026-11-17')).toBeUndefined()
+    expect(cancelProblem(tueThu, '2027-11-16')).toBeUndefined()
   })
 
-  it('starts on the next meeting when today is not one', () => {
-    expect(nextMeetings(tueThu, '2026-11-16', 1)).toEqual(['2026-11-17'])
+  it('is notMeeting for any other weekday', () => {
+    expect(cancelProblem(tueThu, '2026-11-18')).toBe('notMeeting')
   })
 
-  it('skips the days already cancelled', () => {
-    expect(
-      nextMeetings(
-        { ...tueThu, cancellations: ['2026-11-19'] },
-        '2026-11-17',
-        3,
-      ),
-    ).toEqual(['2026-11-17', '2026-11-24', '2026-11-26'])
+  it('is cancelled for a day already cancelled', () => {
+    expect(cancelProblem(tueThu, '2026-11-26')).toBe('cancelled')
   })
 
   it('Sunday is 7', () => {
     expect(
-      nextMeetings({ weekdays: [7], cancellations: [] }, '2026-11-16', 1),
-    ).toEqual(['2026-11-22'])
-  })
-
-  it('a group without days meets never', () => {
+      cancelProblem({ weekdays: [7], cancellations: [] }, '2026-11-22'),
+    ).toBeUndefined()
     expect(
-      nextMeetings({ weekdays: [], cancellations: [] }, '2026-11-16', 3),
-    ).toEqual([])
-  })
-})
-
-describe('cancelledFrom', () => {
-  it('keeps the cancelled days from today on, in order', () => {
-    expect(
-      cancelledFrom(['2026-12-01', '2026-11-10', '2026-11-17'], '2026-11-17'),
-    ).toEqual(['2026-11-17', '2026-12-01'])
+      cancelProblem({ weekdays: [7], cancellations: [] }, '2026-11-16'),
+    ).toBe('notMeeting')
   })
 })

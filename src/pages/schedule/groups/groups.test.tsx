@@ -325,7 +325,16 @@ const openDates = async () =>
     }),
   )
 
-test('group dates: cancelling offers only the days the group meets and sends the chosen one', async () => {
+const cancelDay = async (date: string) => {
+  fireEvent.click(await screen.findByRole('button', { name: 'Cancel a day' }))
+  fireEvent.keyDown(await screen.findByLabelText('Day to cancel'), {
+    key: 'Enter',
+  })
+  await pickDay(date)
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel the session' }))
+}
+
+test('group dates: any day the group meets can be cancelled, and the chosen one is sent', async () => {
   today()
   const { calls } = withGroups({
     [`PUT ${cancellationRoute('2026-11-19')}`]: [
@@ -336,20 +345,38 @@ test('group dates: cancelling offers only the days the group meets and sends the
   renderApp('/schedule')
 
   await openDates()
-  fireEvent.click(await screen.findByRole('button', { name: 'Cancel a day' }))
-  expect(screen.getByRole('radio', { name: 'Tue, Nov 17' })).toBeTruthy()
-  expect(screen.queryByRole('radio', { name: 'Wed, Nov 18' })).toBeNull()
-  fireEvent.click(screen.getByRole('radio', { name: 'Thu, Nov 19' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Cancel the session' }))
+  await cancelDay('2026-11-19')
 
   await waitFor(() =>
-    expect(calls.some((c) => c.route.startsWith('PUT'))).toBe(true),
+    expect(calls.map((c) => c.route)).toContain(
+      `PUT ${cancellationRoute('2026-11-19')}`,
+    ),
   )
+})
+
+test('group dates: a day the group does not meet, or has cancelled, is refused before the request', async () => {
+  today()
+  const { calls } = withGroups({
+    [`GET ${api(groupsRoute)}`]: [
+      200,
+      [{ ...football, cancellations: ['2026-11-19'] }],
+    ],
+  })
+  renderApp('/schedule')
+
+  await openDates()
+  await cancelDay('2026-11-18')
+  expect(await screen.findByText(/doesn.t meet on this day/)).toBeTruthy()
+  fireEvent.keyDown(screen.getByLabelText('Day to cancel'), { key: 'Enter' })
+  await pickDay('2026-11-19')
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel the session' }))
+  expect(await screen.findByText('This day is already cancelled')).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('PUT'))).toBe(false)
 })
 
 test('group dates: a cancelled day is listed and can be restored', async () => {
   today()
-  const cancelled = { ...football, cancellations: ['2026-11-19', '2026-11-01'] }
+  const cancelled = { ...football, cancellations: ['2026-11-19'] }
   const { calls, set } = withGroups({
     [`GET ${api(groupsRoute)}`]: [200, [cancelled]],
     [`DELETE ${cancellationRoute('2026-11-19')}`]: [204],
@@ -358,12 +385,13 @@ test('group dates: a cancelled day is listed and can be restored', async () => {
 
   await openDates()
   expect(await screen.findByText('Thu, Nov 19')).toBeTruthy()
-  expect(screen.queryByText('Sun, Nov 1')).toBeNull()
   set(`GET ${api(groupsRoute)}`, [200, [football]])
   fireEvent.click(screen.getByRole('button', { name: 'Restore Thu, Nov 19' }))
 
   await waitFor(() =>
-    expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(true),
+    expect(calls.map((c) => c.route)).toContain(
+      `DELETE ${cancellationRoute('2026-11-19')}`,
+    ),
   )
   await waitFor(() => expect(screen.queryByText('Thu, Nov 19')).toBeNull())
 })
@@ -526,5 +554,28 @@ test('one-off sessions: an empty form says what is missing and sends nothing', a
   fireEvent.click(await screen.findByRole('button', { name: 'Save' }))
 
   expect((await screen.findAllByText('Required')).length).toBeGreaterThan(0)
+  expect(calls.some((c) => c.route.startsWith('POST'))).toBe(false)
+})
+
+test('one-off sessions: a session that is already over is refused before the request', async () => {
+  today()
+  const { calls } = withGroups()
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: '+ One-off session' }),
+  )
+  fireEvent.change(await screen.findByLabelText('Name'), {
+    target: { value: 'Open day' },
+  })
+  fireEvent.keyDown(screen.getByLabelText('Date'), { key: 'Enter' })
+  // Now is 19:00 in Bangkok.
+  await pickDay('2026-11-17')
+  sendTime('Starts at', '08:00')
+  sendTime('Ends at', '09:00')
+  fireEvent.change(screen.getByLabelText('Seats'), { target: { value: '5' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText('This time has already passed')).toBeTruthy()
   expect(calls.some((c) => c.route.startsWith('POST'))).toBe(false)
 })

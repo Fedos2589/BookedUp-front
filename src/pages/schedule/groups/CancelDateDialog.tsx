@@ -1,9 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { DatePicker } from 'ted-ui/DatePicker'
 import { Modal } from 'ted-ui/Modal'
-import { Radio } from 'ted-ui/Radio/Radio'
-import { RadioGroup } from 'ted-ui/RadioGroup/RadioGroup'
 import { Typography } from 'ted-ui/Typography'
 
 import type { GroupsControllerList200Item } from '@/api/generated.schemas'
@@ -12,13 +11,11 @@ import {
   useGroupsControllerCancel,
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
-import { dayLabel } from '@/dates'
-import { nextMeetings } from './groupDays'
+import { useUnsavedInput } from '@/pwa/unsavedInput'
+import { cancelProblem } from './groupDays'
 
-const OFFERED = 8
-
-// Cancels one session of a group: only the days it meets, as the back refuses
-// any other.
+// Cancels one session of a group, on any day from today on. The picker cannot
+// grey out the days the group does not meet, so those are refused on save.
 export function CancelDateDialog({
   staffId,
   group,
@@ -30,11 +27,12 @@ export function CancelDateDialog({
   today: string
   onClose: () => void
 }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { id: businessId } = useCurrentBusiness()
   const queryClient = useQueryClient()
   const formId = useId()
-  const [date, setDate] = useState<string>()
+  const [date, setDate] = useState('')
+  const [problem, setProblem] = useState<'notMeeting' | 'cancelled'>()
   const cancel = useGroupsControllerCancel({
     mutation: {
       onSuccess: () =>
@@ -43,6 +41,8 @@ export function CancelDateDialog({
         }),
     },
   })
+
+  useUnsavedInput(date !== '')
 
   return (
     <Modal
@@ -73,21 +73,26 @@ export function CancelDateDialog({
         onSubmit={(e) => {
           e.preventDefault()
           if (!date) return
+          const found = cancelProblem(group, date)
+          setProblem(found)
+          if (found) return
           cancel.mutate(
             { businessId, staffId, groupId: group.id, date },
             { onSuccess: onClose },
           )
         }}
       >
-        <RadioGroup
-          aria-label={t('schedule.groups.cancelTitle')}
-          value={date ?? ''}
-          onValueChange={(v) => setDate(String(v))}
-        >
-          {nextMeetings(group, today, OFFERED).map((d) => (
-            <Radio key={d} value={d} label={dayLabel(d, i18n.language)} />
-          ))}
-        </RadioGroup>
+        <DatePicker
+          label={t('schedule.groups.cancelDate')}
+          value={date}
+          minDate={today}
+          error={!!problem}
+          errorText={problem && t(`schedule.groups.${problem}`)}
+          onChange={(value) => {
+            setDate(value)
+            setProblem(undefined)
+          }}
+        />
         {cancel.isError && (
           <Typography variant="t4" color="red-300" role="alert">
             {t('schedule.groups.cancelFailed')}

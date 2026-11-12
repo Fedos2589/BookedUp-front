@@ -5,30 +5,17 @@ import { Button } from 'ted-ui/Button'
 import { Modal } from 'ted-ui/Modal'
 import { Typography } from 'ted-ui/Typography'
 
-import type {
-  GroupsControllerList200Item,
-  GroupsControllerUncancel409,
-} from '@/api/generated.schemas'
+import type { GroupsControllerList200Item } from '@/api/generated.schemas'
 import {
   getGroupsControllerListQueryKey,
   useGroupsControllerUncancel,
 } from '@/api/schedule/schedule'
-import { ApiError } from '@/apiFetch'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { dateIn, dayLabel } from '@/dates'
 import styles from '@/pages/schedule/Schedule.module.scss'
+import { useNow } from '@/useNow'
 import { CancelDateDialog } from './CancelDateDialog'
-import { cancelledFrom } from './groupDays'
-
-// The one-off session a 409 says sits on the day, if it says.
-function blockingTitle(error: unknown) {
-  if (!(error instanceof ApiError) || error.status !== 409) return undefined
-  const { conflictsWith } = (error.body ??
-    {}) as Partial<GroupsControllerUncancel409>
-  return conflictsWith?.kind === 'oneOffSession'
-    ? conflictsWith.title
-    : undefined
-}
+import { conflictTitle } from './conflictTitle'
 
 // The cancelled sessions of a group, which can be restored, and a way to
 // cancel another.
@@ -46,7 +33,7 @@ export function GroupDates({
   const queryClient = useQueryClient()
   const [cancelling, setCancelling] = useState(false)
   // A zone this browser doesn't know: no way to tell today, so nothing to offer.
-  const [today] = useState(() => dateIn(new Date(), timeZone))
+  const today = dateIn(useNow(), timeZone)
   const restore = useGroupsControllerUncancel({
     mutation: {
       onSettled: () =>
@@ -55,8 +42,9 @@ export function GroupDates({
         }),
     },
   })
-  const blocking = blockingTitle(restore.error)
-  const cancelled = today ? cancelledFrom(group.cancellations, today) : []
+  const blocking = conflictTitle(restore.error)
+  // The back sends the cancellations from today on, soonest first.
+  const cancelled = group.cancellations
 
   return (
     <Modal

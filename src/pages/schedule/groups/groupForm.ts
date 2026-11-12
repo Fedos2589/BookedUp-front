@@ -10,15 +10,14 @@ export const TITLE_MAX = 100
 export const DESCRIPTION_MAX = 2000
 const CAPACITY_MAX = 1000
 
-export const minute = z
+const minute = z
   .number()
   .nullable()
   .refine((m): boolean => m !== null, 'validation.required')
 
-// The back's rules for a group. The times are clock times in the form: the
-// body carries the start and the length; an end before the start is the next
-// day (the field has no 24:00). Seats are typed, so they are text.
-// What a group and a one-off session have in common.
+// What a group and a one-off session have in common, by the back's rules. The
+// times are clock times in the form; an end before the start is the next day
+// (the field has no 24:00). Seats are typed, so they are text.
 export const sessionFields = {
   title: z
     .string()
@@ -50,6 +49,7 @@ export const endIsStart = {
   message: 'validation.endIsStart',
 }
 
+// The body of a group carries the start and the length.
 export const groupSchema = z
   .object({
     ...sessionFields,

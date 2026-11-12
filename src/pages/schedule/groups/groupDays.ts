@@ -1,29 +1,12 @@
-import { addDays } from '@/dates'
+import { isoWeekday } from '@/dates'
 
-// ISO weekday (1 = Monday … 7 = Sunday) of a calendar day.
-const weekdayOf = (date: string) =>
-  ((new Date(`${date}T00:00:00Z`).getUTCDay() + 6) % 7) + 1
-
-// The next `count` days, today included, on which the group meets and the
-// session is not cancelled — the only days the back lets be cancelled (else 400).
-export function nextMeetings(
+// Why a day cannot be cancelled for a group, or undefined when it can: the
+// back refuses a day the group does not meet (400) and a day already cancelled.
+export function cancelProblem(
   group: { weekdays: number[]; cancellations: string[] },
-  today: string,
-  count: number,
-): string[] {
-  if (group.weekdays.length === 0) return []
-  const found: string[] = []
-  for (let day = today; found.length < count; day = addDays(day, 1)) {
-    if (
-      group.weekdays.includes(weekdayOf(day)) &&
-      !group.cancellations.includes(day)
-    ) {
-      found.push(day)
-    }
-  }
-  return found
+  date: string,
+): 'notMeeting' | 'cancelled' | undefined {
+  if (!group.weekdays.includes(isoWeekday(date))) return 'notMeeting'
+  if (group.cancellations.includes(date)) return 'cancelled'
+  return undefined
 }
-
-// The cancelled days that have not passed, soonest first (dates sort as text).
-export const cancelledFrom = (cancellations: string[], today: string) =>
-  cancellations.filter((d) => d >= today).sort()

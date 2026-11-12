@@ -120,3 +120,7 @@ export function instantOf(
     throw error
   }
 }
+
+// ISO weekday (1 = Monday … 7 = Sunday) of a calendar day.
+export const isoWeekday = (date: string): number =>
+  ((new Date(`${date}T00:00:00Z`).getUTCDay() + 6) % 7) + 1

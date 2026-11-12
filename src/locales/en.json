@@ -49,7 +49,8 @@
     "dateRange": "Pick the first and the last day",
     "weekdays": "Pick at least one day",
     "capacity": "A whole number from 1 to 1000",
-    "endIsStart": "The end can't be the same as the start"
+    "endIsStart": "The end can't be the same as the start",
+    "inPast": "This time has already passed"
   },
   "common": {
     "loading": "Loading",
@@ -260,7 +261,10 @@
       "restore": "Restore {{date}}",
       "restoreShort": "Restore",
       "restoreBlocked": "Can't restore: One-off session «{{title}}» is at that time. Delete it first.",
-      "restoreFailed": "Couldn't restore the session. Try again."
+      "restoreFailed": "Couldn't restore the session. Try again.",
+      "cancelDate": "Day to cancel",
+      "notMeeting": "The group doesn't meet on this day",
+      "cancelled": "This day is already cancelled"
     },
     "sessions": {
       "title": "One-off sessions",
