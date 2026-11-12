@@ -218,6 +218,19 @@
       "saveFailed": "Couldn't save the time off. Try again.",
       "zoneUnknown": "This browser doesn't know your business's time zone. Update the browser and try again.",
       "confirmDelete": "Delete this time off?"
+    },
+    "groups": {
+      "title": "Groups",
+      "empty": "No groups yet.",
+      "loadFailed": "Couldn't load the groups",
+      "more": "more",
+      "less": "less",
+      "delete": "Delete {{title}}",
+      "deleteShort": "Delete",
+      "deleteFailed": "Couldn't delete the group. Try again.",
+      "confirmDelete": "Delete this group?",
+      "seats_one": "up to {{count}} person",
+      "seats_other": "up to {{count}} people"
     }
   }
 }
