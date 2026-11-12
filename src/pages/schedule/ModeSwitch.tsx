@@ -19,6 +19,16 @@ export function ModeSwitch({ staff }: { staff: StaffControllerList200Item }) {
   const queryClient = useQueryClient()
   const setMode = useStaffScheduleControllerSetMode({
     mutation: {
+      // The answer is the saved mode: shown at once, even when the reload
+      // below fails (the list keeps its data then).
+      onSuccess: ({ mode }, { staffId }) =>
+        queryClient.setQueryData<StaffControllerList200Item[]>(
+          getStaffControllerListQueryKey(businessId),
+          (list) =>
+            list?.map((s) =>
+              s.id === staffId ? { ...s, scheduleMode: mode } : s,
+            ),
+        ),
       onSettled: () =>
         queryClient.invalidateQueries({
           queryKey: getStaffControllerListQueryKey(businessId),

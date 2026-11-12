@@ -122,7 +122,7 @@ test('a failed mode change does not follow to another master', async () => {
   )
 })
 
-test('a list that fails to reload keeps the page, with no load error', async () => {
+test('a list that fails to reload keeps the page and the saved mode', async () => {
   const { set, calls } = fakeApi({
     'GET /api/me': [200, asMaster],
     [`GET ${api('/staff')}`]: [200, [vera]],
@@ -136,13 +136,11 @@ test('a list that fails to reload keeps the page, with no load error', async () 
 
   const staffGets = () =>
     calls.filter((c) => c.route === `GET ${api('/staff')}`).length
-  await waitFor(() => expect(staffGets()).toBeGreaterThan(1))
-  // The reload failed (and was retried): the page is still the page.
-  await waitFor(() =>
-    expect(
-      screen.getByRole('tab', { name: 'Groups' }).hasAttribute('disabled'),
-    ).toBe(false),
-  )
-  await new Promise((resolve) => setTimeout(resolve, 100))
+  // The first load, the reload and its 3 retries: the failure is final.
+  await waitFor(() => expect(staffGets()).toBe(5), { timeout: 15000 })
+  // The saved mode is shown from the PUT answer, not the failed reload.
+  expect(
+    screen.getByRole('tab', { name: 'Groups' }).getAttribute('aria-selected'),
+  ).toBe('true')
   expect(screen.queryByText(/Couldn.t load the schedule/)).toBeNull()
 })
