@@ -331,7 +331,9 @@ const cancelDay = async (date: string) => {
     key: 'Enter',
   })
   await pickDay(date)
-  fireEvent.click(screen.getByRole('button', { name: 'Cancel the session' }))
+  const submit = screen.getByRole('button', { name: 'Cancel the session' })
+  submit.focus()
+  fireEvent.click(submit)
 }
 
 test('group dates: any day the group meets can be cancelled, and the chosen one is sent', async () => {
@@ -367,6 +369,9 @@ test('group dates: a day the group does not meet, or has cancelled, is refused b
   await openDates()
   await cancelDay('2026-11-18')
   expect(await screen.findByText(/doesn.t meet on this day/)).toBeTruthy()
+  await waitFor(() =>
+    expect(document.activeElement).toBe(screen.getByLabelText('Day to cancel')),
+  )
   fireEvent.keyDown(screen.getByLabelText('Day to cancel'), { key: 'Enter' })
   await pickDay('2026-11-19')
   fireEvent.click(screen.getByRole('button', { name: 'Cancel the session' }))
@@ -574,8 +579,13 @@ test('one-off sessions: a session that is already over is refused before the req
   sendTime('Starts at', '08:00')
   sendTime('Ends at', '09:00')
   fireEvent.change(screen.getByLabelText('Seats'), { target: { value: '5' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  const save = screen.getByRole('button', { name: 'Save' })
+  save.focus()
+  fireEvent.click(save)
 
   expect(await screen.findByText('This time has already passed')).toBeTruthy()
+  await waitFor(() =>
+    expect(document.activeElement).toBe(screen.getByLabelText('Ends at')),
+  )
   expect(calls.some((c) => c.route.startsWith('POST'))).toBe(false)
 })

@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DatePicker } from 'ted-ui/DatePicker'
 import { Modal } from 'ted-ui/Modal'
@@ -11,6 +11,7 @@ import {
   useGroupsControllerCancel,
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
+import { focusFirstInvalid } from '@/pages/schedule/hours/focusFirstInvalid'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 import { cancelProblem } from './groupDays'
 
@@ -31,6 +32,7 @@ export function CancelDateDialog({
   const { id: businessId } = useCurrentBusiness()
   const queryClient = useQueryClient()
   const formId = useId()
+  const formRef = useRef<HTMLFormElement>(null)
   const [date, setDate] = useState('')
   const [problem, setProblem] = useState<'notMeeting' | 'cancelled'>()
   const cancel = useGroupsControllerCancel({
@@ -70,12 +72,16 @@ export function CancelDateDialog({
     >
       <form
         id={formId}
+        ref={formRef}
         onSubmit={(e) => {
           e.preventDefault()
           if (!date) return
           const found = cancelProblem(group, date)
           setProblem(found)
-          if (found) return
+          if (found) {
+            focusFirstInvalid(formRef.current)
+            return
+          }
           cancel.mutate(
             { businessId, staffId, groupId: group.id, date },
             { onSuccess: onClose },

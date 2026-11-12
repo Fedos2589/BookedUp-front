@@ -69,6 +69,7 @@ export function OneOffSessionDialog({
     // The back refuses a session that is over (400); say it at the field.
     if (Date.parse(data.endsAt) <= Date.now()) {
       form.setError('endMinute', { message: 'validation.inPast' })
+      focusFirstInvalid(formRef.current)
       return
     }
     add.mutate({ businessId, staffId, data }, { onSuccess: onClose })
