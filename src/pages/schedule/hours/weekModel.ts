@@ -66,12 +66,17 @@ export function toWindows(week: Week): WindowDto[] {
   )
 }
 
-type Placed = { weekday: number; index: number; start: number; end: number }
+export type Placed = {
+  weekday: number
+  index: number
+  start: number
+  end: number
+}
 
 const startInWeek = (p: Placed) => (p.weekday - 1) * MINUTES_PER_DAY + p.start
 
 // The week is a ring: Sunday night runs into Monday (the back's rule).
-function overlaps(a: Placed, b: Placed): boolean {
+export function overlaps(a: Placed, b: Placed): boolean {
   const aStart = startInWeek(a)
   const aLength = a.end - a.start
   return [-WEEK, 0, WEEK].some((shift) => {

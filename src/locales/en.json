@@ -50,7 +50,11 @@
     "weekdays": "Pick at least one day",
     "capacity": "A whole number from 1 to 1000",
     "endIsStart": "The end can't be the same as the start",
-    "inPast": "This time has already passed"
+    "inPast": "This time has already passed",
+    "emptyDay": "Add an interval or mark the day off",
+    "endBeforeStart": "The end must be after the start",
+    "overlap": "Overlaps another interval",
+    "slotTooLong": "The booking step is longer than the interval"
   },
   "common": {
     "loading": "Loading",
