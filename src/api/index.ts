@@ -4,4 +4,5 @@ export * from './businesses/businesses';
 export * from './health/health';
 export * from './invitations/invitations';
 export * from './members/members';
+export * from './schedule/schedule';
 export * from './staff/staff';

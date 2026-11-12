@@ -198,6 +198,17 @@ export type BusinessControllerDescribe200 = {
   role: BusinessControllerDescribe200Role;
 };
 
+/**
+ * Hours cut into one-person slots, or groups
+ */
+export type StaffControllerList200ItemScheduleMode = typeof StaffControllerList200ItemScheduleMode[keyof typeof StaffControllerList200ItemScheduleMode];
+
+
+export const StaffControllerList200ItemScheduleMode = {
+  HOURS: 'HOURS',
+  GROUPS: 'GROUPS',
+} as const;
+
 export type StaffControllerList200Item = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -208,6 +219,8 @@ export type StaffControllerList200Item = {
      */
   userId: string | null;
   archived: boolean;
+  /** Hours cut into one-person slots, or groups */
+  scheduleMode: StaffControllerList200ItemScheduleMode;
 };
 
 export type StaffControllerCreateBody = {
@@ -220,6 +233,17 @@ export type StaffControllerCreateBody = {
   userId?: string;
 };
 
+/**
+ * Hours cut into one-person slots, or groups
+ */
+export type StaffControllerCreate201ScheduleMode = typeof StaffControllerCreate201ScheduleMode[keyof typeof StaffControllerCreate201ScheduleMode];
+
+
+export const StaffControllerCreate201ScheduleMode = {
+  HOURS: 'HOURS',
+  GROUPS: 'GROUPS',
+} as const;
+
 export type StaffControllerCreate201 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -230,6 +254,8 @@ export type StaffControllerCreate201 = {
      */
   userId: string | null;
   archived: boolean;
+  /** Hours cut into one-person slots, or groups */
+  scheduleMode: StaffControllerCreate201ScheduleMode;
 };
 
 export type StaffControllerCreate400StatusCode = typeof StaffControllerCreate400StatusCode[keyof typeof StaffControllerCreate400StatusCode];
@@ -282,6 +308,17 @@ export type StaffControllerUpdateBody = {
   archived?: boolean;
 };
 
+/**
+ * Hours cut into one-person slots, or groups
+ */
+export type StaffControllerUpdate200ScheduleMode = typeof StaffControllerUpdate200ScheduleMode[keyof typeof StaffControllerUpdate200ScheduleMode];
+
+
+export const StaffControllerUpdate200ScheduleMode = {
+  HOURS: 'HOURS',
+  GROUPS: 'GROUPS',
+} as const;
+
 export type StaffControllerUpdate200 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -292,6 +329,8 @@ export type StaffControllerUpdate200 = {
      */
   userId: string | null;
   archived: boolean;
+  /** Hours cut into one-person slots, or groups */
+  scheduleMode: StaffControllerUpdate200ScheduleMode;
 };
 
 export type StaffControllerUpdate400StatusCode = typeof StaffControllerUpdate400StatusCode[keyof typeof StaffControllerUpdate400StatusCode];
@@ -303,6 +342,889 @@ export const StaffControllerUpdate400StatusCode = {
 
 export type StaffControllerUpdate400 = {
   statusCode: StaffControllerUpdate400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type StaffScheduleControllerSetModeBodyMode = typeof StaffScheduleControllerSetModeBodyMode[keyof typeof StaffScheduleControllerSetModeBodyMode];
+
+
+export const StaffScheduleControllerSetModeBodyMode = {
+  HOURS: 'HOURS',
+  GROUPS: 'GROUPS',
+} as const;
+
+export type StaffScheduleControllerSetModeBody = {
+  mode: StaffScheduleControllerSetModeBodyMode;
+};
+
+export type StaffScheduleControllerSetMode200Mode = typeof StaffScheduleControllerSetMode200Mode[keyof typeof StaffScheduleControllerSetMode200Mode];
+
+
+export const StaffScheduleControllerSetMode200Mode = {
+  HOURS: 'HOURS',
+  GROUPS: 'GROUPS',
+} as const;
+
+export type StaffScheduleControllerSetMode200 = {
+  mode: StaffScheduleControllerSetMode200Mode;
+};
+
+export type StaffScheduleControllerSetMode400StatusCode = typeof StaffScheduleControllerSetMode400StatusCode[keyof typeof StaffScheduleControllerSetMode400StatusCode];
+
+
+export const StaffScheduleControllerSetMode400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type StaffScheduleControllerSetMode400 = {
+  statusCode: StaffScheduleControllerSetMode400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type StaffScheduleControllerWeekly200WindowsItem = {
+  /**
+     * ISO: 1 is Monday, 7 is Sunday
+     * @minimum 1
+     * @maximum 7
+     */
+  weekday: number;
+  /**
+     * Minutes after midnight on the business's clock
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * @minimum 5
+     * @maximum 1440
+     */
+  slotMinutes: number;
+  /** @nullable */
+  title: string | null;
+};
+
+export type StaffScheduleControllerWeekly200 = {
+  windows: StaffScheduleControllerWeekly200WindowsItem[];
+};
+
+export type StaffScheduleControllerReplaceWeeklyBodyWindowsItem = {
+  /**
+     * ISO: 1 is Monday, 7 is Sunday
+     * @minimum 1
+     * @maximum 7
+     */
+  weekday: number;
+  /**
+     * Minutes after midnight on the business's clock
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * @minimum 5
+     * @maximum 1440
+     */
+  slotMinutes: number;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  title?: string | null;
+};
+
+export type StaffScheduleControllerReplaceWeeklyBody = {
+  /** @maxItems 100 */
+  windows: StaffScheduleControllerReplaceWeeklyBodyWindowsItem[];
+};
+
+export type StaffScheduleControllerReplaceWeekly200WindowsItem = {
+  /**
+     * ISO: 1 is Monday, 7 is Sunday
+     * @minimum 1
+     * @maximum 7
+     */
+  weekday: number;
+  /**
+     * Minutes after midnight on the business's clock
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * @minimum 5
+     * @maximum 1440
+     */
+  slotMinutes: number;
+  /** @nullable */
+  title: string | null;
+};
+
+export type StaffScheduleControllerReplaceWeekly200 = {
+  windows: StaffScheduleControllerReplaceWeekly200WindowsItem[];
+};
+
+export type StaffScheduleControllerReplaceWeekly400StatusCode = typeof StaffScheduleControllerReplaceWeekly400StatusCode[keyof typeof StaffScheduleControllerReplaceWeekly400StatusCode];
+
+
+export const StaffScheduleControllerReplaceWeekly400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type StaffScheduleControllerReplaceWeekly400 = {
+  statusCode: StaffScheduleControllerReplaceWeekly400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type StaffScheduleControllerDayOverrides200ItemWindowsItem = {
+  /**
+     * Minutes after midnight on the business's clock
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * @minimum 5
+     * @maximum 1440
+     */
+  slotMinutes: number;
+};
+
+export type StaffScheduleControllerDayOverrides200Item = {
+  /**
+     * A day on the business's calendar
+     * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+     */
+  date: string;
+  /** None is a day off */
+  windows: StaffScheduleControllerDayOverrides200ItemWindowsItem[];
+};
+
+export type StaffScheduleControllerPutDayOverrideBodyWindowsItem = {
+  /**
+     * Minutes after midnight on the business's clock
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * @minimum 5
+     * @maximum 1440
+     */
+  slotMinutes: number;
+};
+
+export type StaffScheduleControllerPutDayOverrideBody = {
+  /** @maxItems 48 */
+  windows: StaffScheduleControllerPutDayOverrideBodyWindowsItem[];
+};
+
+export type StaffScheduleControllerPutDayOverride200WindowsItem = {
+  /**
+     * Minutes after midnight on the business's clock
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * @minimum 5
+     * @maximum 1440
+     */
+  slotMinutes: number;
+};
+
+export type StaffScheduleControllerPutDayOverride200 = {
+  /**
+     * A day on the business's calendar
+     * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+     */
+  date: string;
+  /** None is a day off */
+  windows: StaffScheduleControllerPutDayOverride200WindowsItem[];
+};
+
+export type StaffScheduleControllerPutDayOverride400StatusCode = typeof StaffScheduleControllerPutDayOverride400StatusCode[keyof typeof StaffScheduleControllerPutDayOverride400StatusCode];
+
+
+export const StaffScheduleControllerPutDayOverride400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type StaffScheduleControllerPutDayOverride400 = {
+  statusCode: StaffScheduleControllerPutDayOverride400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type StaffScheduleControllerTimeOff200Item = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  /** @nullable */
+  note: string | null;
+};
+
+export type StaffScheduleControllerAddTimeOffBody = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  endsAt: string;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  note?: string | null;
+};
+
+export type StaffScheduleControllerAddTimeOff201 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  /** @nullable */
+  note: string | null;
+};
+
+export type StaffScheduleControllerAddTimeOff400StatusCode = typeof StaffScheduleControllerAddTimeOff400StatusCode[keyof typeof StaffScheduleControllerAddTimeOff400StatusCode];
+
+
+export const StaffScheduleControllerAddTimeOff400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type StaffScheduleControllerAddTimeOff400 = {
+  statusCode: StaffScheduleControllerAddTimeOff400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type GroupsControllerList200Item = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @nullable */
+  description: string | null;
+  /**
+     * ISO: 1 is Monday, 7 is Sunday; ascending
+     * @items.minimum 1
+     * @items.maximum 7
+     */
+  weekdays: number[];
+  /**
+     * Minutes after midnight on the business's clock
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * How many people it is for
+     * @minimum 1
+     * @maximum 1000
+     */
+  capacity: number;
+  /**
+     * Dates it does not meet, from today on
+     * @items.pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+     */
+  cancellations: string[];
+};
+
+export type GroupsControllerAddBody = {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  title: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  description?: string | null;
+  /**
+     * @minItems 1
+     * @maxItems 7
+     * @items.minimum 1
+     * @items.maximum 7
+     */
+  weekdays: number[];
+  /**
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * How many people it is for
+     * @minimum 1
+     * @maximum 1000
+     */
+  capacity: number;
+};
+
+export type GroupsControllerAdd201 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @nullable */
+  description: string | null;
+  /**
+     * ISO: 1 is Monday, 7 is Sunday; ascending
+     * @items.minimum 1
+     * @items.maximum 7
+     */
+  weekdays: number[];
+  /**
+     * Minutes after midnight on the business's clock
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * How many people it is for
+     * @minimum 1
+     * @maximum 1000
+     */
+  capacity: number;
+  /**
+     * Dates it does not meet, from today on
+     * @items.pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+     */
+  cancellations: string[];
+};
+
+export type GroupsControllerAdd400StatusCode = typeof GroupsControllerAdd400StatusCode[keyof typeof GroupsControllerAdd400StatusCode];
+
+
+export const GroupsControllerAdd400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type GroupsControllerAdd400 = {
+  statusCode: GroupsControllerAdd400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type GroupsControllerAdd409StatusCode = typeof GroupsControllerAdd409StatusCode[keyof typeof GroupsControllerAdd409StatusCode];
+
+
+export const GroupsControllerAdd409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type GroupsControllerAdd409Error = typeof GroupsControllerAdd409Error[keyof typeof GroupsControllerAdd409Error];
+
+
+export const GroupsControllerAdd409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type GroupsControllerAdd409Field = typeof GroupsControllerAdd409Field[keyof typeof GroupsControllerAdd409Field];
+
+
+export const GroupsControllerAdd409Field = {
+  startMinute: 'startMinute',
+  startsAt: 'startsAt',
+  date: 'date',
+} as const;
+
+export type GroupsControllerAdd409ConflictsWith = {
+  kind: 'group';
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /**
+     * A day on the business's calendar
+     * @nullable
+     * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+     */
+  date: string | null;
+} | {
+  kind: 'oneOffSession';
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+};
+
+export type GroupsControllerAdd409 = {
+  statusCode: GroupsControllerAdd409StatusCode;
+  error: GroupsControllerAdd409Error;
+  message: string;
+  field: GroupsControllerAdd409Field;
+  conflictsWith: GroupsControllerAdd409ConflictsWith;
+};
+
+export type GroupsControllerChangeBody = {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  title: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  description?: string | null;
+  /**
+     * @minItems 1
+     * @maxItems 7
+     * @items.minimum 1
+     * @items.maximum 7
+     */
+  weekdays: number[];
+  /**
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * How many people it is for
+     * @minimum 1
+     * @maximum 1000
+     */
+  capacity: number;
+};
+
+export type GroupsControllerChange200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @nullable */
+  description: string | null;
+  /**
+     * ISO: 1 is Monday, 7 is Sunday; ascending
+     * @items.minimum 1
+     * @items.maximum 7
+     */
+  weekdays: number[];
+  /**
+     * Minutes after midnight on the business's clock
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * How many people it is for
+     * @minimum 1
+     * @maximum 1000
+     */
+  capacity: number;
+  /**
+     * Dates it does not meet, from today on
+     * @items.pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+     */
+  cancellations: string[];
+};
+
+export type GroupsControllerChange400StatusCode = typeof GroupsControllerChange400StatusCode[keyof typeof GroupsControllerChange400StatusCode];
+
+
+export const GroupsControllerChange400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type GroupsControllerChange400 = {
+  statusCode: GroupsControllerChange400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type GroupsControllerChange409StatusCode = typeof GroupsControllerChange409StatusCode[keyof typeof GroupsControllerChange409StatusCode];
+
+
+export const GroupsControllerChange409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type GroupsControllerChange409Error = typeof GroupsControllerChange409Error[keyof typeof GroupsControllerChange409Error];
+
+
+export const GroupsControllerChange409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type GroupsControllerChange409Field = typeof GroupsControllerChange409Field[keyof typeof GroupsControllerChange409Field];
+
+
+export const GroupsControllerChange409Field = {
+  startMinute: 'startMinute',
+  startsAt: 'startsAt',
+  date: 'date',
+} as const;
+
+export type GroupsControllerChange409ConflictsWith = {
+  kind: 'group';
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /**
+     * A day on the business's calendar
+     * @nullable
+     * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+     */
+  date: string | null;
+} | {
+  kind: 'oneOffSession';
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+};
+
+export type GroupsControllerChange409 = {
+  statusCode: GroupsControllerChange409StatusCode;
+  error: GroupsControllerChange409Error;
+  message: string;
+  field: GroupsControllerChange409Field;
+  conflictsWith: GroupsControllerChange409ConflictsWith;
+};
+
+export type GroupsControllerCancel200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @nullable */
+  description: string | null;
+  /**
+     * ISO: 1 is Monday, 7 is Sunday; ascending
+     * @items.minimum 1
+     * @items.maximum 7
+     */
+  weekdays: number[];
+  /**
+     * Minutes after midnight on the business's clock
+     * @minimum 0
+     * @maximum 1439
+     */
+  startMinute: number;
+  /**
+     * @minimum 1
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * How many people it is for
+     * @minimum 1
+     * @maximum 1000
+     */
+  capacity: number;
+  /**
+     * Dates it does not meet, from today on
+     * @items.pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+     */
+  cancellations: string[];
+};
+
+export type GroupsControllerCancel400StatusCode = typeof GroupsControllerCancel400StatusCode[keyof typeof GroupsControllerCancel400StatusCode];
+
+
+export const GroupsControllerCancel400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type GroupsControllerCancel400 = {
+  statusCode: GroupsControllerCancel400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type GroupsControllerUncancel409StatusCode = typeof GroupsControllerUncancel409StatusCode[keyof typeof GroupsControllerUncancel409StatusCode];
+
+
+export const GroupsControllerUncancel409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type GroupsControllerUncancel409Error = typeof GroupsControllerUncancel409Error[keyof typeof GroupsControllerUncancel409Error];
+
+
+export const GroupsControllerUncancel409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type GroupsControllerUncancel409Field = typeof GroupsControllerUncancel409Field[keyof typeof GroupsControllerUncancel409Field];
+
+
+export const GroupsControllerUncancel409Field = {
+  startMinute: 'startMinute',
+  startsAt: 'startsAt',
+  date: 'date',
+} as const;
+
+export type GroupsControllerUncancel409ConflictsWith = {
+  kind: 'group';
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /**
+     * A day on the business's calendar
+     * @nullable
+     * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+     */
+  date: string | null;
+} | {
+  kind: 'oneOffSession';
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+};
+
+export type GroupsControllerUncancel409 = {
+  statusCode: GroupsControllerUncancel409StatusCode;
+  error: GroupsControllerUncancel409Error;
+  message: string;
+  field: GroupsControllerUncancel409Field;
+  conflictsWith: GroupsControllerUncancel409ConflictsWith;
+};
+
+export type GroupsControllerSessions200Item = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @nullable */
+  description: string | null;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  /**
+     * How many people it is for
+     * @minimum 1
+     * @maximum 1000
+     */
+  capacity: number;
+};
+
+export type GroupsControllerAddSessionBody = {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  title: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  description?: string | null;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  endsAt: string;
+  /**
+     * How many people it is for
+     * @minimum 1
+     * @maximum 1000
+     */
+  capacity: number;
+};
+
+export type GroupsControllerAddSession201 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @nullable */
+  description: string | null;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  /**
+     * How many people it is for
+     * @minimum 1
+     * @maximum 1000
+     */
+  capacity: number;
+};
+
+export type GroupsControllerAddSession400StatusCode = typeof GroupsControllerAddSession400StatusCode[keyof typeof GroupsControllerAddSession400StatusCode];
+
+
+export const GroupsControllerAddSession400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type GroupsControllerAddSession400 = {
+  statusCode: GroupsControllerAddSession400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type GroupsControllerAddSession409StatusCode = typeof GroupsControllerAddSession409StatusCode[keyof typeof GroupsControllerAddSession409StatusCode];
+
+
+export const GroupsControllerAddSession409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type GroupsControllerAddSession409Error = typeof GroupsControllerAddSession409Error[keyof typeof GroupsControllerAddSession409Error];
+
+
+export const GroupsControllerAddSession409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type GroupsControllerAddSession409Field = typeof GroupsControllerAddSession409Field[keyof typeof GroupsControllerAddSession409Field];
+
+
+export const GroupsControllerAddSession409Field = {
+  startMinute: 'startMinute',
+  startsAt: 'startsAt',
+  date: 'date',
+} as const;
+
+export type GroupsControllerAddSession409ConflictsWith = {
+  kind: 'group';
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /**
+     * A day on the business's calendar
+     * @nullable
+     * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+     */
+  date: string | null;
+} | {
+  kind: 'oneOffSession';
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  title: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+};
+
+export type GroupsControllerAddSession409 = {
+  statusCode: GroupsControllerAddSession409StatusCode;
+  error: GroupsControllerAddSession409Error;
+  message: string;
+  field: GroupsControllerAddSession409Field;
+  conflictsWith: GroupsControllerAddSession409ConflictsWith;
+};
+
+export type SlotsControllerSlotsParams = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  from: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  to: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId?: string;
+};
+
+export type SlotsControllerSlots200Item = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  /** @nullable */
+  title: string | null;
+  /** @nullable */
+  description: string | null;
+  /**
+     * How many people it is for: 1 in hours mode
+     * @minimum 1
+     * @maximum 9007199254740991
+     */
+  capacity: number;
+  /**
+     * How many have booked it; 0 until bookings exist
+     * @minimum 0
+     * @maximum 9007199254740991
+     */
+  booked: number;
+  /**
+     * The group it is a meeting of
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * The one-off session it is
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type SlotsControllerSlots400StatusCode = typeof SlotsControllerSlots400StatusCode[keyof typeof SlotsControllerSlots400StatusCode];
+
+
+export const SlotsControllerSlots400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type SlotsControllerSlots400 = {
+  statusCode: SlotsControllerSlots400StatusCode;
   error: string;
   message: string[];
 };
