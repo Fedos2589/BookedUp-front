@@ -45,13 +45,15 @@
     "slug": "Latin letters, digits and single hyphens",
     "emailTaken": "This email is already registered",
     "slugTaken": "This address is taken",
-    "timeZone": "Pick a time zone from the list"
+    "timeZone": "Pick a time zone from the list",
+    "dateRange": "Pick the first and the last day"
   },
   "common": {
     "loading": "Loading",
     "tryAgain": "Try again",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "delete": "Delete"
   },
   "settings": {
     "title": "Business settings",
@@ -199,7 +201,23 @@
       "loadFailed": "Couldn't load the separate dates",
       "deleteFailed": "Couldn't delete the date. Try again.",
       "saveFailed": "Couldn't save the date. Try again.",
-      "dateTaken": "This date is already in the list. Change it there."
+      "dateTaken": "This date is already in the list. Change it there.",
+      "confirmDelete": "Delete this date?"
+    },
+    "timeOff": {
+      "title": "Time off",
+      "empty": "No time off planned.",
+      "add": "+ Time off",
+      "addTitle": "Add time off",
+      "range": "Days off (from – to)",
+      "note": "Note (optional)",
+      "delete": "Delete time off {{range}}",
+      "deleteShort": "Delete",
+      "loadFailed": "Couldn't load the time off",
+      "deleteFailed": "Couldn't delete the time off. Try again.",
+      "saveFailed": "Couldn't save the time off. Try again.",
+      "zoneUnknown": "This browser doesn't know your business's time zone. Update the browser and try again.",
+      "confirmDelete": "Delete this time off?"
     }
   }
 }

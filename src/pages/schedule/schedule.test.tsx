@@ -2,7 +2,8 @@
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
-import { account, fakeApi } from '@/test/fakeApi'
+import { account, deferredAnswer, fakeApi } from '@/test/fakeApi'
+import { pickDay } from '@/test/pickDay'
 import { renderApp } from '@/test/renderApp'
 
 afterEach(() => {
@@ -230,6 +231,7 @@ function withOverrides(extra: Parameters<typeof fakeApi>[0] = {}) {
     [`GET ${api('/staff')}`]: [200, [vera]],
     [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
     [`GET ${api(overridesRoute(vera.id))}`]: [200, [friday, holiday]],
+    [`GET ${api(`/staff/${vera.id}/time-off`)}`]: [200, []],
   })
 }
 
@@ -302,6 +304,9 @@ test('separate dates: delete removes the date', async () => {
   renderApp('/schedule')
 
   fireEvent.click(await screen.findByRole('button', { name: /^Delete Fri/ }))
+  expect(await screen.findByText('Delete this date?')).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
 
   await waitFor(() =>
     expect(
@@ -419,12 +424,222 @@ test('separate dates: adding a date that is already in the list is refused, not 
   fireEvent.click(await screen.findByRole('button', { name: '+ Date' }))
   const field = await screen.findByLabelText('Date')
   fireEvent.keyDown(field, { key: 'Enter' })
-  const day = Number(today.slice(8))
-  fireEvent.click(
-    await screen.findByRole('button', { name: new RegExp(`^${day}\\b`) }),
-  )
+  await pickDay(today)
   fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText(/already in the list/)).toBeTruthy()
   expect(calls.some((c) => c.route.startsWith('PUT'))).toBe(false)
+})
+
+const timeOffRoute = (id: string) => `/staff/${id}/time-off`
+// Whole days in Bangkok (UTC+7): 16th and 17th = 15th 17:00Z to 17th 17:00Z.
+const vacation = {
+  id: '00000000-0000-4000-8000-000000000031',
+  staffId: vera.id,
+  startsAt: '2099-05-15T17:00:00.000Z',
+  endsAt: '2099-05-17T17:00:00.000Z',
+  note: 'Sea',
+}
+
+function withTimeOff(extra: Parameters<typeof fakeApi>[0] = {}) {
+  return fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+    [`GET ${api(overridesRoute(vera.id))}`]: [200, []],
+    [`GET ${api(timeOffRoute(vera.id))}`]: [200, [vacation]],
+    ...extra,
+  })
+}
+
+test('time off: listed as days on the business clock, with the note', async () => {
+  withTimeOff()
+  renderApp('/schedule')
+
+  expect(await screen.findByText(/^Sat, May 16 – Sun, May 17$/)).toBeTruthy()
+  expect(screen.getByText('Sea')).toBeTruthy()
+})
+
+test('time off: a record off the midnights shows its times', async () => {
+  withTimeOff({
+    [`GET ${api(timeOffRoute(vera.id))}`]: [
+      200,
+      [{ ...vacation, startsAt: '2099-05-16T03:30:00.000Z' }],
+    ],
+  })
+  renderApp('/schedule')
+
+  expect(await screen.findByText(/May 16, 10:30 – May 18, 00:00/)).toBeTruthy()
+})
+
+test('time off: delete removes the record', async () => {
+  const { calls } = withTimeOff({
+    [`DELETE ${api(`${timeOffRoute(vera.id)}/${vacation.id}`)}`]: [204],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: /^Delete time off Sat/ }),
+  )
+  expect(await screen.findByText('Delete this time off?')).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+
+  await waitFor(() =>
+    expect(
+      calls.some(
+        (c) =>
+          c.route ===
+          `DELETE ${api(`${timeOffRoute(vera.id)}/${vacation.id}`)}`,
+      ),
+    ).toBe(true),
+  )
+})
+
+test('time off: picked days go to the back as the business midnights, note trimmed', async () => {
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+  }).format(new Date())
+  const { calls } = withTimeOff({
+    [`POST ${api(timeOffRoute(vera.id))}`]: [201, vacation],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Time off' }))
+  fireEvent.keyDown(await screen.findByLabelText(/^Days off/), {
+    key: 'Enter',
+  })
+  await pickDay(today)
+  await pickDay(today)
+  fireEvent.change(screen.getByLabelText('Note (optional)'), {
+    target: { value: '  Sea  ' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  const start = new Date(`${today}T00:00:00+07:00`)
+  await waitFor(() =>
+    expect(calls.find((c) => c.route.startsWith('POST'))?.body).toEqual({
+      startsAt: start.toISOString(),
+      endsAt: new Date(start.getTime() + 24 * 3600_000).toISOString(),
+      note: 'Sea',
+    }),
+  )
+})
+
+test('time off: saving without picking days asks for them and sends nothing', async () => {
+  const { calls } = withTimeOff()
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Time off' }))
+  await screen.findByLabelText(/^Days off/)
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(
+    await screen.findByText(/Pick the first and the last day/),
+  ).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('POST'))).toBe(false)
+})
+
+test('time off: closing the dialog while it saves still refreshes the list', async () => {
+  const later = deferredAnswer()
+  const { calls } = withTimeOff({
+    [`POST ${api(timeOffRoute(vera.id))}`]: later.answer,
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Time off' }))
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+  }).format(new Date())
+  fireEvent.keyDown(await screen.findByLabelText(/^Days off/), {
+    key: 'Enter',
+  })
+  await pickDay(today)
+  await pickDay(today)
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await waitFor(() =>
+    expect(calls.some((c) => c.route.startsWith('POST'))).toBe(true),
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+  await waitFor(() => expect(screen.queryByLabelText(/^Days off/)).toBeNull())
+  const loads = () =>
+    calls.filter(
+      (c) => c.route.startsWith('GET') && c.route.endsWith('/time-off'),
+    ).length
+  const before = loads()
+  later.send([201, vacation])
+
+  await waitFor(() => expect(loads()).toBe(before + 1))
+})
+
+test('time off: a refused save keeps the dialog and says so', async () => {
+  withTimeOff({ [`POST ${api(timeOffRoute(vera.id))}`]: [500] })
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Time off' }))
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+  }).format(new Date())
+  fireEvent.keyDown(await screen.findByLabelText(/^Days off/), {
+    key: 'Enter',
+  })
+  await pickDay(today)
+  await pickDay(today)
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText(/Couldn.t save the time off/)).toBeTruthy()
+  expect(screen.getByLabelText(/^Days off/)).toBeTruthy()
+})
+
+test('time off: a refused delete says so and keeps the record', async () => {
+  withTimeOff({
+    [`DELETE ${api(`${timeOffRoute(vera.id)}/${vacation.id}`)}`]: [500],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: /^Delete time off Sat/ }),
+  )
+  fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
+
+  expect(await screen.findByText(/Couldn.t delete the time off/)).toBeTruthy()
+  expect(screen.getByText('Sea')).toBeTruthy()
+})
+
+test('time off: nothing planned says so', async () => {
+  withTimeOff({ [`GET ${api(timeOffRoute(vera.id))}`]: [200, []] })
+  renderApp('/schedule')
+
+  expect(await screen.findByText('No time off planned.')).toBeTruthy()
+})
+
+test('time off: a list that fails to load can be retried', async () => {
+  const { set } = withTimeOff()
+  set(`GET ${api(timeOffRoute(vera.id))}`, [500])
+  renderApp('/schedule')
+
+  expect(
+    await screen.findByText(/Couldn.t load the time off/, undefined, {
+      timeout: 15000,
+    }),
+  ).toBeTruthy()
+  set(`GET ${api(timeOffRoute(vera.id))}`, [200, [vacation]])
+  fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
+  expect(await screen.findByText('Sea')).toBeTruthy()
+}, 20000)
+
+test('time off: cancelling the confirmation keeps the record and sends nothing', async () => {
+  const { calls } = withTimeOff()
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: /^Delete time off Sat/ }),
+  )
+  fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }))
+
+  await waitFor(() =>
+    expect(screen.queryByText('Delete this time off?')).toBeNull(),
+  )
+  expect(screen.getByText('Sea')).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(false)
 })

@@ -62,3 +62,20 @@ export const dayLabel = (date: string, language: string): string =>
     month: 'short',
     day: 'numeric',
   }).format(new Date(`${date}T00:00:00Z`))
+
+// A calendar day plus days, as a calendar day: stepped in UTC so no zone's
+// DST night shifts it.
+export const addDays = (date: string, days: number): string =>
+  dayjs.utc(date).add(days, 'day').format('YYYY-MM-DD')
+
+// The first moment of a calendar day on the business's clock (00:00, or the
+// first hour that exists where DST skips midnight); undefined for a zone this
+// browser does not know, as timeIn.
+export function startOfDayIn(date: string, timeZone: string) {
+  try {
+    return dayjs.tz(`${date} 00:00`, timeZone)
+  } catch (error) {
+    if (error instanceof RangeError) return undefined
+    throw error
+  }
+}

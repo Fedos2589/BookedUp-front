@@ -14,6 +14,7 @@ import {
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { dayLabel } from '@/dates'
 import styles from '@/pages/schedule/Schedule.module.scss'
+import { ConfirmDelete } from '@/pages/schedule/ConfirmDelete'
 import { DayOverrideDialog } from './DayOverrideDialog'
 import { intervalsText } from './overrideModel'
 
@@ -26,6 +27,8 @@ export function DayOverrides({ staffId }: { staffId: string }) {
   const list = useStaffScheduleControllerDayOverrides(businessId, staffId)
   // 'new': a blank dialog; an override: editing that date.
   const [dialog, setDialog] = useState<Override | 'new'>()
+  // The date asked to delete, with its label, until the answer is confirmed.
+  const [removing, setRemoving] = useState<{ date: string; label: string }>()
   const remove = useStaffScheduleControllerRemoveDayOverride({
     mutation: {
       onSettled: () =>
@@ -93,10 +96,7 @@ export function DayOverrides({ staffId }: { staffId: string }) {
                 colorScheme="black"
                 size="small"
                 aria-label={t('schedule.overrides.delete', { date: label })}
-                disabled={remove.isPending}
-                onClick={() =>
-                  remove.mutate({ businessId, staffId, date: override.date })
-                }
+                onClick={() => setRemoving({ date: override.date, label })}
               >
                 {t('schedule.overrides.deleteShort')}
               </Button>
@@ -118,6 +118,20 @@ export function DayOverrides({ staffId }: { staffId: string }) {
       >
         {t('schedule.overrides.add')}
       </Button>
+      {removing && (
+        <ConfirmDelete
+          title={t('schedule.overrides.confirmDelete')}
+          what={removing.label}
+          loading={remove.isPending}
+          onClose={() => setRemoving(undefined)}
+          onConfirm={() =>
+            remove.mutate(
+              { businessId, staffId, date: removing.date },
+              { onSettled: () => setRemoving(undefined) },
+            )
+          }
+        />
+      )}
       {dialog && (
         <DayOverrideDialog
           staffId={staffId}
