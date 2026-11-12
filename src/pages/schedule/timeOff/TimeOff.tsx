@@ -12,6 +12,7 @@ import {
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import styles from '@/pages/schedule/Schedule.module.scss'
+import { ConfirmDelete } from '@/pages/schedule/ConfirmDelete'
 import { TimeOffDialog } from './TimeOffDialog'
 import { rangeOfInstants, rangeText } from './timeOffRange'
 
@@ -23,6 +24,8 @@ export function TimeOff({ staffId }: { staffId: string }) {
   const queryClient = useQueryClient()
   const list = useStaffScheduleControllerTimeOff(businessId, staffId)
   const [adding, setAdding] = useState(false)
+  // The record asked to delete, with its text, until the answer is confirmed.
+  const [removing, setRemoving] = useState<{ id: string; text: string }>()
   const remove = useStaffScheduleControllerRemoveTimeOff({
     mutation: {
       onSettled: () =>
@@ -85,10 +88,7 @@ export function TimeOff({ staffId }: { staffId: string }) {
                 colorScheme="black"
                 size="small"
                 aria-label={t('schedule.timeOff.delete', { range: text })}
-                disabled={remove.isPending}
-                onClick={() =>
-                  remove.mutate({ businessId, staffId, id: record.id })
-                }
+                onClick={() => setRemoving({ id: record.id, text })}
               >
                 {t('schedule.timeOff.deleteShort')}
               </Button>
@@ -113,6 +113,20 @@ export function TimeOff({ staffId }: { staffId: string }) {
       >
         {t('schedule.timeOff.add')}
       </Button>
+      {removing && (
+        <ConfirmDelete
+          title={t('schedule.timeOff.confirmDelete')}
+          what={removing.text}
+          loading={remove.isPending}
+          onClose={() => setRemoving(undefined)}
+          onConfirm={() =>
+            remove.mutate(
+              { businessId, staffId, id: removing.id },
+              { onSettled: () => setRemoving(undefined) },
+            )
+          }
+        />
+      )}
       {adding && (
         <TimeOffDialog staffId={staffId} onClose={() => setAdding(false)} />
       )}

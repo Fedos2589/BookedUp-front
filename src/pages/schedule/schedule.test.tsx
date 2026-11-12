@@ -304,6 +304,9 @@ test('separate dates: delete removes the date', async () => {
   renderApp('/schedule')
 
   fireEvent.click(await screen.findByRole('button', { name: /^Delete Fri/ }))
+  expect(await screen.findByText('Delete this date?')).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
 
   await waitFor(() =>
     expect(
@@ -478,6 +481,9 @@ test('time off: delete removes the record', async () => {
   fireEvent.click(
     await screen.findByRole('button', { name: /^Delete time off Sat/ }),
   )
+  expect(await screen.findByText('Delete this time off?')).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
 
   await waitFor(() =>
     expect(
@@ -594,6 +600,7 @@ test('time off: a refused delete says so and keeps the record', async () => {
   fireEvent.click(
     await screen.findByRole('button', { name: /^Delete time off Sat/ }),
   )
+  fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
   expect(await screen.findByText(/Couldn.t delete the time off/)).toBeTruthy()
   expect(screen.getByText('Sea')).toBeTruthy()
@@ -620,3 +627,19 @@ test('time off: a list that fails to load can be retried', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
   expect(await screen.findByText('Sea')).toBeTruthy()
 }, 20000)
+
+test('time off: cancelling the confirmation keeps the record and sends nothing', async () => {
+  const { calls } = withTimeOff()
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: /^Delete time off Sat/ }),
+  )
+  fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }))
+
+  await waitFor(() =>
+    expect(screen.queryByText('Delete this time off?')).toBeNull(),
+  )
+  expect(screen.getByText('Sea')).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(false)
+})
