@@ -28,6 +28,11 @@ export function CabinetLayout() {
                 {t('cabinet.dashboard')}
               </Link>
             </Typography>
+            <Typography variant="t3">
+              <Link to="/schedule" className={styles.link}>
+                {t('cabinet.schedule')}
+              </Link>
+            </Typography>
             {roleCan(business.role, 'viewSettings') && (
               <Typography variant="t3">
                 <Link to="/settings" className={styles.link}>
