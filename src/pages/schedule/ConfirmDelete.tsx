@@ -33,7 +33,7 @@ export function ConfirmDelete({
         },
         {
           variant: 'solid',
-          colorScheme: 'black',
+          colorScheme: 'red',
           type: 'button',
           loading,
           children: t('common.delete'),
