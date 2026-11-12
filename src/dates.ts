@@ -79,3 +79,27 @@ export function startOfDayIn(date: string, timeZone: string) {
     throw error
   }
 }
+
+// Minutes after midnight on a business's clock as "HH:MM"; 1440 is the next
+// midnight, shown as 00:00.
+export const clockOfMinute = (minute: number): string => {
+  const m = ((minute % 1440) + 1440) % 1440
+  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+}
+
+// ISO weekday (1 = Monday … 7 = Sunday) as a short name. A weekday has no
+// time zone: 2024-01-01 is a Monday, formatted as UTC.
+export const weekdayLabel = (weekday: number, language: string): string =>
+  new Intl.DateTimeFormat(language, {
+    timeZone: 'UTC',
+    weekday: 'short',
+  }).format(new Date(Date.UTC(2024, 0, weekday)))
+
+// The native time field has no 24:00 (kit usage.md): an end typed at or
+// before the start means the next day. Equal stays as typed — a slip the
+// caller reports, not a 24-hour window.
+export const endFromInput = (start: number, typed: number): number =>
+  typed >= start ? typed : typed + 1440
+
+// The end of a window running into the next day, as the field shows it.
+export const endToInput = (end: number): number => end % 1440

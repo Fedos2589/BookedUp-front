@@ -46,7 +46,10 @@
     "emailTaken": "This email is already registered",
     "slugTaken": "This address is taken",
     "timeZone": "Pick a time zone from the list",
-    "dateRange": "Pick the first and the last day"
+    "dateRange": "Pick the first and the last day",
+    "weekdays": "Pick at least one day",
+    "capacity": "A whole number from 1 to 1000",
+    "endIsStart": "The end can't be the same as the start"
   },
   "common": {
     "loading": "Loading",
@@ -218,6 +221,33 @@
       "saveFailed": "Couldn't save the time off. Try again.",
       "zoneUnknown": "This browser doesn't know your business's time zone. Update the browser and try again.",
       "confirmDelete": "Delete this time off?"
+    },
+    "groups": {
+      "title": "Groups",
+      "empty": "No groups yet.",
+      "loadFailed": "Couldn't load the groups",
+      "more": "more",
+      "less": "less",
+      "delete": "Delete {{title}}",
+      "deleteShort": "Delete",
+      "deleteFailed": "Couldn't delete the group. Try again.",
+      "confirmDelete": "Delete this group?",
+      "seats_one": "up to {{count}} person",
+      "seats_other": "up to {{count}} people",
+      "add": "+ Group",
+      "addTitle": "New group",
+      "editTitle": "Change the group",
+      "edit": "Change {{title}}",
+      "editShort": "Change",
+      "name": "Name",
+      "description": "What to bring (optional)",
+      "descriptionHint": "Boots, water, a towel…",
+      "days": "Days",
+      "start": "Starts at",
+      "end": "Ends at",
+      "capacity": "Seats",
+      "conflict": "Overlaps another session: {{title}}",
+      "saveFailed": "Couldn't save the group. Try again."
     }
   }
 }

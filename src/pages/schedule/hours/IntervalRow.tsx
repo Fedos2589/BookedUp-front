@@ -3,14 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { IconButton } from 'ted-ui/IconButton/IconButton'
 import { TimePicker } from 'ted-ui/TimePicker'
 
+import { endFromInput, endToInput } from '@/dates'
 import styles from '@/pages/schedule/Schedule.module.scss'
-import {
-  endFromInput,
-  endToInput,
-  removeInterval,
-  setInterval,
-  setStart,
-} from './weekEdit'
+import { removeInterval, setInterval, setStart } from './weekEdit'
 import type { Interval, Week, WeekError } from './weekModel'
 
 export function IntervalRow({

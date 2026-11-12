@@ -1,3 +1,4 @@
+import { endFromInput, endToInput } from '@/dates'
 import {
   MINUTES_PER_DAY,
   type Day,
@@ -6,15 +7,6 @@ import {
 } from './weekModel'
 const DEFAULT_INTERVAL: Interval = { start: 540, end: 1080, title: null }
 const NEW_INTERVAL_LENGTH = 120
-
-// The native time field has no 24:00 (kit usage.md): an end typed at or
-// before the start means the next day. Equal stays as typed — a slip the model
-// reports, not a 24-hour window.
-export function endFromInput(start: number, typed: number): number {
-  return typed >= start ? typed : typed + MINUTES_PER_DAY
-}
-
-export const endToInput = (end: number): number => end % MINUTES_PER_DAY
 
 function changeDay(week: Week, index: number, change: (day: Day) => Day): Week {
   return {
