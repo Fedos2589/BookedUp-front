@@ -3,7 +3,7 @@ import type { StaffScheduleControllerReplaceWeeklyBodyWindowsItem as WindowDto }
 export type { WindowDto }
 
 const DEFAULT_SLOT = 30
-const MINUTES_PER_DAY = 1440
+export const MINUTES_PER_DAY = 1440
 const WEEK = 7 * MINUTES_PER_DAY
 
 // Minutes after midnight; `end` may pass 1440 for a window running into the

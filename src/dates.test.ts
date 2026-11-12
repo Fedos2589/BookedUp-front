@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { dateTimeIn, timeIn } from './dates'
+import { dateIn, dayLabel, dateTimeIn, timeIn } from './dates'
 
 test('the wall-clock time in a time zone, not the browser’s', () => {
   const now = new Date('2026-11-11T03:40:00Z')
@@ -34,4 +34,18 @@ test('a date and time in the business zone, in the app’s language', () => {
   expect(dateTimeIn(moment, 'Asia/Bangkok', 'en')).toBe('Nov 19, 03:30')
   expect(dateTimeIn(moment, 'Asia/Bangkok', 'ru')).toBe('19 нояб., 03:30')
   expect(dateTimeIn(moment, 'Mars/Olympus_Mons', 'en')).toBe(undefined)
+})
+
+test('dateIn is the calendar day on the business clock, not the browser', () => {
+  const moment = new Date('2026-11-12T20:30:00Z')
+  expect(dateIn(moment, 'Asia/Bangkok')).toBe('2026-11-13')
+  expect(dateIn(moment, 'America/New_York')).toBe('2026-11-12')
+})
+
+test('dateIn is undefined for a zone this browser does not know', () => {
+  expect(dateIn(new Date(), 'Mars/Olympus')).toBeUndefined()
+})
+
+test('a calendar day is worded in the app language without shifting by zone', () => {
+  expect(dayLabel('2026-11-13', 'en')).toBe('Fri, Nov 13')
 })

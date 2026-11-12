@@ -198,7 +198,8 @@
       "deleteShort": "Delete",
       "loadFailed": "Couldn't load the separate dates",
       "deleteFailed": "Couldn't delete the date. Try again.",
-      "saveFailed": "Couldn't save the date. Try again."
+      "saveFailed": "Couldn't save the date. Try again.",
+      "dateTaken": "This date is already in the list. Change it there."
     }
   }
 }

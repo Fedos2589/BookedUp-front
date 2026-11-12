@@ -313,3 +313,118 @@ test('separate dates: delete removes the date', async () => {
     ).toBe(true),
   )
 })
+
+test('weekly hours: moving the start of a night interval keeps it one, and the save goes through', async () => {
+  const night = {
+    ...monday,
+    weekday: 5,
+    startMinute: 1320,
+    durationMinutes: 180,
+  }
+  const { calls } = fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [night] }],
+    [`GET ${api(overridesRoute(vera.id))}`]: [200, []],
+    [`PUT ${api(weeklyRoute(vera.id))}`]: [200, { windows: [night] }],
+  })
+  renderApp('/schedule')
+
+  fireEvent.change(await screen.findByLabelText('Friday: from'), {
+    target: { value: '00:30' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  await waitFor(() =>
+    expect(calls.find((c) => c.route.startsWith('PUT'))?.body).toEqual({
+      windows: [{ ...night, startMinute: 30, durationMinutes: 30 }],
+    }),
+  )
+})
+
+test('weekly hours: a failed submit moves focus to the field with the error', async () => {
+  fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+    [`GET ${api(overridesRoute(vera.id))}`]: [200, []],
+  })
+  renderApp('/schedule')
+
+  fireEvent.change(await screen.findByLabelText('Monday: to'), {
+    target: { value: '09:00' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  // The first field of the interval, which both pickers are marked for.
+  await waitFor(() =>
+    expect(document.activeElement).toBe(screen.getByLabelText('Monday: from')),
+  )
+  expect(document.activeElement?.getAttribute('aria-invalid')).toBe('true')
+})
+
+test('separate dates: a refused past date is shown on the date field', async () => {
+  const { set } = withOverrides()
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: /^Change Fri/ }))
+  await screen.findByLabelText('Day: from')
+  set(`PUT ${api(`${overridesRoute(vera.id)}/${friday.date}`)}`, [
+    400,
+    { statusCode: 400, error: 'Bad Request', message: ['date: In the past'] },
+  ])
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  expect(await screen.findByText('This date is in the past')).toBeTruthy()
+
+  // Any other refusal is the generic one.
+  set(`PUT ${api(`${overridesRoute(vera.id)}/${friday.date}`)}`, [
+    400,
+    { statusCode: 400, error: 'Bad Request', message: ['windows: Too many'] },
+  ])
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  expect(await screen.findByText(/Couldn.t save the date/)).toBeTruthy()
+  expect(screen.queryByText('This date is in the past')).toBeNull()
+})
+
+test('separate dates: a list that fails to load can be retried', async () => {
+  const { set } = withOverrides()
+  set(`GET ${api(overridesRoute(vera.id))}`, [500])
+  renderApp('/schedule')
+
+  expect(
+    await screen.findByText(/Couldn.t load the separate dates/, undefined, {
+      timeout: 15000,
+    }),
+  ).toBeTruthy()
+  set(`GET ${api(overridesRoute(vera.id))}`, [200, [friday]])
+  fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
+  expect(await screen.findByText('10:00–14:00')).toBeTruthy()
+}, 20000)
+
+test('separate dates: adding a date that is already in the list is refused, not replaced', async () => {
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+  }).format(new Date())
+  const { calls } = fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+    [`GET ${api(overridesRoute(vera.id))}`]: [
+      200,
+      [{ ...friday, date: today }],
+    ],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Date' }))
+  const field = await screen.findByLabelText('Date')
+  fireEvent.keyDown(field, { key: 'Enter' })
+  const day = Number(today.slice(8))
+  fireEvent.click(
+    await screen.findByRole('button', { name: new RegExp(`^${day}\\b`) }),
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText(/already in the list/)).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('PUT'))).toBe(false)
+})

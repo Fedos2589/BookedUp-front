@@ -1,6 +1,3 @@
-import dayjs from 'dayjs'
-
-import '@/dates'
 import { endToInput } from './weekEdit'
 import { fromWindows, toWindows, type Week, type WindowDto } from './weekModel'
 
@@ -37,15 +34,3 @@ export function intervalsText(windows: readonly OverrideWindow[]) {
     )
     .join(', ')
 }
-
-export const todayIn = (timeZone: string, now = new Date()): string =>
-  dayjs(now).tz(timeZone).format('YYYY-MM-DD')
-
-// A calendar day has no time zone: format it as UTC so no zone shifts it.
-export const dayLabel = (date: string, language: string): string =>
-  new Intl.DateTimeFormat(language, {
-    timeZone: 'UTC',
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(`${date}T00:00:00Z`))

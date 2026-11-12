@@ -27,7 +27,11 @@ export function DayRow({
   const { t } = useTranslation()
   return (
     <fieldset className={styles.day}>
-      <legend className={styles.dayName}>{name}</legend>
+      <legend className={styles.dayName}>
+        <Typography variant="h6" component="span">
+          {name}
+        </Typography>
+      </legend>
       <Checkbox
         label={t('schedule.hours.working')}
         checked={day.working}

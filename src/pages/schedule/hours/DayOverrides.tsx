@@ -12,9 +12,10 @@ import {
   useStaffScheduleControllerRemoveDayOverride,
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
+import { dayLabel } from '@/dates'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { DayOverrideDialog } from './DayOverrideDialog'
-import { dayLabel, intervalsText } from './overrideModel'
+import { intervalsText } from './overrideModel'
 
 // «Separate dates»: a day that replaces its weekday whole — other hours, or a
 // day off. The back lists only today and later.
@@ -46,9 +47,18 @@ export function DayOverrides({ staffId }: { staffId: string }) {
         <Spinner size="medium" aria-label={t('common.loading')} />
       )}
       {list.isError && !list.data && (
-        <Typography variant="t4" color="red-300" role="alert">
-          {t('schedule.overrides.loadFailed')}
-        </Typography>
+        <div className={styles.failed}>
+          <Typography variant="t4" color="red-300" role="alert">
+            {t('schedule.overrides.loadFailed')}
+          </Typography>
+          <Button
+            variant="ghost"
+            colorScheme="black"
+            onClick={() => void list.refetch()}
+          >
+            {t('common.tryAgain')}
+          </Button>
+        </div>
       )}
       {list.data?.length === 0 && (
         <Typography variant="t4" component="p">
@@ -112,6 +122,7 @@ export function DayOverrides({ staffId }: { staffId: string }) {
         <DayOverrideDialog
           staffId={staffId}
           override={dialog === 'new' ? undefined : dialog}
+          takenDates={list.data?.map((o) => o.date) ?? []}
           onClose={() => setDialog(undefined)}
         />
       )}

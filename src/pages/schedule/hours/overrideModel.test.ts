@@ -1,11 +1,9 @@
 import { expect, test } from 'vitest'
 
 import {
-  dayLabel,
   intervalsText,
   overrideFromWeek,
   weekOfOverride,
-  todayIn,
 } from './overrideModel'
 import { setWorking } from './weekEdit'
 
@@ -37,14 +35,4 @@ test('intervals are written as clock times, a day without windows as null', () =
   )
   expect(intervalsText([win(0, 1440)])).toBe('00:00–00:00')
   expect(intervalsText([])).toBeNull()
-})
-
-test('today is the date on the business clock, not the browser', () => {
-  const moment = new Date('2026-11-12T20:30:00Z')
-  expect(todayIn('Asia/Bangkok', moment)).toBe('2026-11-13')
-  expect(todayIn('America/New_York', moment)).toBe('2026-11-12')
-})
-
-test('a date is worded in the app language without shifting by time zone', () => {
-  expect(dayLabel('2026-11-13', 'en')).toBe('Fri, Nov 13')
 })

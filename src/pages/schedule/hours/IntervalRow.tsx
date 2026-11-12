@@ -9,6 +9,7 @@ import {
   endToInput,
   removeInterval,
   setInterval,
+  setStart,
 } from './weekEdit'
 import type { Interval, Week, WeekError } from './weekModel'
 
@@ -38,7 +39,7 @@ export function IntervalRow({
         step={week.slotMinutes}
         error={error !== undefined}
         onChange={(start) =>
-          start !== null && onChange(setInterval(week, dayIndex, at, { start }))
+          start !== null && onChange(setStart(week, dayIndex, at, start))
         }
       />
       <TimePicker

@@ -1,16 +1,19 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActionBar } from 'ted-ui/ActionBar'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
-import { getStaffScheduleControllerWeeklyQueryKey } from '@/api/schedule/schedule'
-import { useStaffScheduleControllerReplaceWeekly } from '@/api/schedule/schedule'
+import {
+  getStaffScheduleControllerWeeklyQueryKey,
+  useStaffScheduleControllerReplaceWeekly,
+} from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { DayRow } from './DayRow'
+import { focusFirstInvalid } from './focusFirstInvalid'
 import { SlotStep } from './SlotStep'
 import {
   fromWindows,
@@ -38,6 +41,7 @@ export function WeekForm({
   const [week, setWeek] = useState(saved)
   const [tried, setTried] = useState(false)
   const save = useStaffScheduleControllerReplaceWeekly()
+  const formRef = useRef<HTMLFormElement>(null)
 
   const dirty = !same(week, saved)
   useUnsavedInput(dirty)
@@ -45,7 +49,7 @@ export function WeekForm({
 
   const submit = () => {
     setTried(true)
-    if (errors.length > 0) return
+    if (errors.length > 0) return focusFirstInvalid(formRef.current)
     save.mutate(
       { businessId, staffId, data: { windows: toWindows(week) } },
       {
@@ -70,6 +74,7 @@ export function WeekForm({
 
   return (
     <form
+      ref={formRef}
       className={styles.hours}
       noValidate
       onSubmit={(e) => {
@@ -80,21 +85,24 @@ export function WeekForm({
       <Typography variant="h5" component="h2">
         {t('schedule.hours.title')}
       </Typography>
-      {week.days.map((day, index) => (
-        <DayRow
-          key={index}
-          index={index}
-          name={t(`schedule.weekday.${WEEKDAYS[index]}`)}
-          day={day}
-          errors={tried ? errors.filter((e) => e.weekday === index + 1) : []}
-          onChange={setWeek}
-          week={week}
+      {/* Typed while the request runs would be wiped by its answer. */}
+      <fieldset disabled={save.isPending} className={styles.group}>
+        {week.days.map((day, index) => (
+          <DayRow
+            key={index}
+            index={index}
+            name={t(`schedule.weekday.${WEEKDAYS[index]}`)}
+            day={day}
+            errors={tried ? errors.filter((e) => e.weekday === index + 1) : []}
+            onChange={setWeek}
+            week={week}
+          />
+        ))}
+        <SlotStep
+          value={week.slotMinutes}
+          onChange={(slotMinutes) => setWeek({ ...week, slotMinutes })}
         />
-      ))}
-      <SlotStep
-        value={week.slotMinutes}
-        onChange={(slotMinutes) => setWeek({ ...week, slotMinutes })}
-      />
+      </fieldset>
       {save.isError && (
         <Typography variant="t4" color="red-300" role="alert">
           {t('schedule.hours.saveFailed')}

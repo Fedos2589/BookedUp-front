@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TagSelect } from 'ted-ui/TagSelect'
 import { Typography } from 'ted-ui/Typography'
@@ -14,17 +15,18 @@ export function SlotStep({
   onChange: (minutes: number) => void
 }) {
   const { t } = useTranslation()
+  const labelId = useId()
   const steps = STEPS.includes(value)
     ? STEPS
     : [...STEPS, value].sort((a, b) => a - b)
   return (
     <div>
-      <Typography variant="t4" component="p" id="slot-step">
+      <Typography variant="t4" component="p" id={labelId}>
         {t('schedule.hours.slotStep')}
       </Typography>
       <TagSelect
         multiple={false}
-        aria-labelledby="slot-step"
+        aria-labelledby={labelId}
         options={steps.map((step) => ({
           value: step,
           label: t('schedule.hours.minutes', { count: step }),
