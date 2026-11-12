@@ -49,7 +49,9 @@
   },
   "common": {
     "loading": "Loading",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "settings": {
     "title": "Business settings",
@@ -151,6 +153,34 @@
       "HOURS": "One-to-one",
       "GROUPS": "Groups",
       "failed": "Couldn't change the type. Try again."
+    },
+    "hours": {
+      "title": "Weekly hours",
+      "working": "Working",
+      "workingOn": "{{day}}: working",
+      "from": "{{day}}: from",
+      "to": "{{day}}: to",
+      "addInterval": "+ Interval",
+      "removeInterval": "{{day}}: remove interval",
+      "slotStep": "Booking step",
+      "minutes": "{{count}} min",
+      "loadFailed": "Couldn't load the weekly hours",
+      "saveFailed": "Couldn't save the hours. Try again.",
+      "error": {
+        "empty": "Add an interval or mark the day off",
+        "endBeforeStart": "The end must be after the start",
+        "overlap": "Overlaps another interval",
+        "slotTooLong": "The booking step is longer than the interval"
+      }
+    },
+    "weekday": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
     }
   }
 }

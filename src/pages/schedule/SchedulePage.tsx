@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Spinner } from 'ted-ui/Spinner/Spinner'
@@ -13,6 +13,7 @@ import { editableStaff } from './editableStaff'
 import { ModeSwitch } from './ModeSwitch'
 import styles from './Schedule.module.scss'
 import { StaffPicker } from './StaffPicker'
+import { WeeklyHours } from '@/pages/schedule/hours/WeeklyHours'
 
 // A master's schedule: someone sees their own, whoever manages others also
 // picks among them (editableStaff). Under the mode switch goes the mode's
@@ -82,7 +83,12 @@ export function SchedulePage() {
               onChange={(s) => setPickedId(s.id)}
             />
           )}
-          <ModeSwitch key={current.id} staff={current} />
+          <Fragment key={current.id}>
+            <ModeSwitch staff={current} />
+            {current.scheduleMode === 'HOURS' && (
+              <WeeklyHours staffId={current.id} />
+            )}
+          </Fragment>
         </>
       )}
     </main>

@@ -109,6 +109,8 @@ test('a failed mode change does not follow to another master', async () => {
     [`GET ${api('/members')}`]: [200, members],
     [`GET ${api('/staff')}`]: [200, [vera, petr]],
     [`PUT ${api(`/staff/${vera.id}/schedule-mode`)}`]: [500],
+    [`GET ${api(`/staff/${vera.id}/weekly-windows`)}`]: [200, { windows: [] }],
+    [`GET ${api(`/staff/${petr.id}/weekly-windows`)}`]: [200, { windows: [] }],
   })
   renderApp('/schedule')
   await screen.findByRole('combobox', { name: 'Master' })
@@ -126,6 +128,7 @@ test('a list that fails to reload keeps the page and the saved mode', async () =
   const { set, calls } = fakeApi({
     'GET /api/me': [200, asMaster],
     [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(`/staff/${vera.id}/weekly-windows`)}`]: [200, { windows: [] }],
     [`PUT ${api(`/staff/${vera.id}/schedule-mode`)}`]: () => {
       set(`GET ${api('/staff')}`, [500])
       return [200, { mode: 'GROUPS' }]
@@ -143,4 +146,72 @@ test('a list that fails to reload keeps the page and the saved mode', async () =
     screen.getByRole('tab', { name: 'Groups' }).getAttribute('aria-selected'),
   ).toBe('true')
   expect(screen.queryByText(/Couldn.t load the schedule/)).toBeNull()
+})
+
+const weeklyRoute = (id: string) => `/staff/${id}/weekly-windows`
+const monday = {
+  weekday: 1,
+  startMinute: 540,
+  durationMinutes: 480,
+  slotMinutes: 30,
+  title: null,
+}
+
+test('weekly hours: change a day, save, and the saved week replaces the form', async () => {
+  const { calls } = fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+    [`PUT ${api(weeklyRoute(vera.id))}`]: [
+      200,
+      { windows: [{ ...monday, startMinute: 600, durationMinutes: 420 }] },
+    ],
+  })
+  renderApp('/schedule')
+
+  const from = await screen.findByLabelText('Monday: from')
+  expect((from as HTMLInputElement).value).toBe('09:00')
+  const save = screen.getByRole('button', { name: 'Save' })
+  expect((save as HTMLButtonElement).disabled).toBe(true)
+
+  fireEvent.change(from, { target: { value: '10:00' } })
+  fireEvent.click(save)
+
+  await waitFor(() =>
+    expect(calls.find((c) => c.route.startsWith('PUT'))?.body).toEqual({
+      windows: [{ ...monday, startMinute: 600, durationMinutes: 420 }],
+    }),
+  )
+  await waitFor(() =>
+    expect(
+      (screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true),
+  )
+})
+
+test('weekly hours: an end at 00:00 is saved as midnight, and a bad interval blocks the save', async () => {
+  const { calls } = fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+    [`PUT ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+  })
+  renderApp('/schedule')
+
+  const to = await screen.findByLabelText('Monday: to')
+  fireEvent.change(to, { target: { value: '09:00' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  expect(
+    await screen.findByText('The end must be after the start'),
+  ).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('PUT'))).toBe(false)
+
+  fireEvent.change(to, { target: { value: '00:00' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await waitFor(() =>
+    expect(calls.find((c) => c.route.startsWith('PUT'))?.body).toEqual({
+      windows: [{ ...monday, durationMinutes: 900 }],
+    }),
+  )
 })
