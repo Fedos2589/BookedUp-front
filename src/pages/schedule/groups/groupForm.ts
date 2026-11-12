@@ -10,7 +10,7 @@ export const TITLE_MAX = 100
 export const DESCRIPTION_MAX = 2000
 const CAPACITY_MAX = 1000
 
-const minute = z
+export const minute = z
   .number()
   .nullable()
   .refine((m): boolean => m !== null, 'validation.required')
@@ -18,30 +18,44 @@ const minute = z
 // The back's rules for a group. The times are clock times in the form: the
 // body carries the start and the length; an end before the start is the next
 // day (the field has no 24:00). Seats are typed, so they are text.
+// What a group and a one-off session have in common.
+export const sessionFields = {
+  title: z
+    .string()
+    .trim()
+    .min(1, 'validation.required')
+    .max(TITLE_MAX, 'validation.tooLong'),
+  description: z.string().trim().max(DESCRIPTION_MAX, 'validation.tooLong'),
+  startMinute: minute,
+  endMinute: minute,
+  capacity: z
+    .string()
+    .trim()
+    .refine(
+      (s) => /^\d+$/.test(s) && Number(s) >= 1 && Number(s) <= CAPACITY_MAX,
+      'validation.capacity',
+    ),
+}
+
+export const endIsNotStart = ({
+  startMinute,
+  endMinute,
+}: {
+  startMinute: number | null
+  endMinute: number | null
+}) => startMinute === null || endMinute === null || endMinute !== startMinute
+
+export const endIsStart = {
+  path: ['endMinute'],
+  message: 'validation.endIsStart',
+}
+
 export const groupSchema = z
   .object({
-    title: z
-      .string()
-      .trim()
-      .min(1, 'validation.required')
-      .max(TITLE_MAX, 'validation.tooLong'),
-    description: z.string().trim().max(DESCRIPTION_MAX, 'validation.tooLong'),
+    ...sessionFields,
     weekdays: z.array(z.number()).min(1, 'validation.weekdays'),
-    startMinute: minute,
-    endMinute: minute,
-    capacity: z
-      .string()
-      .trim()
-      .refine(
-        (s) => /^\d+$/.test(s) && Number(s) >= 1 && Number(s) <= CAPACITY_MAX,
-        'validation.capacity',
-      ),
   })
-  .refine(
-    ({ startMinute, endMinute }) =>
-      startMinute === null || endMinute === null || endMinute !== startMinute,
-    { path: ['endMinute'], message: 'validation.endIsStart' },
-  )
+  .refine(endIsNotStart, endIsStart)
 
 export type GroupForm = z.infer<typeof groupSchema>
 

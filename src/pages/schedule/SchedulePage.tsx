@@ -14,6 +14,7 @@ import { ModeSwitch } from './ModeSwitch'
 import styles from './Schedule.module.scss'
 import { StaffPicker } from './StaffPicker'
 import { Groups } from '@/pages/schedule/groups/Groups'
+import { OneOffSessions } from '@/pages/schedule/groups/OneOffSessions'
 import { DayOverrides } from '@/pages/schedule/hours/DayOverrides'
 import { WeeklyHours } from '@/pages/schedule/hours/WeeklyHours'
 import { TimeOff } from '@/pages/schedule/timeOff/TimeOff'
@@ -95,7 +96,10 @@ export function SchedulePage() {
               </>
             )}
             {current.scheduleMode === 'GROUPS' && (
-              <Groups staffId={current.id} />
+              <>
+                <Groups staffId={current.id} />
+                <OneOffSessions staffId={current.id} />
+              </>
             )}
             <TimeOff staffId={current.id} />
           </Fragment>

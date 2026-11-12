@@ -261,6 +261,19 @@
       "restoreShort": "Restore",
       "restoreBlocked": "Can't restore: One-off session «{{title}}» is at that time. Delete it first.",
       "restoreFailed": "Couldn't restore the session. Try again."
+    },
+    "sessions": {
+      "title": "One-off sessions",
+      "empty": "No coming one-off sessions.",
+      "loadFailed": "Couldn't load the one-off sessions",
+      "add": "+ One-off session",
+      "addTitle": "New one-off session",
+      "date": "Date",
+      "delete": "Delete {{title}}",
+      "confirmDelete": "Delete this one-off session?",
+      "deleteFailed": "Couldn't delete the session. Try again.",
+      "saveFailed": "Couldn't save the session. Try again.",
+      "zoneUnknown": "This browser doesn't know your business's time zone. Update the browser and try again."
     }
   }
 }
