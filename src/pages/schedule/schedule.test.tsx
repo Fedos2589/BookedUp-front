@@ -215,3 +215,101 @@ test('weekly hours: an end at 00:00 is saved as midnight, and a bad interval blo
     }),
   )
 })
+
+const overridesRoute = (id: string) => `/staff/${id}/day-overrides`
+const friday = {
+  date: '2099-05-15',
+  windows: [{ startMinute: 600, durationMinutes: 240, slotMinutes: 30 }],
+}
+const holiday = { date: '2099-05-16', windows: [] }
+
+function withOverrides(extra: Parameters<typeof fakeApi>[0] = {}) {
+  return fakeApi({
+    ...extra,
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+    [`GET ${api(overridesRoute(vera.id))}`]: [200, [friday, holiday]],
+  })
+}
+
+test('separate dates: listed with their hours or as a day off', async () => {
+  withOverrides()
+  renderApp('/schedule')
+
+  expect(await screen.findByText('10:00–14:00')).toBeTruthy()
+  expect(screen.getByText('Day off')).toBeTruthy()
+})
+
+test('separate dates: a changed date is saved with its windows and the list reloads', async () => {
+  const { calls, set } = withOverrides()
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: /^Change Fri/ }))
+  const from = await screen.findByLabelText('Day: from')
+  fireEvent.change(from, { target: { value: '11:00' } })
+  set(`PUT ${api(`${overridesRoute(vera.id)}/${friday.date}`)}`, [
+    200,
+    {
+      ...friday,
+      windows: [
+        { ...friday.windows[0], startMinute: 660, durationMinutes: 180 },
+      ],
+    },
+  ])
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  await waitFor(() =>
+    expect(
+      calls.find(
+        (c) =>
+          c.route === `PUT ${api(`${overridesRoute(vera.id)}/${friday.date}`)}`,
+      )?.body,
+    ).toEqual({
+      windows: [{ startMinute: 660, durationMinutes: 180, slotMinutes: 30 }],
+    }),
+  )
+  await waitFor(() => expect(screen.queryByLabelText('Day: from')).toBeNull())
+})
+
+test('separate dates: a day off is saved without windows', async () => {
+  const { calls, set } = withOverrides()
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: /^Change Fri/ }))
+  const day = await screen.findByRole('group', { name: 'Day' })
+  // base-ui toggles through its hidden input.
+  fireEvent.click(day.querySelector('input[type="checkbox"]')!)
+  set(`PUT ${api(`${overridesRoute(vera.id)}/${friday.date}`)}`, [
+    200,
+    { date: friday.date, windows: [] },
+  ])
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  await waitFor(() =>
+    expect(
+      calls.find(
+        (c) => c.route.startsWith('PUT') && c.route.includes('day-overrides'),
+      )?.body,
+    ).toEqual({ windows: [] }),
+  )
+})
+
+test('separate dates: delete removes the date', async () => {
+  const { calls } = withOverrides({
+    [`DELETE ${api(`${overridesRoute(vera.id)}/${friday.date}`)}`]: [204],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: /^Delete Fri/ }))
+
+  await waitFor(() =>
+    expect(
+      calls.some(
+        (c) =>
+          c.route ===
+          `DELETE ${api(`${overridesRoute(vera.id)}/${friday.date}`)}`,
+      ),
+    ).toBe(true),
+  )
+})

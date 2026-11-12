@@ -157,7 +157,6 @@
     "hours": {
       "title": "Weekly hours",
       "working": "Working",
-      "workingOn": "{{day}}: working",
       "from": "{{day}}: from",
       "to": "{{day}}: to",
       "addInterval": "+ Interval",
@@ -181,6 +180,25 @@
       "fri": "Friday",
       "sat": "Saturday",
       "sun": "Sunday"
+    },
+    "overrides": {
+      "title": "Separate dates",
+      "empty": "No separate dates. Add one to change a single day.",
+      "dayOff": "Day off",
+      "add": "+ Date",
+      "addTitle": "Add a date",
+      "editTitle": "Change a date",
+      "date": "Date",
+      "day": "Day",
+      "dateRequired": "Pick a date",
+      "pastDate": "This date is in the past",
+      "edit": "Change {{date}}",
+      "editShort": "Change",
+      "delete": "Delete {{date}}",
+      "deleteShort": "Delete",
+      "loadFailed": "Couldn't load the separate dates",
+      "deleteFailed": "Couldn't delete the date. Try again.",
+      "saveFailed": "Couldn't save the date. Try again."
     }
   }
 }

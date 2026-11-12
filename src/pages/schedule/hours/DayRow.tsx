@@ -8,30 +8,28 @@ import { IntervalRow } from './IntervalRow'
 import { addInterval, setWorking } from './weekEdit'
 import type { Day, Week, WeekError } from './weekModel'
 
-const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
-
 // One weekday: «I work» and, when on, its intervals.
 export function DayRow({
   index,
+  name,
   day,
   week,
   errors,
   onChange,
 }: {
   index: number
+  name: string
   day: Day
   week: Week
   errors: WeekError[]
   onChange: (week: Week) => void
 }) {
   const { t } = useTranslation()
-  const name = t(`schedule.weekday.${WEEKDAYS[index]}`)
   return (
     <fieldset className={styles.day}>
       <legend className={styles.dayName}>{name}</legend>
       <Checkbox
         label={t('schedule.hours.working')}
-        aria-label={t('schedule.hours.workingOn', { day: name })}
         checked={day.working}
         onCheckedChange={(working) =>
           onChange(setWorking(week, index, working))

@@ -13,6 +13,7 @@ import { editableStaff } from './editableStaff'
 import { ModeSwitch } from './ModeSwitch'
 import styles from './Schedule.module.scss'
 import { StaffPicker } from './StaffPicker'
+import { DayOverrides } from '@/pages/schedule/hours/DayOverrides'
 import { WeeklyHours } from '@/pages/schedule/hours/WeeklyHours'
 
 // A master's schedule: someone sees their own, whoever manages others also
@@ -86,7 +87,10 @@ export function SchedulePage() {
           <Fragment key={current.id}>
             <ModeSwitch staff={current} />
             {current.scheduleMode === 'HOURS' && (
-              <WeeklyHours staffId={current.id} />
+              <>
+                <WeeklyHours staffId={current.id} />
+                <DayOverrides staffId={current.id} />
+              </>
             )}
           </Fragment>
         </>

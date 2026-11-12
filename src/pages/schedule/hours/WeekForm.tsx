@@ -20,6 +20,8 @@ import {
   type WindowDto,
 } from './weekModel'
 
+const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
+
 const same = (a: Week, b: Week) => JSON.stringify(a) === JSON.stringify(b)
 
 export function WeekForm({
@@ -82,6 +84,7 @@ export function WeekForm({
         <DayRow
           key={index}
           index={index}
+          name={t(`schedule.weekday.${WEEKDAYS[index]}`)}
           day={day}
           errors={tried ? errors.filter((e) => e.weekday === index + 1) : []}
           onChange={setWeek}
