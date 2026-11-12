@@ -79,3 +79,18 @@ export function startOfDayIn(date: string, timeZone: string) {
     throw error
   }
 }
+
+// Minutes after midnight on a business's clock as "HH:MM"; 1440 is the next
+// midnight, shown as 00:00.
+export const clockOfMinute = (minute: number): string => {
+  const m = ((minute % 1440) + 1440) % 1440
+  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+}
+
+// ISO weekday (1 = Monday … 7 = Sunday) as a short name. A weekday has no
+// time zone: 2024-01-01 is a Monday, formatted as UTC.
+export const weekdayLabel = (weekday: number, language: string): string =>
+  new Intl.DateTimeFormat(language, {
+    timeZone: 'UTC',
+    weekday: 'short',
+  }).format(new Date(Date.UTC(2024, 0, weekday)))

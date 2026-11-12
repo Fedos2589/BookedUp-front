@@ -1,6 +1,13 @@
 import { expect, test } from 'vitest'
 
-import { dateIn, dayLabel, dateTimeIn, timeIn } from './dates'
+import {
+  clockOfMinute,
+  dateIn,
+  dayLabel,
+  dateTimeIn,
+  timeIn,
+  weekdayLabel,
+} from './dates'
 
 test('the wall-clock time in a time zone, not the browser’s', () => {
   const now = new Date('2026-11-11T03:40:00Z')
@@ -48,4 +55,17 @@ test('dateIn is undefined for a zone this browser does not know', () => {
 
 test('a calendar day is worded in the app language without shifting by zone', () => {
   expect(dayLabel('2026-11-13', 'en')).toBe('Fri, Nov 13')
+})
+
+test('clockOfMinute: minutes after midnight as HH:MM, the next midnight as 00:00', () => {
+  expect(clockOfMinute(0)).toBe('00:00')
+  expect(clockOfMinute(15 * 60 + 5)).toBe('15:05')
+  expect(clockOfMinute(1440)).toBe('00:00')
+  expect(clockOfMinute(1440 + 60)).toBe('01:00')
+})
+
+test('weekdayLabel: ISO weekday 1 is Monday, 7 is Sunday', () => {
+  expect(weekdayLabel(1, 'en')).toBe('Mon')
+  expect(weekdayLabel(7, 'en')).toBe('Sun')
+  expect(weekdayLabel(2, 'ru')).toBe('вт')
 })

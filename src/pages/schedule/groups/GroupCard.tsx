@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
 import type { GroupsControllerList200Item } from '@/api/generated.schemas'
 import styles from '@/pages/schedule/Schedule.module.scss'
-import { collapsed, whenText } from './groupText'
+import { whenText } from './groupText'
 
 export function GroupCard({
   group,
@@ -16,7 +16,20 @@ export function GroupCard({
 }) {
   const { t, i18n } = useTranslation()
   const [open, setOpen] = useState(false)
-  const description = group.description ? collapsed(group.description) : null
+  const text = useRef<HTMLElement>(null)
+  // Whether the description is cut by the 3-line clamp, measured on screen: a
+  // long paragraph without line breaks wraps too.
+  const [cut, setCut] = useState(false)
+  useLayoutEffect(() => {
+    const el = text.current
+    if (!el || open) return
+    const measure = () => setCut(el.scrollHeight > el.clientHeight)
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [group.description, open])
 
   return (
     <li className={styles.groupCard}>
@@ -27,12 +40,17 @@ export function GroupCard({
         {whenText(group, i18n.language)} ·{' '}
         {t('schedule.groups.seats', { count: group.capacity })}
       </Typography>
-      {description && (
+      {group.description && (
         <>
-          <Typography variant="t4" component="p" className={styles.pre}>
-            {open ? group.description : description.text}
+          <Typography
+            ref={text}
+            variant="t4"
+            component="p"
+            className={open ? styles.pre : `${styles.pre} ${styles.clamped}`}
+          >
+            {group.description}
           </Typography>
-          {description.hasMore && (
+          {(cut || open) && (
             <Button
               type="button"
               variant="ghost"
