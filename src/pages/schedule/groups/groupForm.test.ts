@@ -39,6 +39,31 @@ describe('toBody', () => {
   })
 })
 
+describe('a group that runs into the next day', () => {
+  it('has an end before the start in the form and a length over midnight in the body', () => {
+    const group = {
+      id: 'g',
+      title: 'Night run',
+      description: null,
+      weekdays: [6],
+      startMinute: 23 * 60,
+      durationMinutes: 90,
+      capacity: 10,
+      cancellations: [],
+    }
+    const form = fromGroup(group)
+    expect(form.endMinute).toBe(30)
+    expect(toBody(groupSchema.parse(form)).durationMinutes).toBe(90)
+  })
+
+  it('an end at 00:00 is midnight', () => {
+    const body = toBody(
+      groupSchema.parse({ ...valid, startMinute: 22 * 60, endMinute: 0 }),
+    )
+    expect(body.durationMinutes).toBe(120)
+  })
+})
+
 describe('fromGroup', () => {
   it('is the form of a saved group, and back', () => {
     const group = {
@@ -105,13 +130,11 @@ describe("groupSchema (the back's rules)", () => {
     )
   })
 
-  it('wants the end after the start', () => {
+  it('an end equal to the start is refused; an end before it is the next day', () => {
     expect(errorsOf({ ...valid, endMinute: 15 * 60 }).endMinute).toBe(
-      'validation.endAfterStart',
+      'validation.endIsStart',
     )
-    expect(errorsOf({ ...valid, endMinute: 14 * 60 }).endMinute).toBe(
-      'validation.endAfterStart',
-    )
+    expect(errorsOf({ ...valid, endMinute: 14 * 60 })).toEqual({})
   })
 
   it('wants whole seats from 1 to 1000', () => {

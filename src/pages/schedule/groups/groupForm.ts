@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { endFromInput, endToInput } from '@/dates'
 import type {
   GroupsControllerAddBody,
   GroupsControllerList200Item,
@@ -15,7 +16,8 @@ const minute = z
   .refine((m): boolean => m !== null, 'validation.required')
 
 // The back's rules for a group. The times are clock times in the form: the
-// body carries the start and the length. Seats are typed, so they are text.
+// body carries the start and the length; an end before the start is the next
+// day (the field has no 24:00). Seats are typed, so they are text.
 export const groupSchema = z
   .object({
     title: z
@@ -37,8 +39,8 @@ export const groupSchema = z
   })
   .refine(
     ({ startMinute, endMinute }) =>
-      startMinute === null || endMinute === null || endMinute > startMinute,
-    { path: ['endMinute'], message: 'validation.endAfterStart' },
+      startMinute === null || endMinute === null || endMinute !== startMinute,
+    { path: ['endMinute'], message: 'validation.endIsStart' },
   )
 
 export type GroupForm = z.infer<typeof groupSchema>
@@ -57,11 +59,11 @@ export const fromGroup = (group: GroupsControllerList200Item): GroupForm => ({
   description: group.description ?? '',
   weekdays: group.weekdays,
   startMinute: group.startMinute,
-  endMinute: group.startMinute + group.durationMinutes,
+  endMinute: endToInput(group.startMinute + group.durationMinutes),
   capacity: String(group.capacity),
 })
 
-// Takes a form the schema has accepted: the times are there and in order.
+// Takes a form the schema has accepted: both times are there and differ.
 export function toBody(form: GroupForm): GroupsControllerAddBody {
   const start = form.startMinute ?? 0
   return {
@@ -69,7 +71,7 @@ export function toBody(form: GroupForm): GroupsControllerAddBody {
     description: form.description || null,
     weekdays: [...form.weekdays].sort((a, b) => a - b),
     startMinute: start,
-    durationMinutes: (form.endMinute ?? start) - start,
+    durationMinutes: endFromInput(start, form.endMinute ?? start) - start,
     capacity: Number(form.capacity),
   }
 }

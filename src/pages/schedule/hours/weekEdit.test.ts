@@ -2,8 +2,6 @@ import { expect, test } from 'vitest'
 
 import {
   addInterval,
-  endFromInput,
-  endToInput,
   removeInterval,
   setInterval,
   setStart,
@@ -21,20 +19,6 @@ const week = () =>
       title: null,
     },
   ])
-
-test('an end at or before the start is the next day, as the native field has no 24:00', () => {
-  expect(endFromInput(540, 1080)).toBe(1080)
-  expect(endFromInput(540, 0)).toBe(1440)
-  expect(endFromInput(1320, 120)).toBe(1560)
-  // Equal is the user's slip, not a 24-hour window: the model reports it.
-  expect(endFromInput(540, 540)).toBe(540)
-})
-
-test('the field shows the end of a window running into the next day on the clock', () => {
-  expect(endToInput(1440)).toBe(0)
-  expect(endToInput(1560)).toBe(120)
-  expect(endToInput(1080)).toBe(1080)
-})
 
 test('turning a day on gives it a working interval, turning it off keeps the intervals', () => {
   const on = setWorking(week(), 0, true)

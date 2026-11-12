@@ -67,7 +67,10 @@ export function Groups({ staffId }: { staffId: string }) {
           <GroupCard
             key={group.id}
             group={group}
-            onEdit={() => setEditing(group)}
+            onEdit={() => {
+              remove.reset()
+              setEditing(group)
+            }}
             onDelete={() => {
               remove.reset()
               setRemoving({ id: group.id, title: group.title })

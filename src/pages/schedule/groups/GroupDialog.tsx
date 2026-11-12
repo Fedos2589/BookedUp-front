@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { useId, useRef } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useForm, type SubmitErrorHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Input, Textarea } from 'ted-ui/Input'
 import { Modal } from 'ted-ui/Modal'
@@ -10,7 +10,10 @@ import { TimePicker } from 'ted-ui/TimePicker'
 import { Typography } from 'ted-ui/Typography'
 
 import { ApiError } from '@/apiFetch'
-import type { GroupsControllerList200Item } from '@/api/generated.schemas'
+import type {
+  GroupsControllerAdd409,
+  GroupsControllerList200Item,
+} from '@/api/generated.schemas'
 import {
   getGroupsControllerListQueryKey,
   useGroupsControllerAdd,
@@ -37,8 +40,8 @@ const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7]
 // The title of what a 409 says the group collides with, if it says.
 function conflictTitle(error: unknown) {
   if (!(error instanceof ApiError) || error.status !== 409) return undefined
-  const body = error.body as { conflictsWith?: { title?: string } } | undefined
-  return body?.conflictsWith?.title ?? ''
+  return (error.body as GroupsControllerAdd409 | undefined)?.conflictsWith
+    ?.title
 }
 
 // Creates a group, or changes `group`.
@@ -56,6 +59,7 @@ export function GroupDialog({
   const queryClient = useQueryClient()
   const formId = useId()
   const daysId = useId()
+  const daysRef = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const form = useForm<GroupForm>({
     resolver: zodResolver(groupSchema),
@@ -85,6 +89,13 @@ export function GroupDialog({
       add.mutate({ businessId, staffId, data }, done)
     }
   }
+
+  // The days are tags, not a field with aria-invalid: when they are the first
+  // thing wrong, focus goes to them by hand.
+  const onInvalid: SubmitErrorHandler<GroupForm> = (errs) =>
+    errs.weekdays && !errs.title && !errs.description
+      ? daysRef.current?.querySelector('button')?.focus()
+      : focusFirstInvalid(formRef.current)
 
   const conflict = conflictTitle(save.error)
 
@@ -118,11 +129,7 @@ export function GroupDialog({
         ref={formRef}
         className={styles.hours}
         noValidate
-        onSubmit={(e) =>
-          void form.handleSubmit(submit, () =>
-            focusFirstInvalid(formRef.current),
-          )(e)
-        }
+        onSubmit={(e) => void form.handleSubmit(submit, onInvalid)(e)}
       >
         <Input
           label={t('schedule.groups.name')}
@@ -143,7 +150,7 @@ export function GroupDialog({
           control={form.control}
           name="weekdays"
           render={({ field, fieldState }) => (
-            <div className={styles.day}>
+            <div className={styles.day} ref={daysRef}>
               <Typography variant="t4" component="p" id={daysId}>
                 {t('schedule.groups.days')}
               </Typography>

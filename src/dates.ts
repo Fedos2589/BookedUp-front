@@ -94,3 +94,12 @@ export const weekdayLabel = (weekday: number, language: string): string =>
     timeZone: 'UTC',
     weekday: 'short',
   }).format(new Date(Date.UTC(2024, 0, weekday)))
+
+// The native time field has no 24:00 (kit usage.md): an end typed at or
+// before the start means the next day. Equal stays as typed — a slip the
+// caller reports, not a 24-hour window.
+export const endFromInput = (start: number, typed: number): number =>
+  typed >= start ? typed : typed + 1440
+
+// The end of a window running into the next day, as the field shows it.
+export const endToInput = (end: number): number => end % 1440

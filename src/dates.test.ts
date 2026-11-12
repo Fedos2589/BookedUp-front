@@ -5,6 +5,8 @@ import {
   dateIn,
   dayLabel,
   dateTimeIn,
+  endFromInput,
+  endToInput,
   timeIn,
   weekdayLabel,
 } from './dates'
@@ -68,4 +70,18 @@ test('weekdayLabel: ISO weekday 1 is Monday, 7 is Sunday', () => {
   expect(weekdayLabel(1, 'en')).toBe('Mon')
   expect(weekdayLabel(7, 'en')).toBe('Sun')
   expect(weekdayLabel(2, 'ru')).toBe('вт')
+})
+
+test('an end at or before the start is the next day, as the native field has no 24:00', () => {
+  expect(endFromInput(540, 1080)).toBe(1080)
+  expect(endFromInput(540, 0)).toBe(1440)
+  expect(endFromInput(1320, 120)).toBe(1560)
+  // Equal is the user's slip, not a 24-hour window: the model reports it.
+  expect(endFromInput(540, 540)).toBe(540)
+})
+
+test('the field shows the end of a window running into the next day on the clock', () => {
+  expect(endToInput(1440)).toBe(0)
+  expect(endToInput(1560)).toBe(120)
+  expect(endToInput(1080)).toBe(1080)
 })

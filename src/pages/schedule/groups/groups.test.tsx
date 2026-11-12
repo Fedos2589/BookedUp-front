@@ -234,3 +234,76 @@ test('groups: a clash with another session names it and keeps the dialog', async
   ).toBeTruthy()
   expect(screen.getByLabelText('Name')).toBeTruthy()
 })
+
+test('groups: a group over midnight is edited with its end on the clock', async () => {
+  const night = { ...football, startMinute: 23 * 60, durationMinutes: 90 }
+  const { calls } = withGroups({
+    [`GET ${api(groupsRoute)}`]: [200, [night]],
+    [`PUT ${api(`${groupsRoute}/${football.id}`)}`]: [200, night],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Change Football, kids 7–10' }),
+  )
+  expect(
+    ((await screen.findByLabelText('Ends at')) as HTMLInputElement).value,
+  ).toBe('00:30')
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  await waitFor(() =>
+    expect(calls.find((c) => c.route.startsWith('PUT'))?.body).toMatchObject({
+      startMinute: 1380,
+      durationMinutes: 90,
+    }),
+  )
+})
+
+test('groups: with only the days missing, focus goes to the days', async () => {
+  withGroups()
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Group' }))
+  fireEvent.change(await screen.findByLabelText('Name'), {
+    target: { value: 'Chess' },
+  })
+  sendTime('Starts at', '10:00')
+  sendTime('Ends at', '10:45')
+  fireEvent.change(screen.getByLabelText('Seats'), { target: { value: '3' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText('Pick at least one day')).toBeTruthy()
+  expect(document.activeElement).toBe(
+    screen.getByRole('button', { name: 'Mon' }),
+  )
+})
+
+test('groups: a refused delete is forgotten when another group is opened for change', async () => {
+  withGroups({
+    [`DELETE ${api(`${groupsRoute}/${football.id}`)}`]: [500],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Delete Football, kids 7–10' }),
+  )
+  fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
+  expect(await screen.findByText(/Couldn't delete the group/)).toBeTruthy()
+
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Change Football, kids 7–10' }),
+  )
+  await screen.findByLabelText('Name')
+  expect(screen.queryByText(/Couldn't delete the group/)).toBeNull()
+})
+
+test('groups: a 409 without a name for the clash gets the general message', async () => {
+  withGroups({ [`POST ${api(groupsRoute)}`]: [409, { statusCode: 409 }] })
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Group' }))
+  await fillGroup()
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText(/Couldn't save the group/)).toBeTruthy()
+})

@@ -48,8 +48,8 @@
     "timeZone": "Pick a time zone from the list",
     "dateRange": "Pick the first and the last day",
     "weekdays": "Pick at least one day",
-    "endAfterStart": "The end must be after the start",
-    "capacity": "A whole number from 1 to 1000"
+    "capacity": "A whole number from 1 to 1000",
+    "endIsStart": "The end can't be the same as the start"
   },
   "common": {
     "loading": "Loading",
