@@ -42,3 +42,23 @@ export function dateTimeIn(
     throw error
   }
 }
+
+// The calendar day ("2026-11-13") on the business's clock; undefined for a zone
+// this browser does not know, as timeIn.
+export function dateIn(moment: Date, timeZone: string): string | undefined {
+  try {
+    return dayjs(moment).tz(timeZone).format('YYYY-MM-DD')
+  } catch (error) {
+    if (error instanceof RangeError) return undefined
+    throw error
+  }
+}
+
+// A calendar day has no time zone: format it as UTC so no zone shifts it.
+export const dayLabel = (date: string, language: string): string =>
+  new Intl.DateTimeFormat(language, {
+    timeZone: 'UTC',
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(`${date}T00:00:00Z`))

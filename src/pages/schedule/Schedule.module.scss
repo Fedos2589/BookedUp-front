@@ -11,3 +11,59 @@
   align-items: center;
   gap: var(--spacing-8);
 }
+
+.hours {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.dayName {
+  padding: 0;
+}
+
+.intervals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.interval {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-8);
+}
+
+.overrides {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.override {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
