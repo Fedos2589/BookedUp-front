@@ -19,7 +19,7 @@ import styles from '@/pages/schedule/Schedule.module.scss'
 import { focusFirstInvalid } from '@/pages/schedule/hours/focusFirstInvalid'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 import { instantsOfRange } from './timeOffRange'
-import { timeOffSchema, type TimeOffForm } from './timeOffSchema'
+import { NOTE_MAX, timeOffSchema, type TimeOffForm } from './timeOffSchema'
 
 // Adds a range of whole days, both ends included, with an optional note.
 export function TimeOffDialog({
@@ -117,6 +117,7 @@ export function TimeOffDialog({
         />
         <Input
           label={t('schedule.timeOff.note')}
+          maxLength={NOTE_MAX}
           error={!!errors.note}
           errorText={fieldErrorText(t, errors.note)}
           {...form.register('note')}

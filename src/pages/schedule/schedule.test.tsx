@@ -643,3 +643,14 @@ test('time off: cancelling the confirmation keeps the record and sends nothing',
   expect(screen.getByText('Sea')).toBeTruthy()
   expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(false)
 })
+
+test("time off: the note field stops at the back's 200 characters", async () => {
+  withTimeOff()
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Time off' }))
+
+  expect(
+    (await screen.findByLabelText('Note (optional)')).getAttribute('maxlength'),
+  ).toBe('200')
+})

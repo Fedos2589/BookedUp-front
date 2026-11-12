@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
+import { ConfirmDialog } from 'ted-ui/ConfirmDialog'
 import { Spinner } from 'ted-ui/Spinner/Spinner'
 import { Typography } from 'ted-ui/Typography'
 
@@ -14,7 +15,6 @@ import {
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { dayLabel } from '@/dates'
 import styles from '@/pages/schedule/Schedule.module.scss'
-import { ConfirmDelete } from '@/pages/schedule/ConfirmDelete'
 import { DayOverrideDialog } from './DayOverrideDialog'
 import { intervalsText } from './overrideModel'
 
@@ -119,9 +119,11 @@ export function DayOverrides({ staffId }: { staffId: string }) {
         {t('schedule.overrides.add')}
       </Button>
       {removing && (
-        <ConfirmDelete
+        <ConfirmDialog
+          isVisible
+          colorScheme="red"
+          confirmLabel={t('common.delete')}
           title={t('schedule.overrides.confirmDelete')}
-          what={removing.label}
           loading={remove.isPending}
           onClose={() => setRemoving(undefined)}
           onConfirm={() =>
@@ -130,7 +132,9 @@ export function DayOverrides({ staffId }: { staffId: string }) {
               { onSettled: () => setRemoving(undefined) },
             )
           }
-        />
+        >
+          {removing.label}
+        </ConfirmDialog>
       )}
       {dialog && (
         <DayOverrideDialog
