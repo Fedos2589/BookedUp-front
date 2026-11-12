@@ -2,8 +2,8 @@ import { expect, test } from 'vitest'
 
 import {
   fromWindows,
+  nextInterval,
   toWindows,
-  validateWeek,
   type Week,
   type WindowDto,
 } from './weekModel'
@@ -74,53 +74,26 @@ test('intervals of a day off are not sent', () => {
   expect(toWindows(week)).toEqual([])
 })
 
-test('a valid week has no errors', () => {
-  expect(
-    validateWeek(fromWindows([win(1, 540, 240), win(1, 840, 60)])),
-  ).toEqual([])
+test('a new interval starts where the last one ends, two hours long', () => {
+  expect(nextInterval({ start: 600, end: 720, title: null })).toEqual({
+    start: 720,
+    end: 840,
+    title: null,
+  })
 })
 
-test('an interval must end after it starts', () => {
-  const week = fromWindows([win(1, 540, 60)])
-  week.days[0].intervals[0].end = 540
-  expect(validateWeek(week)).toEqual([
-    { weekday: 1, index: 0, code: 'endBeforeStart' },
-  ])
+test('a new interval after one ending at midnight starts on the clock, not at 24:00', () => {
+  expect(nextInterval({ start: 1320, end: 1440, title: null })).toEqual({
+    start: 0,
+    end: 120,
+    title: null,
+  })
 })
 
-test('intervals of a day may not overlap, touching is fine', () => {
-  const touching = fromWindows([win(1, 540, 60), win(1, 600, 60)])
-  expect(validateWeek(touching)).toEqual([])
-  const overlapping = fromWindows([win(1, 540, 90), win(1, 600, 60)])
-  expect(validateWeek(overlapping)).toEqual([
-    { weekday: 1, index: 1, code: 'overlap' },
-  ])
-})
-
-test('Sunday night running into Monday overlaps (the week is a ring)', () => {
-  const week = fromWindows([win(7, 1380, 120), win(1, 30, 60)])
-  expect(validateWeek(week)).toEqual([
-    { weekday: 7, index: 0, code: 'overlap' },
-  ])
-})
-
-test('a working day needs an interval', () => {
-  const week = emptyWeek()
-  week.days[2].working = true
-  expect(validateWeek(week)).toEqual([{ weekday: 3, code: 'empty' }])
-})
-
-test('the step may not be longer than an interval', () => {
-  const week = fromWindows([win(1, 540, 20, 15)])
-  week.slotMinutes = 30
-  expect(validateWeek(week)).toEqual([
-    { weekday: 1, index: 0, code: 'slotTooLong' },
-  ])
-})
-
-test('a day off is not validated', () => {
-  const week = fromWindows([win(1, 540, 60)])
-  week.days[0].working = false
-  week.days[0].intervals[0].end = 0
-  expect(validateWeek(week)).toEqual([])
+test('the first interval of a day is the usual 09:00–18:00', () => {
+  expect(nextInterval(undefined)).toEqual({
+    start: 540,
+    end: 1080,
+    title: null,
+  })
 })

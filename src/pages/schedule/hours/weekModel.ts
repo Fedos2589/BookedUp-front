@@ -25,11 +25,6 @@ export function nextInterval(last: Interval | undefined): Interval {
   return { start, end: start + NEW_INTERVAL_LENGTH, title: null }
 }
 
-export type WeekError = { weekday: number } & (
-  | { code: 'empty'; index?: undefined }
-  | { code: 'endBeforeStart' | 'overlap' | 'slotTooLong'; index: number }
-)
-
 // The back keeps one step per window; the form has one for the week — the most
 // common one, the smaller on a tie.
 function commonSlot(windows: readonly WindowDto[]): number {
@@ -95,25 +90,4 @@ export function overlaps(a: Placed, b: Placed): boolean {
     const bStart = startInWeek(b) + shift
     return aStart < bStart + (b.end - b.start) && bStart < aStart + aLength
   })
-}
-
-export function validateWeek(week: Week): WeekError[] {
-  const errors: WeekError[] = []
-  const checked: Placed[] = []
-  week.days.forEach((day, d) => {
-    const weekday = d + 1
-    if (!day.working) return
-    if (day.intervals.length === 0) errors.push({ weekday, code: 'empty' })
-    day.intervals.forEach((interval, index) => {
-      const placed = { weekday, index, ...interval }
-      if (interval.end <= interval.start)
-        errors.push({ weekday, index, code: 'endBeforeStart' })
-      else if (checked.some((other) => overlaps(other, placed)))
-        errors.push({ weekday, index, code: 'overlap' })
-      else if (week.slotMinutes > interval.end - interval.start)
-        errors.push({ weekday, index, code: 'slotTooLong' })
-      if (interval.end > interval.start) checked.push(placed)
-    })
-  })
-  return errors
 }

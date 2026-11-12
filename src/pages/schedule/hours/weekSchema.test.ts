@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { weekSchema } from './weekSchema'
-import {
-  fromWindows,
-  validateWeek,
-  type Week,
-  type WindowDto,
-} from './weekModel'
+import { fromWindows, type Week, type WindowDto } from './weekModel'
 
 const win = (
   weekday: number,
@@ -28,23 +23,6 @@ const issuesOf = (week: Week) => {
     ? []
     : result.error.issues.map((i) => ({ path: i.path, message: i.message }))
 }
-
-const MESSAGE = {
-  empty: 'validation.emptyDay',
-  endBeforeStart: 'validation.endBeforeStart',
-  overlap: 'validation.overlap',
-  slotTooLong: 'validation.slotTooLong',
-} as const
-
-// validateWeek's answer, in the schema's words.
-const legacy = (week: Week) =>
-  validateWeek(week).map((e) => ({
-    path:
-      e.code === 'empty'
-        ? ['days', e.weekday - 1]
-        : ['days', e.weekday - 1, 'intervals', e.index],
-    message: MESSAGE[e.code],
-  }))
 
 const withWeek = (make: () => Week) => make()
 const cases: Record<string, Week> = {
@@ -74,12 +52,6 @@ const cases: Record<string, Week> = {
     return w
   }),
 }
-
-describe('weekSchema reports what validateWeek reports', () => {
-  for (const [name, week] of Object.entries(cases)) {
-    it(name, () => expect(issuesOf(week)).toEqual(legacy(week)))
-  }
-})
 
 describe('weekSchema', () => {
   it('accepts a valid week and touching intervals', () => {

@@ -178,13 +178,7 @@
       "slotStep": "Booking step",
       "minutes": "{{count}} min",
       "loadFailed": "Couldn't load the weekly hours",
-      "saveFailed": "Couldn't save the hours. Try again.",
-      "error": {
-        "empty": "Add an interval or mark the day off",
-        "endBeforeStart": "The end must be after the start",
-        "overlap": "Overlaps another interval",
-        "slotTooLong": "The booking step is longer than the interval"
-      }
+      "saveFailed": "Couldn't save the hours. Try again."
     },
     "weekday": {
       "mon": "Monday",
