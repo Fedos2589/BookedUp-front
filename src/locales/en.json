@@ -61,6 +61,7 @@
   "cabinet": {
     "navigation": "Cabinet",
     "dashboard": "Dashboard",
+    "schedule": "Schedule",
     "settings": "Settings",
     "team": "Team",
     "signOut": "Sign out",
@@ -138,5 +139,18 @@
     "goneTitle": "This invitation no longer works",
     "goneText": "It was used, cancelled or has expired. Ask the person who invited you for a new link.",
     "loadFailed": "Couldn't load the invitation"
+  },
+  "schedule": {
+    "title": "Schedule",
+    "loadFailed": "Couldn't load the schedule",
+    "noSchedule": "There is no schedule to edit yet. Add one on the Team page.",
+    "noScheduleAskOwner": "You have no schedule yet. Ask the owner or an admin to add one.",
+    "master": "Master",
+    "mode": {
+      "label": "Schedule type",
+      "HOURS": "One-to-one",
+      "GROUPS": "Groups",
+      "failed": "Couldn't change the type. Try again."
+    }
   }
 }

@@ -17,6 +17,7 @@ import { InvitationGone } from '@/pages/invite/InvitationGone'
 import { InvitePage } from '@/pages/invite/InvitePage'
 import { invitationTokenOf } from '@/pages/invite/invitationToken'
 import { PagePending } from '@/pages/PagePending'
+import { SchedulePage } from '@/pages/schedule/SchedulePage'
 import { SettingsPage } from '@/pages/settings/SettingsPage'
 import { SignUpPage } from '@/pages/signUp/SignUpPage'
 import { TeamPage } from '@/pages/team/TeamPage'
@@ -55,6 +56,13 @@ const teamRoute = createRoute({
   getParentRoute: () => cabinetRoute,
   path: '/team',
   component: TeamPage,
+})
+
+// A master's working hours, or their groups.
+const scheduleRoute = createRoute({
+  getParentRoute: () => cabinetRoute,
+  path: '/schedule',
+  component: SchedulePage,
 })
 
 // `?invitation=<token>`: signed in, go back to that invitation, not the cabinet.
@@ -102,7 +110,12 @@ const bookingRoute = createRoute({
 })
 
 export const routeTree = rootRoute.addChildren([
-  cabinetRoute.addChildren([dashboardRoute, settingsRoute, teamRoute]),
+  cabinetRoute.addChildren([
+    dashboardRoute,
+    scheduleRoute,
+    settingsRoute,
+    teamRoute,
+  ]),
   signInRoute,
   signUpRoute,
   inviteRoute,
