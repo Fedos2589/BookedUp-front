@@ -307,3 +307,94 @@ test('groups: a 409 without a name for the clash gets the general message', asyn
 
   expect(await screen.findByText(/Couldn't save the group/)).toBeTruthy()
 })
+
+// Tuesday 17 Nov 2026, noon UTC: the same calendar day in every business zone
+// the tests use.
+function today() {
+  vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-11-17T12:00:00Z') })
+}
+const cancellationRoute = (date: string) =>
+  api(`${groupsRoute}/${football.id}/cancellations/${date}`)
+const openDates = async () =>
+  fireEvent.click(
+    await screen.findByRole('button', {
+      name: 'Dates of Football, kids 7–10',
+    }),
+  )
+
+test('group dates: cancelling offers only the days the group meets and sends the chosen one', async () => {
+  today()
+  const { calls } = withGroups({
+    [`PUT ${cancellationRoute('2026-11-19')}`]: [
+      200,
+      { ...football, cancellations: ['2026-11-19'] },
+    ],
+  })
+  renderApp('/schedule')
+
+  await openDates()
+  fireEvent.click(await screen.findByRole('button', { name: 'Cancel a day' }))
+  expect(screen.getByRole('radio', { name: 'Tue, Nov 17' })).toBeTruthy()
+  expect(screen.queryByRole('radio', { name: 'Wed, Nov 18' })).toBeNull()
+  fireEvent.click(screen.getByRole('radio', { name: 'Thu, Nov 19' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel the session' }))
+
+  await waitFor(() =>
+    expect(calls.some((c) => c.route.startsWith('PUT'))).toBe(true),
+  )
+})
+
+test('group dates: a cancelled day is listed and can be restored', async () => {
+  today()
+  const cancelled = { ...football, cancellations: ['2026-11-19', '2026-11-01'] }
+  const { calls, set } = withGroups({
+    [`GET ${api(groupsRoute)}`]: [200, [cancelled]],
+    [`DELETE ${cancellationRoute('2026-11-19')}`]: [204],
+  })
+  renderApp('/schedule')
+
+  await openDates()
+  expect(await screen.findByText('Thu, Nov 19')).toBeTruthy()
+  expect(screen.queryByText('Sun, Nov 1')).toBeNull()
+  set(`GET ${api(groupsRoute)}`, [200, [football]])
+  fireEvent.click(screen.getByRole('button', { name: 'Restore Thu, Nov 19' }))
+
+  await waitFor(() =>
+    expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(true),
+  )
+  await waitFor(() => expect(screen.queryByText('Thu, Nov 19')).toBeNull())
+})
+
+test('group dates: a restore the back refuses says which session sits there', async () => {
+  today()
+  withGroups({
+    [`GET ${api(groupsRoute)}`]: [
+      200,
+      [{ ...football, cancellations: ['2026-11-19'] }],
+    ],
+    [`DELETE ${cancellationRoute('2026-11-19')}`]: [
+      409,
+      {
+        statusCode: 409,
+        error: 'Conflict',
+        message: 'x',
+        field: 'date',
+        conflictsWith: {
+          kind: 'oneOffSession',
+          id: 's1',
+          title: 'Open day',
+          startsAt: '2026-11-19T15:00:00Z',
+        },
+      },
+    ],
+  })
+  renderApp('/schedule')
+
+  await openDates()
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Restore Thu, Nov 19' }),
+  )
+
+  expect(await screen.findByText(/One-off session «Open day»/)).toBeTruthy()
+  expect(screen.getByText('Thu, Nov 19')).toBeTruthy()
+})

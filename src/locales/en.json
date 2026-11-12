@@ -56,7 +56,8 @@
     "tryAgain": "Try again",
     "save": "Save",
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "close": "Close"
   },
   "settings": {
     "title": "Business settings",
@@ -247,7 +248,19 @@
       "end": "Ends at",
       "capacity": "Seats",
       "conflict": "Overlaps another session: {{title}}",
-      "saveFailed": "Couldn't save the group. Try again."
+      "saveFailed": "Couldn't save the group. Try again.",
+      "dates": "Dates of {{title}}",
+      "datesShort": "Dates",
+      "datesTitle": "{{title}}: cancelled days",
+      "noCancelled": "No cancelled days.",
+      "cancelDay": "Cancel a day",
+      "cancelTitle": "Cancel a session",
+      "cancelSession": "Cancel the session",
+      "cancelFailed": "Couldn't cancel the session. Try again.",
+      "restore": "Restore {{date}}",
+      "restoreShort": "Restore",
+      "restoreBlocked": "Can't restore: One-off session «{{title}}» is at that time. Delete it first.",
+      "restoreFailed": "Couldn't restore the session. Try again."
     }
   }
 }
