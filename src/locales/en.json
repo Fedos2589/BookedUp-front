@@ -213,7 +213,8 @@
       "deleteShort": "Delete",
       "loadFailed": "Couldn't load the time off",
       "deleteFailed": "Couldn't delete the time off. Try again.",
-      "saveFailed": "Couldn't save the time off. Try again."
+      "saveFailed": "Couldn't save the time off. Try again.",
+      "zoneUnknown": "This browser doesn't know your business's time zone. Update the browser and try again."
     }
   }
 }

@@ -1,11 +1,4 @@
-import dayjs from 'dayjs'
-import timezone from 'dayjs/plugin/timezone'
-import utc from 'dayjs/plugin/utc'
-
-import { dateTimeIn } from '@/dates'
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
+import { addDays, dateIn, dateTimeIn, dayLabel, startOfDayIn } from '@/dates'
 
 // Time off is an instant range; people think in days. «From the 16th to the
 // 20th» (both included) is midnight of the 16th to midnight of the 21st on the
@@ -15,24 +8,23 @@ export type TimeOffRange =
   | { kind: 'days'; from: string; to: string }
   | { kind: 'times'; startsAt: Date; endsAt: Date }
 
-const midnight = (date: string, timeZone: string) =>
-  dayjs.tz(`${date} 00:00`, timeZone)
-
-// A calendar day has no zone: step it in UTC so nothing shifts it.
-const addDays = (date: string, days: number) =>
-  dayjs.utc(date).add(days, 'day').format('YYYY-MM-DD')
-
 // undefined for a zone this browser's Intl doesn't know (as dates.ts).
 export function instantsOfRange(from: string, to: string, timeZone: string) {
-  try {
-    return {
-      startsAt: midnight(from, timeZone).toISOString(),
-      endsAt: midnight(addDays(to, 1), timeZone).toISOString(),
-    }
-  } catch (error) {
-    if (error instanceof RangeError) return undefined
-    throw error
-  }
+  const start = startOfDayIn(from, timeZone)
+  const end = startOfDayIn(addDays(to, 1), timeZone)
+  return start && end
+    ? { startsAt: start.toISOString(), endsAt: end.toISOString() }
+    : undefined
+}
+
+// The calendar day an instant opens, or undefined when it is not the first
+// moment of its day (or the zone is unknown).
+function dayItOpens(instant: string, timeZone: string) {
+  const date = dateIn(new Date(instant), timeZone)
+  const first = date && startOfDayIn(date, timeZone)
+  return date && first && first.valueOf() === Date.parse(instant)
+    ? date
+    : undefined
 }
 
 // Whole days when both ends sit on the business's midnights, else the times
@@ -47,18 +39,11 @@ export function rangeOfInstants(
     startsAt: new Date(startsAt),
     endsAt: new Date(endsAt),
   }
-  try {
-    const start = dayjs(startsAt).tz(timeZone)
-    const end = dayjs(endsAt).tz(timeZone)
-    const onMidnight = (d: dayjs.Dayjs) => d.isSame(d.startOf('day'))
-    if (!onMidnight(start) || !onMidnight(end)) return times
-    const from = start.format('YYYY-MM-DD')
-    const to = addDays(end.format('YYYY-MM-DD'), -1)
-    return to < from ? times : { kind: 'days', from, to }
-  } catch (error) {
-    if (error instanceof RangeError) return times
-    throw error
-  }
+  const from = dayItOpens(startsAt, timeZone)
+  const next = dayItOpens(endsAt, timeZone)
+  if (!from || !next) return times
+  const to = addDays(next, -1)
+  return to < from ? times : { kind: 'days', from, to }
 }
 
 // "Nov 16 – Nov 20" (days: «Mon, Nov 16» style as the dates list) or, off the
@@ -68,12 +53,13 @@ export function rangeText(
   range: TimeOffRange,
   language: string,
   timeZone: string,
-  dayText: (date: string) => string,
 ): string {
-  if (range.kind === 'days')
+  if (range.kind === 'days') {
+    const day = (date: string) => dayLabel(date, language)
     return range.from === range.to
-      ? dayText(range.from)
-      : `${dayText(range.from)} – ${dayText(range.to)}`
+      ? day(range.from)
+      : `${day(range.from)} – ${day(range.to)}`
+  }
   const at = (moment: Date) =>
     dateTimeIn(moment, timeZone, language) ?? moment.toISOString()
   return `${at(range.startsAt)} – ${at(range.endsAt)}`

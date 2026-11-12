@@ -109,6 +109,23 @@ describe('rangeOfInstants', () => {
     ).toBe('times')
   })
 
+  it('a day whose midnight DST skips is still a whole day (Santiago, 2026-09-06)', () => {
+    // Clocks go 00:00 -> 01:00 that night: the day opens at 01:00 local.
+    expect(
+      rangeOfInstants(
+        '2026-09-06T04:00:00.000Z',
+        '2026-09-07T03:00:00.000Z',
+        'America/Santiago',
+      ),
+    ).toEqual({ kind: 'days', from: '2026-09-06', to: '2026-09-06' })
+    expect(
+      instantsOfRange('2026-09-06', '2026-09-06', 'America/Santiago'),
+    ).toEqual({
+      startsAt: '2026-09-06T04:00:00.000Z',
+      endsAt: '2026-09-07T03:00:00.000Z',
+    })
+  })
+
   it('is times for a zone this browser does not know', () => {
     expect(
       rangeOfInstants(

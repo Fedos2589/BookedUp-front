@@ -38,9 +38,21 @@ export function TimeOffDialog({
   const [note, setNote] = useState('')
   const [tried, setTried] = useState(false)
   const [zoneUnknown, setZoneUnknown] = useState(false)
-  const add = useStaffScheduleControllerAddTimeOff()
+  // Refreshing the list lives on the hook: it must run even if the dialog was
+  // closed while the request was in flight.
+  const add = useStaffScheduleControllerAddTimeOff({
+    mutation: {
+      onSuccess: () =>
+        queryClient.invalidateQueries({
+          queryKey: getStaffScheduleControllerTimeOffQueryKey(
+            businessId,
+            staffId,
+          ),
+        }),
+    },
+  })
 
-  useUnsavedInput(true)
+  useUnsavedInput(range.from !== '' || note !== '')
   const missingRange = tried && (range.from === '' || range.to === '')
 
   const submit = () => {
@@ -56,17 +68,7 @@ export function TimeOffDialog({
         staffId,
         data: { ...instants, note: note.trim() || null },
       },
-      {
-        onSuccess: () => {
-          void queryClient.invalidateQueries({
-            queryKey: getStaffScheduleControllerTimeOffQueryKey(
-              businessId,
-              staffId,
-            ),
-          })
-          onClose()
-        },
-      },
+      { onSuccess: onClose },
     )
   }
 
@@ -120,10 +122,16 @@ export function TimeOffDialog({
           maxLength={NOTE_MAX}
           onChange={(e) => setNote(e.target.value)}
         />
-        {(add.isError || zoneUnknown) && (
+        {zoneUnknown ? (
           <Typography variant="t4" color="red-300" role="alert">
-            {t('schedule.timeOff.saveFailed')}
+            {t('schedule.timeOff.zoneUnknown')}
           </Typography>
+        ) : (
+          add.isError && (
+            <Typography variant="t4" color="red-300" role="alert">
+              {t('schedule.timeOff.saveFailed')}
+            </Typography>
+          )
         )}
       </form>
     </Modal>

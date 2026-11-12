@@ -11,7 +11,6 @@ import {
   useStaffScheduleControllerTimeOff,
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
-import { dayLabel } from '@/dates'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { TimeOffDialog } from './TimeOffDialog'
 import { rangeOfInstants, rangeText } from './timeOffRange'
@@ -69,7 +68,6 @@ export function TimeOff({ staffId }: { staffId: string }) {
             rangeOfInstants(record.startsAt, record.endsAt, timeZone),
             i18n.language,
             timeZone,
-            (date) => dayLabel(date, i18n.language),
           )
           return (
             <li key={record.id} className={styles.override}>
@@ -108,7 +106,10 @@ export function TimeOff({ staffId }: { staffId: string }) {
         variant="ghost"
         colorScheme="black"
         size="small"
-        onClick={() => setAdding(true)}
+        onClick={() => {
+          remove.reset()
+          setAdding(true)
+        }}
       >
         {t('schedule.timeOff.add')}
       </Button>
