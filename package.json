@@ -35,7 +35,7 @@
     "react-dom": "^19.3.1",
     "react-hook-form": "^7.91.0",
     "react-i18next": "^17.1.13",
-    "ted-ui": "github:Fedos2589/TedUI#v0.2.0",
+    "ted-ui": "github:Fedos2589/TedUI#v0.3.0",
     "zod": "^4.6.7",
     "zustand": "^5.1.0"
   },
