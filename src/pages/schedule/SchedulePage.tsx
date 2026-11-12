@@ -30,8 +30,11 @@ export function SchedulePage() {
   })
   const [pickedId, setPickedId] = useState<string>()
 
-  const loading = staff.isPending || (manages && members.isPending)
-  const failed = staff.isError || (manages && members.isError)
+  // A reload that fails keeps the data it had: the page stays, not an error.
+  const failed =
+    (staff.isError && !staff.data) ||
+    (manages && members.isError && !members.data)
+  const loading = !failed && (staff.isPending || (manages && members.isPending))
   const options =
     staff.data && (members.data || !manages)
       ? editableStaff(
@@ -67,7 +70,7 @@ export function SchedulePage() {
       )}
       {!loading && !failed && !current && (
         <Typography variant="t3" component="p">
-          {t('schedule.noSchedule')}
+          {t(manages ? 'schedule.noSchedule' : 'schedule.noScheduleAskOwner')}
         </Typography>
       )}
       {current && (
@@ -79,7 +82,7 @@ export function SchedulePage() {
               onChange={(s) => setPickedId(s.id)}
             />
           )}
-          <ModeSwitch staff={current} />
+          <ModeSwitch key={current.id} staff={current} />
         </>
       )}
     </main>

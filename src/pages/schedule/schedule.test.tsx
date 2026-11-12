@@ -48,15 +48,17 @@ const asMaster = {
 }
 
 test('the owner opens the schedule from the navigation, picks a master and switches the mode', async () => {
-  const staff = [vera, petr]
-  const { calls } = fakeApi({
+  const { calls, set } = fakeApi({
     'GET /api/me': [200, account],
     [`GET ${api('/members')}`]: [200, members],
-    [`GET ${api('/staff')}`]: [200, staff],
-    [`PUT ${api(`/staff/${vera.id}/schedule-mode`)}`]: [
-      200,
-      { mode: 'GROUPS' },
-    ],
+    [`GET ${api('/staff')}`]: [200, [vera, petr]],
+    [`PUT ${api(`/staff/${vera.id}/schedule-mode`)}`]: () => {
+      set(`GET ${api('/staff')}`, [
+        200,
+        [{ ...vera, scheduleMode: 'GROUPS' }, petr],
+      ])
+      return [200, { mode: 'GROUPS' }]
+    },
   })
   renderApp('/')
   fireEvent.click(await screen.findByRole('link', { name: 'Schedule' }))
@@ -66,13 +68,6 @@ test('the owner opens the schedule from the navigation, picks a master and switc
   const hours = await screen.findByRole('tab', { name: 'One-to-one' })
   expect(hours.getAttribute('aria-selected')).toBe('true')
 
-  vi.stubGlobal(
-    'fetch',
-    ((original) => (url: string, init?: RequestInit) => {
-      if (init?.method === 'PUT') vera.scheduleMode = 'GROUPS'
-      return original(url, init)
-    })(fetch),
-  )
   fireEvent.click(screen.getByRole('tab', { name: 'Groups' }))
 
   await waitFor(() =>
@@ -104,5 +99,50 @@ test('a master without a schedule is told there is none', async () => {
   })
   renderApp('/schedule')
 
-  expect(await screen.findByText(/no schedule to edit/)).toBeTruthy()
+  expect(await screen.findByText(/Ask the owner or an admin/)).toBeTruthy()
+  expect(screen.queryByText(/Team page/)).toBeNull()
+})
+
+test('a failed mode change does not follow to another master', async () => {
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET ${api('/members')}`]: [200, members],
+    [`GET ${api('/staff')}`]: [200, [vera, petr]],
+    [`PUT ${api(`/staff/${vera.id}/schedule-mode`)}`]: [500],
+  })
+  renderApp('/schedule')
+  await screen.findByRole('combobox', { name: 'Master' })
+  fireEvent.click(await screen.findByRole('tab', { name: 'Groups' }))
+  expect(await screen.findByText(/Couldn.t change the type/)).toBeTruthy()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Show options' }))
+  fireEvent.click(await screen.findByRole('option', { name: 'Petr' }))
+  await waitFor(() =>
+    expect(screen.queryByText(/Couldn.t change the type/)).toBeNull(),
+  )
+})
+
+test('a list that fails to reload keeps the page, with no load error', async () => {
+  const { set, calls } = fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`PUT ${api(`/staff/${vera.id}/schedule-mode`)}`]: () => {
+      set(`GET ${api('/staff')}`, [500])
+      return [200, { mode: 'GROUPS' }]
+    },
+  })
+  renderApp('/schedule')
+  fireEvent.click(await screen.findByRole('tab', { name: 'Groups' }))
+
+  const staffGets = () =>
+    calls.filter((c) => c.route === `GET ${api('/staff')}`).length
+  await waitFor(() => expect(staffGets()).toBeGreaterThan(1))
+  // The reload failed (and was retried): the page is still the page.
+  await waitFor(() =>
+    expect(
+      screen.getByRole('tab', { name: 'Groups' }).hasAttribute('disabled'),
+    ).toBe(false),
+  )
+  await new Promise((resolve) => setTimeout(resolve, 100))
+  expect(screen.queryByText(/Couldn.t load the schedule/)).toBeNull()
 })

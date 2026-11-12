@@ -144,6 +144,7 @@
     "title": "Schedule",
     "loadFailed": "Couldn't load the schedule",
     "noSchedule": "There is no schedule to edit yet. Add one on the Team page.",
+    "noScheduleAskOwner": "You have no schedule yet. Ask the owner or an admin to add one.",
     "master": "Master",
     "mode": {
       "label": "Schedule type",
