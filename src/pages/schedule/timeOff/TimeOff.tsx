@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
+import { ConfirmDialog } from 'ted-ui/ConfirmDialog'
 import { Spinner } from 'ted-ui/Spinner/Spinner'
 import { Typography } from 'ted-ui/Typography'
 
@@ -12,7 +13,6 @@ import {
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import styles from '@/pages/schedule/Schedule.module.scss'
-import { ConfirmDelete } from '@/pages/schedule/ConfirmDelete'
 import { TimeOffDialog } from './TimeOffDialog'
 import { rangeOfInstants, rangeText } from './timeOffRange'
 
@@ -114,9 +114,11 @@ export function TimeOff({ staffId }: { staffId: string }) {
         {t('schedule.timeOff.add')}
       </Button>
       {removing && (
-        <ConfirmDelete
+        <ConfirmDialog
+          isVisible
+          colorScheme="red"
+          confirmLabel={t('common.delete')}
           title={t('schedule.timeOff.confirmDelete')}
-          what={removing.text}
           loading={remove.isPending}
           onClose={() => setRemoving(undefined)}
           onConfirm={() =>
@@ -125,7 +127,9 @@ export function TimeOff({ staffId }: { staffId: string }) {
               { onSettled: () => setRemoving(undefined) },
             )
           }
-        />
+        >
+          {removing.text}
+        </ConfirmDialog>
       )}
       {adding && (
         <TimeOffDialog staffId={staffId} onClose={() => setAdding(false)} />
