@@ -1,5 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { useId, useRef, useState } from 'react'
+import { Controller, FormProvider, useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { DatePicker } from 'ted-ui/DatePicker'
 import { Modal } from 'ted-ui/Modal'
@@ -13,14 +15,27 @@ import {
 import { ApiError } from '@/apiFetch'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { dateIn } from '@/dates'
+import { fieldErrorText } from '@/forms/fieldError'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { DayRow } from './DayRow'
 import { focusFirstInvalid } from './focusFirstInvalid'
-import { overrideFromWeek, weekOfOverride } from './overrideModel'
+import {
+  newOverrideWeek,
+  overrideFromWeek,
+  weekOfOverride,
+} from './overrideModel'
+import { overrideSchema, type OverrideForm } from './overrideSchema'
 import { SlotStep } from './SlotStep'
-import { setWorking } from './weekEdit'
-import { validateWeek } from './weekModel'
+
+// The back's word on a date that is in the past (the picker stops those; this
+// is for a day that changed under an open dialog).
+const isPastDateAnswer = (error: unknown) =>
+  error instanceof ApiError &&
+  error.status === 400 &&
+  (error.body as { message?: string[] } | undefined)?.message?.some((m) =>
+    m.startsWith('date:'),
+  ) === true
 
 // Adds or edits one date. A new date starts as a working day with the usual
 // default interval; unticking «Working» makes it a day off. The date of an
@@ -43,39 +58,25 @@ export function DayOverrideDialog({
   // A zone this browser doesn't know: no lower bound, the back refuses a past day.
   const [today] = useState(() => dateIn(new Date(), timeZone))
   const formRef = useRef<HTMLFormElement>(null)
-  const [date, setDate] = useState(override?.date ?? '')
-  const [week, setWeek] = useState(() =>
-    override
-      ? weekOfOverride(override.windows)
-      : setWorking(weekOfOverride([]), 0, true),
-  )
-  const [tried, setTried] = useState(false)
+  const form = useForm<OverrideForm>({
+    resolver: zodResolver(overrideSchema(override ? [] : takenDates)),
+    defaultValues: {
+      date: override?.date ?? '',
+      ...(override ? weekOfOverride(override.windows) : newOverrideWeek()),
+    },
+  })
+  const working = useWatch({ control: form.control, name: 'days.0.working' })
   const put = useStaffScheduleControllerPutDayOverride()
 
   useUnsavedInput(true)
-  const errors = validateWeek(week)
-  const missingDate = tried && date === ''
-  // The date picker stops past dates; this is the back's word if the day
-  // changed under an open dialog.
-  const past =
-    put.error instanceof ApiError &&
-    put.error.status === 400 &&
-    (put.error.body as { message?: string[] } | undefined)?.message?.some((m) =>
-      m.startsWith('date:'),
-    ) === true
-  // PUT would replace it silently: changing a date is what «Change» is for.
-  const taken = !override && takenDates.includes(date)
 
-  const submit = () => {
-    setTried(true)
-    if (date === '' || taken || errors.length > 0)
-      return focusFirstInvalid(formRef.current)
+  const submit = (values: OverrideForm) =>
     put.mutate(
       {
         businessId,
         staffId,
-        date,
-        data: { windows: overrideFromWeek(week) },
+        date: values.date,
+        data: { windows: overrideFromWeek(values) },
       },
       {
         onSuccess: () => {
@@ -87,9 +88,13 @@ export function DayOverrideDialog({
           })
           onClose()
         },
+        onError: (error) => {
+          if (!isPastDateAnswer(error)) return
+          form.setError('date', { message: 'validation.pastDate' })
+          focusFirstInvalid(formRef.current)
+        },
       },
     )
-  }
 
   return (
     <Modal
@@ -123,44 +128,33 @@ export function DayOverrideDialog({
         ref={formRef}
         className={styles.hours}
         noValidate
-        onSubmit={(e) => {
-          e.preventDefault()
-          submit()
-        }}
+        onSubmit={(e) =>
+          void form.handleSubmit(submit, () =>
+            focusFirstInvalid(formRef.current),
+          )(e)
+        }
       >
-        <DatePicker
-          mode="single"
-          label={t('schedule.overrides.date')}
-          value={date}
-          minDate={today}
-          disabled={!!override}
-          error={missingDate || past || taken}
-          errorText={
-            past
-              ? t('schedule.overrides.pastDate')
-              : taken
-                ? t('schedule.overrides.dateTaken')
-                : missingDate
-                  ? t('schedule.overrides.dateRequired')
-                  : undefined
-          }
-          onChange={setDate}
-        />
-        <DayRow
-          index={0}
-          name={t('schedule.overrides.day')}
-          day={week.days[0]}
-          week={week}
-          errors={tried ? errors : []}
-          onChange={setWeek}
-        />
-        {week.days[0].working && (
-          <SlotStep
-            value={week.slotMinutes}
-            onChange={(slotMinutes) => setWeek({ ...week, slotMinutes })}
+        <FormProvider {...form}>
+          <Controller
+            control={form.control}
+            name="date"
+            render={({ field, fieldState }) => (
+              <DatePicker
+                mode="single"
+                label={t('schedule.overrides.date')}
+                value={field.value}
+                minDate={today}
+                disabled={!!override}
+                error={!!fieldState.error}
+                errorText={fieldErrorText(t, fieldState.error)}
+                onChange={field.onChange}
+              />
+            )}
           />
-        )}
-        {put.isError && !past && (
+          <DayRow index={0} name={t('schedule.overrides.day')} />
+          {working && <SlotStep />}
+        </FormProvider>
+        {put.isError && !isPastDateAnswer(put.error) && (
           <Typography variant="t4" color="red-300" role="alert">
             {t('schedule.overrides.saveFailed')}
           </Typography>

@@ -1,12 +1,11 @@
 import { endFromInput, endToInput } from '@/dates'
 import {
-  MINUTES_PER_DAY,
+  DEFAULT_INTERVAL,
+  nextInterval,
   type Day,
   type Interval,
   type Week,
 } from './weekModel'
-const DEFAULT_INTERVAL: Interval = { start: 540, end: 1080, title: null }
-const NEW_INTERVAL_LENGTH = 120
 
 function changeDay(week: Week, index: number, change: (day: Day) => Day): Week {
   return {
@@ -29,15 +28,7 @@ export function addInterval(week: Week, index: number): Week {
   return changeDay(week, index, (day) => {
     const last = day.intervals.at(-1)
     if (!last) return { working: true, intervals: [DEFAULT_INTERVAL] }
-    // On the clock: after an interval ending at midnight the next starts at 00:00.
-    const start = last.end % MINUTES_PER_DAY
-    return {
-      ...day,
-      intervals: [
-        ...day.intervals,
-        { start, end: start + NEW_INTERVAL_LENGTH, title: null },
-      ],
-    }
+    return { ...day, intervals: [...day.intervals, nextInterval(last)] }
   })
 }
 

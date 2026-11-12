@@ -654,3 +654,63 @@ test("time off: the note field stops at the back's 200 characters", async () => 
     (await screen.findByLabelText('Note (optional)')).getAttribute('maxlength'),
   ).toBe('200')
 })
+
+test('weekly hours: ticking a day off adds the usual interval, which is saved', async () => {
+  const { calls } = fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+    [`PUT ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+  })
+  renderApp('/schedule')
+
+  await screen.findByLabelText('Monday: from')
+  // Monday works, so the second tick box is Tuesday's.
+  fireEvent.click(screen.getAllByText('Working')[1])
+  expect(
+    ((await screen.findByLabelText('Tuesday: from')) as HTMLInputElement).value,
+  ).toBe('09:00')
+  expect((screen.getByLabelText('Tuesday: to') as HTMLInputElement).value).toBe(
+    '18:00',
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  await waitFor(() =>
+    expect(calls.find((c) => c.route.startsWith('PUT'))?.body).toEqual({
+      windows: [
+        monday,
+        { ...monday, weekday: 2, startMinute: 540, durationMinutes: 540 },
+      ],
+    }),
+  )
+})
+
+test('weekly hours: removing the only interval of a day makes it a day off', async () => {
+  const { calls } = fakeApi({
+    'GET /api/me': [200, asMaster],
+    [`GET ${api('/staff')}`]: [200, [vera]],
+    [`GET ${api(weeklyRoute(vera.id))}`]: [200, { windows: [monday] }],
+    [`PUT ${api(weeklyRoute(vera.id))}`]: [200, { windows: [] }],
+  })
+  renderApp('/schedule')
+
+  await screen.findByLabelText('Monday: from')
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Monday: remove interval' }),
+  )
+  expect(screen.queryByLabelText('Monday: from')).toBeNull()
+  expect(
+    (
+      screen.getAllByRole('checkbox', {
+        name: 'Working',
+      })[0] as HTMLInputElement
+    ).getAttribute('aria-checked'),
+  ).toBe('false')
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  await waitFor(() =>
+    expect(calls.find((c) => c.route.startsWith('PUT'))?.body).toEqual({
+      windows: [],
+    }),
+  )
+})

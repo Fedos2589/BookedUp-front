@@ -2,10 +2,10 @@ import { expect, test } from 'vitest'
 
 import {
   intervalsText,
+  newOverrideWeek,
   overrideFromWeek,
   weekOfOverride,
 } from './overrideModel'
-import { setWorking } from './weekEdit'
 
 const win = (
   startMinute: number,
@@ -26,7 +26,7 @@ test('a day off is a day without windows, and back', () => {
   const off = weekOfOverride([])
   expect(off.days[0].working).toBe(false)
   expect(overrideFromWeek(off)).toEqual([])
-  expect(overrideFromWeek(setWorking(off, 0, true))).toEqual([win(540, 540)])
+  expect(overrideFromWeek(newOverrideWeek())).toEqual([win(540, 540)])
 })
 
 test('intervals are written as clock times, a day without windows as null', () => {

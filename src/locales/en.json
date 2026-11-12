@@ -54,7 +54,10 @@
     "emptyDay": "Add an interval or mark the day off",
     "endBeforeStart": "The end must be after the start",
     "overlap": "Overlaps another interval",
-    "slotTooLong": "The booking step is longer than the interval"
+    "slotTooLong": "The booking step is longer than the interval",
+    "dateRequired": "Pick a date",
+    "pastDate": "This date is in the past",
+    "dateTaken": "This date is already in the list. Change it there."
   },
   "common": {
     "loading": "Loading",
@@ -201,8 +204,6 @@
       "editTitle": "Change a date",
       "date": "Date",
       "day": "Day",
-      "dateRequired": "Pick a date",
-      "pastDate": "This date is in the past",
       "edit": "Change {{date}}",
       "editShort": "Change",
       "delete": "Delete {{date}}",
@@ -210,7 +211,6 @@
       "loadFailed": "Couldn't load the separate dates",
       "deleteFailed": "Couldn't delete the date. Try again.",
       "saveFailed": "Couldn't save the date. Try again.",
-      "dateTaken": "This date is already in the list. Change it there.",
       "confirmDelete": "Delete this date?"
     },
     "timeOff": {

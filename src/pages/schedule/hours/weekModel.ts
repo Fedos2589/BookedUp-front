@@ -8,10 +8,22 @@ const WEEK = 7 * MINUTES_PER_DAY
 
 // Minutes after midnight; `end` may pass 1440 for a window running into the
 // next day (the back allows it). The title is carried, not edited here.
+// The interval a working day starts with, and the length of one added after it.
+export const DEFAULT_INTERVAL: Interval = { start: 540, end: 1080, title: null }
+const NEW_INTERVAL_LENGTH = 120
+
 export type Interval = { start: number; end: number; title: string | null }
 export type Day = { working: boolean; intervals: Interval[] }
 // days[0] is Monday (ISO weekday 1).
 export type Week = { days: Day[]; slotMinutes: number }
+
+// The interval added after `last`: on the clock, so after one ending at
+// midnight the next starts at 00:00.
+export function nextInterval(last: Interval | undefined): Interval {
+  if (!last) return { ...DEFAULT_INTERVAL }
+  const start = last.end % MINUTES_PER_DAY
+  return { start, end: start + NEW_INTERVAL_LENGTH, title: null }
+}
 
 export type WeekError = { weekday: number } & (
   | { code: 'empty'; index?: undefined }
