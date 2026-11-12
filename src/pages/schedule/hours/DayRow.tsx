@@ -1,30 +1,34 @@
+import {
+  Controller,
+  useFieldArray,
+  useFormContext,
+  useWatch,
+} from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Checkbox } from 'ted-ui/Checkbox'
 import { Typography } from 'ted-ui/Typography'
 
+import { fieldErrorText } from '@/forms/fieldError'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { IntervalRow } from './IntervalRow'
-import { addInterval, setWorking } from './weekEdit'
-import type { Day, Week, WeekError } from './weekModel'
+import { DEFAULT_INTERVAL, nextInterval, type Week } from './weekModel'
 
-// One weekday: «I work» and, when on, its intervals.
-export function DayRow({
-  index,
-  name,
-  day,
-  week,
-  errors,
-  onChange,
-}: {
-  index: number
-  name: string
-  day: Day
-  week: Week
-  errors: WeekError[]
-  onChange: (week: Week) => void
-}) {
+// One weekday of the week form: «I work» and, when on, its intervals.
+export function DayRow({ index, name }: { index: number; name: string }) {
   const { t } = useTranslation()
+  const {
+    control,
+    getValues,
+    setValue,
+    formState: { errors },
+  } = useFormContext<Week>()
+  const intervals = useFieldArray({
+    control,
+    name: `days.${index}.intervals`,
+  })
+  const working = useWatch({ control, name: `days.${index}.working` })
+  const emptyDay = errors.days?.[index]
   return (
     <fieldset className={styles.day}>
       <legend className={styles.dayName}>
@@ -32,30 +36,45 @@ export function DayRow({
           {name}
         </Typography>
       </legend>
-      <Checkbox
-        label={t('schedule.hours.working')}
-        checked={day.working}
-        onCheckedChange={(working) =>
-          onChange(setWorking(week, index, working))
-        }
+      <Controller
+        control={control}
+        name={`days.${index}.working`}
+        render={({ field }) => (
+          <Checkbox
+            label={t('schedule.hours.working')}
+            checked={field.value}
+            onCheckedChange={(on) => {
+              field.onChange(on)
+              if (on && intervals.fields.length === 0)
+                intervals.append(
+                  { ...DEFAULT_INTERVAL },
+                  { shouldFocus: false },
+                )
+            }}
+          />
+        )}
       />
-      {day.working && (
+      {working && (
         <div className={styles.intervals}>
-          {day.intervals.map((interval, at) => (
+          {intervals.fields.map((field, at) => (
             <IntervalRow
-              key={at}
+              key={field.id}
               dayIndex={index}
               at={at}
               dayName={name}
-              interval={interval}
-              week={week}
-              error={errors.find((e) => e.index === at)?.code}
-              onChange={onChange}
+              onRemove={() => {
+                // A day without intervals is a day off.
+                if (intervals.fields.length === 1)
+                  setValue(`days.${index}.working`, false, {
+                    shouldDirty: true,
+                  })
+                intervals.remove(at)
+              }}
             />
           ))}
-          {errors.some((e) => e.code === 'empty') && (
+          {emptyDay?.message && (
             <Typography variant="t4" color="red-300" role="alert">
-              {t('schedule.hours.error.empty')}
+              {fieldErrorText(t, emptyDay)}
             </Typography>
           )}
           <Button
@@ -63,7 +82,12 @@ export function DayRow({
             variant="ghost"
             colorScheme="black"
             size="small"
-            onClick={() => onChange(addInterval(week, index))}
+            onClick={() =>
+              intervals.append(
+                nextInterval(getValues(`days.${index}.intervals`).at(-1)),
+                { shouldFocus: false },
+              )
+            }
           >
             {t('schedule.hours.addInterval')}
           </Button>

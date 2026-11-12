@@ -1,4 +1,5 @@
 import type { StaffScheduleControllerReplaceWeeklyBodyWindowsItem as WindowDto } from '@/api/generated.schemas'
+import { endFromInput, endToInput } from '@/dates'
 
 export type { WindowDto }
 
@@ -13,10 +14,25 @@ export type Day = { working: boolean; intervals: Interval[] }
 // days[0] is Monday (ISO weekday 1).
 export type Week = { days: Day[]; slotMinutes: number }
 
-export type WeekError = { weekday: number } & (
-  | { code: 'empty'; index?: undefined }
-  | { code: 'endBeforeStart' | 'overlap' | 'slotTooLong'; index: number }
-)
+// The interval a working day starts with, and the length of one added after it.
+export const DEFAULT_INTERVAL: Interval = { start: 540, end: 1080, title: null }
+const NEW_INTERVAL_LENGTH = 120
+
+// The end stays what the form shows (the clock), so moving the start gives the
+// same interval as typing that end after it: night when it falls before.
+export const moveStart = (interval: Interval, start: number): Interval => ({
+  ...interval,
+  start,
+  end: endFromInput(start, endToInput(interval.end)),
+})
+
+// The interval added after `last`: on the clock, so after one ending at
+// midnight the next starts at 00:00.
+export function nextInterval(last: Interval | undefined): Interval {
+  if (!last) return { ...DEFAULT_INTERVAL }
+  const start = last.end % MINUTES_PER_DAY
+  return { start, end: start + NEW_INTERVAL_LENGTH, title: null }
+}
 
 // The back keeps one step per window; the form has one for the week — the most
 // common one, the smaller on a tie.
@@ -66,37 +82,21 @@ export function toWindows(week: Week): WindowDto[] {
   )
 }
 
-type Placed = { weekday: number; index: number; start: number; end: number }
+export type Placed = {
+  weekday: number
+  index: number
+  start: number
+  end: number
+}
 
 const startInWeek = (p: Placed) => (p.weekday - 1) * MINUTES_PER_DAY + p.start
 
 // The week is a ring: Sunday night runs into Monday (the back's rule).
-function overlaps(a: Placed, b: Placed): boolean {
+export function overlaps(a: Placed, b: Placed): boolean {
   const aStart = startInWeek(a)
   const aLength = a.end - a.start
   return [-WEEK, 0, WEEK].some((shift) => {
     const bStart = startInWeek(b) + shift
     return aStart < bStart + (b.end - b.start) && bStart < aStart + aLength
   })
-}
-
-export function validateWeek(week: Week): WeekError[] {
-  const errors: WeekError[] = []
-  const checked: Placed[] = []
-  week.days.forEach((day, d) => {
-    const weekday = d + 1
-    if (!day.working) return
-    if (day.intervals.length === 0) errors.push({ weekday, code: 'empty' })
-    day.intervals.forEach((interval, index) => {
-      const placed = { weekday, index, ...interval }
-      if (interval.end <= interval.start)
-        errors.push({ weekday, index, code: 'endBeforeStart' })
-      else if (checked.some((other) => overlaps(other, placed)))
-        errors.push({ weekday, index, code: 'overlap' })
-      else if (week.slotMinutes > interval.end - interval.start)
-        errors.push({ weekday, index, code: 'slotTooLong' })
-      if (interval.end > interval.start) checked.push(placed)
-    })
-  })
-  return errors
 }

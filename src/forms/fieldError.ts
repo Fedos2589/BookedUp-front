@@ -1,4 +1,3 @@
-import type { FieldError } from 'react-hook-form'
 import type { TFunction } from 'i18next'
 
 import en from '@/locales/en.json'
@@ -11,7 +10,10 @@ const isValidationMessage = (message: string): message is ValidationMessage =>
   message.startsWith('validation.') &&
   message.slice('validation.'.length) in en.validation
 
-export function fieldErrorText(t: TFunction, error: FieldError | undefined) {
+export function fieldErrorText(
+  t: TFunction,
+  error: { message?: string } | undefined,
+) {
   if (!error) return undefined
   const message = error.message ?? ''
   return t(isValidationMessage(message) ? message : 'validation.invalid')

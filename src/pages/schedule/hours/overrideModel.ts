@@ -1,5 +1,11 @@
 import { clockOfMinute } from '@/dates'
-import { fromWindows, toWindows, type Week, type WindowDto } from './weekModel'
+import {
+  DEFAULT_INTERVAL,
+  fromWindows,
+  toWindows,
+  type Week,
+  type WindowDto,
+} from './weekModel'
 
 export type OverrideWindow = Pick<
   WindowDto,
@@ -11,6 +17,13 @@ export type OverrideWindow = Pick<
 // week's, not a second copy.
 export const weekOfOverride = (windows: readonly OverrideWindow[]): Week =>
   fromWindows(windows.map((w) => ({ ...w, weekday: 1, title: null })))
+
+// A new date starts as a working day with the usual interval.
+export const newOverrideWeek = (): Week => {
+  const week = weekOfOverride([])
+  week.days[0] = { working: true, intervals: [{ ...DEFAULT_INTERVAL }] }
+  return week
+}
 
 export const overrideFromWeek = (week: Week): OverrideWindow[] =>
   toWindows(week).map(({ startMinute, durationMinutes, slotMinutes }) => ({
