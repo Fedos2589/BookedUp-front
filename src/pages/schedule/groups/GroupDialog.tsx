@@ -9,11 +9,7 @@ import { TagSelect } from 'ted-ui/TagSelect'
 import { TimePicker } from 'ted-ui/TimePicker'
 import { Typography } from 'ted-ui/Typography'
 
-import { ApiError } from '@/apiFetch'
-import type {
-  GroupsControllerAdd409,
-  GroupsControllerList200Item,
-} from '@/api/generated.schemas'
+import type { GroupsControllerList200Item } from '@/api/generated.schemas'
 import {
   getGroupsControllerListQueryKey,
   useGroupsControllerAdd,
@@ -25,6 +21,7 @@ import { fieldErrorText } from '@/forms/fieldError'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { focusFirstInvalid } from '@/pages/schedule/hours/focusFirstInvalid'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
+import { conflictTitle } from './conflictTitle'
 import {
   DESCRIPTION_MAX,
   emptyGroupForm,
@@ -36,13 +33,6 @@ import {
 } from './groupForm'
 
 const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7]
-
-// The title of what a 409 says the group collides with, if it says.
-function conflictTitle(error: unknown) {
-  if (!(error instanceof ApiError) || error.status !== 409) return undefined
-  return (error.body as GroupsControllerAdd409 | undefined)?.conflictsWith
-    ?.title
-}
 
 // Creates a group, or changes `group`.
 export function GroupDialog({

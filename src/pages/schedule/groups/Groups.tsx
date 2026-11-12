@@ -14,6 +14,7 @@ import {
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { GroupCard } from './GroupCard'
+import { GroupDates } from './GroupDates'
 import { GroupDialog } from './GroupDialog'
 import type { GroupsControllerList200Item } from '@/api/generated.schemas'
 
@@ -25,6 +26,9 @@ export function Groups({ staffId }: { staffId: string }) {
   const list = useGroupsControllerList(businessId, staffId)
   // The group being changed, or `true` for a new one.
   const [editing, setEditing] = useState<GroupsControllerList200Item | true>()
+  // The group whose cancelled days are open; read from the list, so it stays current.
+  const [datesOf, setDatesOf] = useState<string>()
+  const dating = list.data?.find((g) => g.id === datesOf)
   const [removing, setRemoving] = useState<{ id: string; title: string }>()
   const remove = useGroupsControllerRemove({
     mutation: {
@@ -71,6 +75,7 @@ export function Groups({ staffId }: { staffId: string }) {
               remove.reset()
               setEditing(group)
             }}
+            onDates={() => setDatesOf(group.id)}
             onDelete={() => {
               remove.reset()
               setRemoving({ id: group.id, title: group.title })
@@ -100,6 +105,13 @@ export function Groups({ staffId }: { staffId: string }) {
           staffId={staffId}
           group={editing === true ? undefined : editing}
           onClose={() => setEditing(undefined)}
+        />
+      )}
+      {dating && (
+        <GroupDates
+          staffId={staffId}
+          group={dating}
+          onClose={() => setDatesOf(undefined)}
         />
       )}
       {removing && (

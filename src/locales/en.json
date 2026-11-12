@@ -49,14 +49,16 @@
     "dateRange": "Pick the first and the last day",
     "weekdays": "Pick at least one day",
     "capacity": "A whole number from 1 to 1000",
-    "endIsStart": "The end can't be the same as the start"
+    "endIsStart": "The end can't be the same as the start",
+    "inPast": "This time has already passed"
   },
   "common": {
     "loading": "Loading",
     "tryAgain": "Try again",
     "save": "Save",
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "close": "Close"
   },
   "settings": {
     "title": "Business settings",
@@ -247,7 +249,35 @@
       "end": "Ends at",
       "capacity": "Seats",
       "conflict": "Overlaps another session: {{title}}",
-      "saveFailed": "Couldn't save the group. Try again."
+      "saveFailed": "Couldn't save the group. Try again.",
+      "dates": "Dates of {{title}}",
+      "datesShort": "Dates",
+      "datesTitle": "{{title}}: cancelled days",
+      "noCancelled": "No cancelled days.",
+      "cancelDay": "Cancel a day",
+      "cancelTitle": "Cancel a session",
+      "cancelSession": "Cancel the session",
+      "cancelFailed": "Couldn't cancel the session. Try again.",
+      "restore": "Restore {{date}}",
+      "restoreShort": "Restore",
+      "restoreBlocked": "Can't restore: One-off session «{{title}}» is at that time. Delete it first.",
+      "restoreFailed": "Couldn't restore the session. Try again.",
+      "cancelDate": "Day to cancel",
+      "notMeeting": "The group doesn't meet on this day",
+      "cancelled": "This day is already cancelled"
+    },
+    "sessions": {
+      "title": "One-off sessions",
+      "empty": "No coming one-off sessions.",
+      "loadFailed": "Couldn't load the one-off sessions",
+      "add": "+ One-off session",
+      "addTitle": "New one-off session",
+      "date": "Date",
+      "delete": "Delete {{title}}",
+      "confirmDelete": "Delete this one-off session?",
+      "deleteFailed": "Couldn't delete the session. Try again.",
+      "saveFailed": "Couldn't save the session. Try again.",
+      "zoneUnknown": "This browser doesn't know your business's time zone. Update the browser and try again."
     }
   }
 }

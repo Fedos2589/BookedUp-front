@@ -3,6 +3,7 @@ import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { account, fakeApi } from '@/test/fakeApi'
+import { pickDay } from '@/test/pickDay'
 import { renderApp } from '@/test/renderApp'
 
 afterEach(() => {
@@ -29,6 +30,7 @@ const vera = {
   scheduleMode: 'GROUPS',
 }
 const groupsRoute = `/staff/${vera.id}/groups`
+const sessionsRoute = `/staff/${vera.id}/one-off-sessions`
 const timeOffRoute = `/staff/${vera.id}/time-off`
 const football = {
   id: '00000000-0000-4000-8000-000000000041',
@@ -47,6 +49,7 @@ function withGroups(extra: Parameters<typeof fakeApi>[0] = {}) {
     [`GET ${api('/staff')}`]: [200, [vera]],
     [`GET ${api(timeOffRoute)}`]: [200, []],
     [`GET ${api(groupsRoute)}`]: [200, [football]],
+    [`GET ${api(sessionsRoute)}`]: [200, []],
     ...extra,
   })
 }
@@ -306,4 +309,283 @@ test('groups: a 409 without a name for the clash gets the general message', asyn
   fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText(/Couldn't save the group/)).toBeTruthy()
+})
+
+// Tuesday 17 Nov 2026, noon UTC: the same calendar day in every business zone
+// the tests use.
+function today() {
+  vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-11-17T12:00:00Z') })
+}
+const cancellationRoute = (date: string) =>
+  api(`${groupsRoute}/${football.id}/cancellations/${date}`)
+const openDates = async () =>
+  fireEvent.click(
+    await screen.findByRole('button', {
+      name: 'Dates of Football, kids 7–10',
+    }),
+  )
+
+const cancelDay = async (date: string) => {
+  fireEvent.click(await screen.findByRole('button', { name: 'Cancel a day' }))
+  fireEvent.keyDown(await screen.findByLabelText('Day to cancel'), {
+    key: 'Enter',
+  })
+  await pickDay(date)
+  const submit = screen.getByRole('button', { name: 'Cancel the session' })
+  submit.focus()
+  fireEvent.click(submit)
+}
+
+test('group dates: any day the group meets can be cancelled, and the chosen one is sent', async () => {
+  today()
+  const { calls } = withGroups({
+    [`PUT ${cancellationRoute('2026-11-19')}`]: [
+      200,
+      { ...football, cancellations: ['2026-11-19'] },
+    ],
+  })
+  renderApp('/schedule')
+
+  await openDates()
+  await cancelDay('2026-11-19')
+
+  await waitFor(() =>
+    expect(calls.map((c) => c.route)).toContain(
+      `PUT ${cancellationRoute('2026-11-19')}`,
+    ),
+  )
+})
+
+test('group dates: a day the group does not meet, or has cancelled, is refused before the request', async () => {
+  today()
+  const { calls } = withGroups({
+    [`GET ${api(groupsRoute)}`]: [
+      200,
+      [{ ...football, cancellations: ['2026-11-19'] }],
+    ],
+  })
+  renderApp('/schedule')
+
+  await openDates()
+  await cancelDay('2026-11-18')
+  expect(await screen.findByText(/doesn.t meet on this day/)).toBeTruthy()
+  await waitFor(() =>
+    expect(document.activeElement).toBe(screen.getByLabelText('Day to cancel')),
+  )
+  fireEvent.keyDown(screen.getByLabelText('Day to cancel'), { key: 'Enter' })
+  await pickDay('2026-11-19')
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel the session' }))
+  expect(await screen.findByText('This day is already cancelled')).toBeTruthy()
+  expect(calls.some((c) => c.route.startsWith('PUT'))).toBe(false)
+})
+
+test('group dates: a cancelled day is listed and can be restored', async () => {
+  today()
+  const cancelled = { ...football, cancellations: ['2026-11-19'] }
+  const { calls, set } = withGroups({
+    [`GET ${api(groupsRoute)}`]: [200, [cancelled]],
+    [`DELETE ${cancellationRoute('2026-11-19')}`]: [204],
+  })
+  renderApp('/schedule')
+
+  await openDates()
+  expect(await screen.findByText('Thu, Nov 19')).toBeTruthy()
+  set(`GET ${api(groupsRoute)}`, [200, [football]])
+  fireEvent.click(screen.getByRole('button', { name: 'Restore Thu, Nov 19' }))
+
+  await waitFor(() =>
+    expect(calls.map((c) => c.route)).toContain(
+      `DELETE ${cancellationRoute('2026-11-19')}`,
+    ),
+  )
+  await waitFor(() => expect(screen.queryByText('Thu, Nov 19')).toBeNull())
+})
+
+test('group dates: a restore the back refuses says which session sits there', async () => {
+  today()
+  withGroups({
+    [`GET ${api(groupsRoute)}`]: [
+      200,
+      [{ ...football, cancellations: ['2026-11-19'] }],
+    ],
+    [`DELETE ${cancellationRoute('2026-11-19')}`]: [
+      409,
+      {
+        statusCode: 409,
+        error: 'Conflict',
+        message: 'x',
+        field: 'date',
+        conflictsWith: {
+          kind: 'oneOffSession',
+          id: 's1',
+          title: 'Open day',
+          startsAt: '2026-11-19T15:00:00Z',
+        },
+      },
+    ],
+  })
+  renderApp('/schedule')
+
+  await openDates()
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Restore Thu, Nov 19' }),
+  )
+
+  expect(await screen.findByText(/One-off session «Open day»/)).toBeTruthy()
+  expect(screen.getByText('Thu, Nov 19')).toBeTruthy()
+})
+
+const openDay = {
+  id: '00000000-0000-4000-8000-000000000051',
+  title: 'Open day',
+  description: null,
+  startsAt: '2026-11-19T08:00:00.000Z',
+  endsAt: '2026-11-19T09:00:00.000Z',
+  capacity: 20,
+}
+const ended = {
+  ...openDay,
+  id: '00000000-0000-4000-8000-000000000052',
+  title: 'Old show',
+  startsAt: '2026-11-10T08:00:00.000Z',
+  endsAt: '2026-11-10T09:00:00.000Z',
+}
+
+test('one-off sessions: the coming ones are listed with day, time and seats; ended ones are not', async () => {
+  today()
+  withGroups({ [`GET ${api(sessionsRoute)}`]: [200, [ended, openDay]] })
+  renderApp('/schedule')
+
+  expect(await screen.findByText('Open day')).toBeTruthy()
+  // Bangkok is UTC+7: 08:00Z–09:00Z is 15:00–16:00.
+  expect(
+    screen.getByText(/Thu, Nov 19 · 15:00–16:00 · up to 20 people/),
+  ).toBeTruthy()
+  expect(screen.queryByText('Old show')).toBeNull()
+})
+
+test('one-off sessions: delete asks first, then removes it', async () => {
+  today()
+  const { calls, set } = withGroups({
+    [`GET ${api(sessionsRoute)}`]: [200, [openDay]],
+    [`DELETE ${api(`${sessionsRoute}/${openDay.id}`)}`]: [204],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Delete Open day' }),
+  )
+  expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(false)
+  set(`GET ${api(sessionsRoute)}`, [200, []])
+  fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
+
+  await waitFor(() => expect(screen.queryByText('Open day')).toBeNull())
+  expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(true)
+})
+
+async function fillSession() {
+  fireEvent.click(
+    await screen.findByRole('button', { name: '+ One-off session' }),
+  )
+  fireEvent.change(await screen.findByLabelText('Name'), {
+    target: { value: ' Open day ' },
+  })
+  fireEvent.keyDown(screen.getByLabelText('Date'), { key: 'Enter' })
+  await pickDay('2026-11-19')
+  sendTime('Starts at', '15:00')
+  sendTime('Ends at', '16:00')
+  fireEvent.change(screen.getByLabelText('Seats'), { target: { value: '20' } })
+}
+
+test('one-off sessions: a new one is posted with the instants in the business zone', async () => {
+  today()
+  const { calls } = withGroups({
+    [`POST ${api(sessionsRoute)}`]: [201, { ...openDay }],
+  })
+  renderApp('/schedule')
+
+  await fillSession()
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  await waitFor(() =>
+    expect(calls.some((c) => c.route.startsWith('POST'))).toBe(true),
+  )
+  expect(calls.find((c) => c.route.startsWith('POST'))?.body).toEqual({
+    title: 'Open day',
+    description: null,
+    startsAt: '2026-11-19T08:00:00.000Z',
+    endsAt: '2026-11-19T09:00:00.000Z',
+    capacity: 20,
+  })
+})
+
+test('one-off sessions: a 409 names the session it overlaps', async () => {
+  today()
+  withGroups({
+    [`POST ${api(sessionsRoute)}`]: [
+      409,
+      {
+        statusCode: 409,
+        error: 'Conflict',
+        message: 'x',
+        field: 'startsAt',
+        conflictsWith: {
+          kind: 'group',
+          id: football.id,
+          title: football.title,
+          date: '2026-11-19',
+        },
+      },
+    ],
+  })
+  renderApp('/schedule')
+
+  await fillSession()
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(
+    await screen.findByText(/Overlaps another session: Football, kids 7–10/),
+  ).toBeTruthy()
+})
+
+test('one-off sessions: an empty form says what is missing and sends nothing', async () => {
+  today()
+  const { calls } = withGroups()
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: '+ One-off session' }),
+  )
+  fireEvent.click(await screen.findByRole('button', { name: 'Save' }))
+
+  expect((await screen.findAllByText('Required')).length).toBeGreaterThan(0)
+  expect(calls.some((c) => c.route.startsWith('POST'))).toBe(false)
+})
+
+test('one-off sessions: a session that is already over is refused before the request', async () => {
+  today()
+  const { calls } = withGroups()
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: '+ One-off session' }),
+  )
+  fireEvent.change(await screen.findByLabelText('Name'), {
+    target: { value: 'Open day' },
+  })
+  fireEvent.keyDown(screen.getByLabelText('Date'), { key: 'Enter' })
+  // Now is 19:00 in Bangkok.
+  await pickDay('2026-11-17')
+  sendTime('Starts at', '08:00')
+  sendTime('Ends at', '09:00')
+  fireEvent.change(screen.getByLabelText('Seats'), { target: { value: '5' } })
+  const save = screen.getByRole('button', { name: 'Save' })
+  save.focus()
+  fireEvent.click(save)
+
+  expect(await screen.findByText('This time has already passed')).toBeTruthy()
+  await waitFor(() =>
+    expect(document.activeElement).toBe(screen.getByLabelText('Ends at')),
+  )
+  expect(calls.some((c) => c.route.startsWith('POST'))).toBe(false)
 })

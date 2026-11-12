@@ -103,3 +103,24 @@ export const endFromInput = (start: number, typed: number): number =>
 
 // The end of a window running into the next day, as the field shows it.
 export const endToInput = (end: number): number => end % 1440
+
+// A wall-clock minute of a calendar day on the business's clock, as an UTC
+// instant ("…Z"). A minute past 1439 is on the following day (an end after
+// midnight); undefined for a zone this browser does not know, as timeIn.
+export function instantOf(
+  date: string,
+  minute: number,
+  timeZone: string,
+): string | undefined {
+  const day = addDays(date, Math.floor(minute / 1440))
+  try {
+    return dayjs.tz(`${day} ${clockOfMinute(minute)}`, timeZone).toISOString()
+  } catch (error) {
+    if (error instanceof RangeError) return undefined
+    throw error
+  }
+}
+
+// ISO weekday (1 = Monday … 7 = Sunday) of a calendar day.
+export const isoWeekday = (date: string): number =>
+  ((new Date(`${date}T00:00:00Z`).getUTCDay() + 6) % 7) + 1

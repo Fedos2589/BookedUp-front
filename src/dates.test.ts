@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 
 import {
+  instantOf,
   clockOfMinute,
   dateIn,
   dayLabel,
@@ -84,4 +85,27 @@ test('the field shows the end of a window running into the next day on the clock
   expect(endToInput(1440)).toBe(0)
   expect(endToInput(1560)).toBe(120)
   expect(endToInput(1080)).toBe(1080)
+})
+
+test('instantOf: a wall-clock minute of a day in the business zone, as an instant', () => {
+  expect(instantOf('2026-11-17', 15 * 60, 'Asia/Bangkok')).toBe(
+    '2026-11-17T08:00:00.000Z',
+  )
+})
+
+test('instantOf: past 24h is the next day; DST is the zone’s own', () => {
+  expect(instantOf('2026-11-17', 1440 + 30, 'Asia/Bangkok')).toBe(
+    '2026-11-17T17:30:00.000Z',
+  )
+  // Berlin: +01:00 before the last Sunday of March, +02:00 after.
+  expect(instantOf('2026-03-28', 10 * 60, 'Europe/Berlin')).toBe(
+    '2026-03-28T09:00:00.000Z',
+  )
+  expect(instantOf('2026-03-29', 10 * 60, 'Europe/Berlin')).toBe(
+    '2026-03-29T08:00:00.000Z',
+  )
+})
+
+test('instantOf: undefined for a zone this browser does not know', () => {
+  expect(instantOf('2026-11-17', 600, 'Mars/Olympus')).toBeUndefined()
 })
