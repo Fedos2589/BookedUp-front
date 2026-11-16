@@ -1,0 +1,2818 @@
+<title>BookedUp — ручные тесты</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+/>
+<style>
+  /* Layout: one reading column, scenarios as cards with numbered do → see steps */
+  :root {
+    --bg: #f6f7f8;
+    --surface: #ffffff;
+    --fg: #1b2127;
+    --muted: #5d6872;
+    --line: #dde2e6;
+    --accent: #2f6f73;
+    --accent-soft: #e3efef;
+    --must: #b3261e;
+    --should: #a86200;
+    --nit: #3b7a3b;
+    --q: #5a54a8;
+    --must-soft: #fbe9e7;
+    --should-soft: #fdf1e0;
+    --nit-soft: #e8f3e8;
+    --q-soft: #ecebf8;
+    --code-bg: #eef1f3;
+    --f-body: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --f-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #13181c;
+      --surface: #1a2025;
+      --fg: #e4e8eb;
+      --muted: #9aa5ae;
+      --line: #2c353c;
+      --accent: #6fb6b9;
+      --accent-soft: #1e3335;
+      --must: #f2857c;
+      --should: #f0b25c;
+      --nit: #86c886;
+      --q: #a9a4f0;
+      --must-soft: #3a1f1d;
+      --should-soft: #3a2c17;
+      --nit-soft: #1f3120;
+      --q-soft: #25233d;
+      --code-bg: #20282e;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg: #13181c;
+    --surface: #1a2025;
+    --fg: #e4e8eb;
+    --muted: #9aa5ae;
+    --line: #2c353c;
+    --accent: #6fb6b9;
+    --accent-soft: #1e3335;
+    --must: #f2857c;
+    --should: #f0b25c;
+    --nit: #86c886;
+    --q: #a9a4f0;
+    --must-soft: #3a1f1d;
+    --should-soft: #3a2c17;
+    --nit-soft: #1f3120;
+    --q-soft: #25233d;
+    --code-bg: #20282e;
+    color-scheme: dark;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 32px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    line-height: 1.25;
+    margin: 0;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+  }
+  h2 {
+    font-size: 19px;
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  p {
+    margin: 0;
+  }
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+  a {
+    color: var(--accent);
+  }
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  code {
+    font-family: var(--f-mono);
+    font-size: 0.86em;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    overflow-wrap: anywhere;
+  }
+  pre {
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    background: var(--code-bg);
+    padding: 12px 14px;
+    border-radius: 6px;
+    margin: 0;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+  }
+  ul,
+  ol {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  header.top {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .meta span {
+    white-space: nowrap;
+  }
+  .chip {
+    font-size: 11.5px;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 1px 7px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .lbl {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .tbl {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13.5px;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  .tc {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+  .tc .hd {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    align-items: baseline;
+  }
+  .pre {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 12px;
+    margin: 0;
+    font-size: 14px;
+  }
+  .pre dt {
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .pre dd {
+    margin: 0;
+    min-width: 0;
+  }
+  @media (max-width: 520px) {
+    .pre {
+      grid-template-columns: 1fr;
+    }
+    .pre dd {
+      margin-bottom: 6px;
+    }
+  }
+  ol.steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: s;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  ol.steps li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 2px 10px;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+  }
+  ol.steps li::before {
+    content: counter(s);
+    font-family: var(--f-mono);
+    color: var(--accent);
+    font-weight: 500;
+    grid-row: span 2;
+  }
+  .act,
+  .exp {
+    min-width: 0;
+  }
+  .exp {
+    color: var(--muted);
+  }
+  .exp::before {
+    content: '→ ';
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .ui {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .c-happy {
+    background: var(--nit-soft);
+    color: var(--nit);
+  }
+  .c-corner {
+    background: var(--q-soft);
+    color: var(--q);
+  }
+  .toc {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">План ручного тестирования · 16.11.2026</div>
+    <h1>BookedUp — весь текущий функционал</h1>
+    <div class="meta">
+      <span>BookedUp-front <code>main @ 1f6c981</code></span>
+      <span>BookedUp-back <code>main @ 2b3962e</code></span>
+      <span>36 сценариев</span>
+    </div>
+    <p>
+      Что сейчас есть в приложении: регистрация владельца вместе с бизнесом,
+      вход и выход, кабинет с навигацией по ролям, настройки бизнеса (только
+      просмотр), страница «Team» (приглашения по ссылке, роли, удаление, мастера
+      без аккаунта), страница приглашения, страница «Schedule» в двух режимах
+      (индивидуальные часы с отдельными датами или группы с разовыми занятиями)
+      и отгулы, английский и русский интерфейс, PWA. Записи клиентов (E6) на
+      бэке пока только таблица — в интерфейсе их нет, страница
+      <code>/book/…</code> — заглушка.
+    </p>
+  </header>
+
+  <section id="toc">
+    <h2>Сценарии</h2>
+    <ol class="toc">
+      <li><a href="#t0">Подготовка</a></li>
+      <li>
+        <a href="#t1">Регистрация владельца с бизнесом</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t2">Выход и вход</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t3">Кабинет владельца: навигация и настройки</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t4">Приглашение администратора</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t5">Принятие приглашения с регистрацией (администратор)</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t6"
+          >Администратор приглашает мастера, мастер регистрируется</a
+        >
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t7">Принятие приглашения уже зарегистрированным человеком</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t8">Смена роли и удаление участника</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t9">Мастер без аккаунта и приглашение на его график</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t10">«Add a schedule» для участника и отзыв приглашения</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t11">График: недельные часы</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t12">График: отдельные даты</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t13">График: отгулы</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t14">График: режим групп, создание и правка группы</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t15">Группа: отмена и восстановление занятия</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t16">Разовые занятия и пересечения</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t17">Чей график видит каждая роль</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t18">Русский интерфейс</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t19">PWA: установка и офлайн</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t20">Ошибки регистрации: поля, занятый email и адрес</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t21">Ошибки входа и лимит попыток</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t22">Прямые адреса: роли и гость</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t23">Ссылка-приглашение больше не работает</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t24">Приглашение в команду, где человек уже есть</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t25">Удалённый участник: «You’re not in a business»</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t26">Команду изменили в другом окне</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t27">Недельные часы: ошибки формы</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t28">Отдельные даты и отгулы: ошибки формы</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t29">Группы и разовые занятия: ошибки формы</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t30">Бэк недоступен</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t31">Сессия закончилась в другой вкладке</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t32">Перезагрузка и кнопка «Назад» браузера</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t33">Телефон 390px и экранная клавиатура</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t34">Часовой пояс бизнеса не совпадает с браузером</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t35">Страница записи <code>/book/…</code></a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t36"
+          >Приглашение уже вошедшего человека, выход со страницы приглашения</a
+        >
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+    </ol>
+  </section>
+
+  <section id="plan">
+    <h2>Шаги</h2>
+
+    <article class="tc" id="t0">
+      <div class="hd"><h3>0. Подготовка</h3></div>
+      <dl class="pre">
+        <dt>Стенд</dt>
+        <dd>
+          Бэк на <code>http://localhost:3000</code>, фронт на
+          <code>http://localhost:5173</code> (запросы <code>/api/*</code> фронт
+          проксирует на бэк). Swagger:
+          <code>http://localhost:3000/api/docs</code>.
+        </dd>
+        <dt>Окна</dt>
+        <dd>
+          Сессия хранится в cookie, поэтому каждому аккаунту — свой профиль
+          браузера: <b>О</b> — Chrome, профиль «Owner»; <b>А</b> — Chrome,
+          профиль «Admin»; <b>М</b> — Firefox или Safari (мастер); <b>Б</b> —
+          Chrome Incognito (второй владелец). Окно инкогнито живёт до закрытия
+          всех инкогнито-окон.
+        </dd>
+        <dt>Аккаунты</dt>
+        <dd>
+          Придуманные для плана, создаются в сценариях 1, 5, 6, 7: владелец
+          <code>owner.qa@example.com</code>, администратор
+          <code>admin.qa@example.com</code>, мастер
+          <code>master.qa@example.com</code>, второй владелец
+          <code>owner2.qa@example.com</code>. Пароль у всех
+          <code>qa-pass-1234</code>. Если эти email уже заняты в вашей базе —
+          добавьте к имени цифру и записывайте, какие взяли.
+        </dd>
+        <dt>Лимиты</dt>
+        <dd>
+          Бэк пускает 10 регистраций в час с одного IP и 5 неудачных входов на
+          аккаунт за 15 минут. Лимиты в памяти: перезапуск бэка их сбрасывает.
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            В <code>BookedUp-back</code>:
+            <code>git switch main &amp;&amp; git pull</code>,
+            <code>cp .env.example .env</code> (если .env ещё нет),
+            <code>npm install</code>, <code>docker compose up -d</code>,
+            <code>npm run db:migrate</code>, <code>npm run start:dev</code>.
+          </div>
+          <div class="exp">
+            <code>http://localhost:3000/health</code> отвечает OK. Если на :3000
+            уже работает старый бэк — остановите его или запустите новый на
+            другом порту (<code>PORT=3001</code>) и в шаге 2 задайте
+            <code>API_PROXY_TARGET=http://localhost:3001</code>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В <code>BookedUp-front</code>:
+            <code>git switch main &amp;&amp; git pull</code>,
+            <code>npm ci</code>, <code>npm run dev</code>.
+          </div>
+          <div class="exp">
+            В терминале <code>http://localhost:5173/</code>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В окне О откройте <code>http://localhost:5173</code>.
+          </div>
+          <div class="exp">
+            Адрес меняется на <code>/sign-in</code>, заголовок
+            <span class="ui">«Sign in»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Проверьте язык браузера: во всех окнах английский первым (Chrome →
+            Settings → Languages), кроме сценария 18.
+          </div>
+          <div class="exp">Интерфейс на английском.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t1">
+      <div class="hd">
+        <h3>1. Регистрация владельца с бизнесом</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно О, <code>/sign-in</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Нажмите ссылку <span class="ui">«Create an account»</span> под
+            формой.
+          </div>
+          <div class="exp">
+            Адрес <code>/sign-up</code>, заголовок
+            <span class="ui">«Create your account»</span>, над формой
+            <span class="ui">«Step 1 of 2»</span>, поля
+            <span class="ui">Your name</span>, <span class="ui">Email</span>,
+            <span class="ui">Password</span>, кнопка
+            <span class="ui">«Continue»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            <span class="ui">Your name</span>: <code>Олег Владелец</code>,
+            <span class="ui">Email</span>: <code>owner.qa@example.com</code>,
+            <span class="ui">Password</span>: <code>qa-pass-1234</code>. Нажмите
+            глаз <span class="ui">«Show password»</span>.
+          </div>
+          <div class="exp">
+            Пароль виден открытым текстом, повторный клик снова скрывает.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Continue»</span>.</div>
+          <div class="exp">
+            Заголовок <span class="ui">«Your business»</span>,
+            <span class="ui">«Step 2 of 2»</span>, поля
+            <span class="ui">Business name</span>,
+            <span class="ui">Booking page address</span>,
+            <span class="ui">Time zone</span> (уже заполнен поясом браузера),
+            кнопки <span class="ui">«Create account»</span> и
+            <span class="ui">«Back»</span>. Ничего ещё не создано.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            <span class="ui">Business name</span>:
+            <code>Студия Йога Плюс</code>.
+          </div>
+          <div class="exp">
+            Адрес заполняется сам: <code>studiya-yoga-plyus</code>; подсказка
+            под ним
+            <span class="ui"
+              >«Clients will book at
+              localhost:5173/book/studiya-yoga-plyus»</span
+            >.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Back»</span>, затем
+            <span class="ui">«Continue»</span>.
+          </div>
+          <div class="exp">
+            На шаге 1 имя, email и пароль на месте; на шаге 2 — название и адрес
+            тоже.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Сотрите адрес и введите <code>yoga-plus-qa</code>, затем допишите к
+            названию <code> Центр</code>.
+          </div>
+          <div class="exp">
+            Адрес остался <code>yoga-plus-qa</code> — после ручной правки он
+            больше не следует за названием.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Кликните в <span class="ui">Time zone</span>, наберите
+            <code>Moscow</code>, выберите <code>Europe/Moscow</code>.
+          </div>
+          <div class="exp">
+            Подсказка под полем
+            <span class="ui">«Bookings are shown in this time zone»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Create account»</span>.
+          </div>
+          <div class="exp">
+            Адрес <code>/</code>; сверху навигация
+            <span class="ui">Dashboard · Schedule · Settings · Team</span> и
+            кнопка <span class="ui">«Sign out»</span>; заголовок
+            <span class="ui">«Студия Йога Плюс Центр»</span>, под ним
+            <span class="ui">«Business dashboard»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Запишите адрес бизнеса <code>yoga-plus-qa</code>.
+          </div>
+          <div class="exp">Понадобится в сценариях 20 и 35.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t2">
+      <div class="hd">
+        <h3>2. Выход и вход</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно О, владелец в кабинете, <code>/</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Нажмите <span class="ui">«Sign out»</span>.</div>
+          <div class="exp">Адрес <code>/sign-in</code>, форма входа.</div>
+        </li>
+        <li>
+          <div class="act">Нажмите «Назад» в браузере.</div>
+          <div class="exp">
+            Кабинет не показывается — снова <code>/sign-in</code>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Email <code>owner.qa@example.com</code>, Password
+            <code>qa-pass-1234</code>, нажмите
+            <span class="ui">«Sign in»</span> (кнопку формы).
+          </div>
+          <div class="exp">Адрес <code>/</code>, дашборд бизнеса.</div>
+        </li>
+        <li>
+          <div class="act">
+            Введите в адресной строке <code>localhost:5173/sign-in</code>, затем
+            <code>localhost:5173/sign-up</code>.
+          </div>
+          <div class="exp">
+            Оба раза перенаправляет на <code>/</code> — вошедшему форма не
+            показывается.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Закройте вкладку, откройте новую на <code>localhost:5173</code>.
+          </div>
+          <div class="exp">Сразу кабинет, без входа (сессия в cookie).</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t3">
+      <div class="hd">
+        <h3>3. Кабинет владельца: навигация и настройки</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно О, владелец, <code>/</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Нажмите <span class="ui">Settings</span>.</div>
+          <div class="exp">
+            Адрес <code>/settings</code>, заголовок
+            <span class="ui">«Business settings»</span>; поля
+            <span class="ui">Name</span> — «Студия Йога Плюс Центр»,
+            <span class="ui">Booking page</span> — ссылка
+            <code>localhost:5173/book/yoga-plus-qa</code>,
+            <span class="ui">Time zone</span> — <code>Europe/Moscow</code> и
+            строка <span class="ui">«It’s HH:MM there now»</span> с текущим
+            московским временем.
+          </div>
+        </li>
+        <li>
+          <div class="act">Подождите смену минуты.</div>
+          <div class="exp">Время в строке обновилось без перезагрузки.</div>
+        </li>
+        <li>
+          <div class="act">Нажмите ссылку страницы записи.</div>
+          <div class="exp">
+            Адрес <code>/book/yoga-plus-qa</code>, заголовок
+            <span class="ui">«Booking: yoga-plus-qa»</span>, навигации кабинета
+            нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Вернитесь, нажмите <span class="ui">Team</span>.
+          </div>
+          <div class="exp">
+            Адрес <code>/team</code>, заголовок <span class="ui">«Team»</span>;
+            разделы <span class="ui">Members</span> (один участник — вы,
+            <span class="ui">Owner</span>, без кнопок смены роли и удаления),
+            <span class="ui">Invitations</span> с кнопкой
+            <span class="ui">«Invite»</span> и текстом
+            <span class="ui">«No pending invitations»</span>,
+            <span class="ui">Masters without an account</span> с полем
+            <span class="ui">Name</span> и кнопкой
+            <span class="ui">«Add»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">Schedule</span>.</div>
+          <div class="exp">
+            Заголовок <span class="ui">«Schedule»</span> и текст
+            <span class="ui"
+              >«There is no schedule to edit yet. Add one on the Team
+              page.»</span
+            >
+            (у владельца ещё нет своего графика).
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t4">
+      <div class="hd">
+        <h3>4. Приглашение администратора</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно О, владелец, <code>/team</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Нажмите <span class="ui">«Invite»</span>.</div>
+          <div class="exp">
+            Модалка <span class="ui">«Invite to the team»</span>: группа
+            <span class="ui">Role</span> с вариантами
+            <span class="ui">Admin</span> и
+            <span class="ui">Master</span> (выбран Master), поле
+            <span class="ui">«Who is it for (optional)»</span>, кнопки
+            <span class="ui">«Cancel»</span> и
+            <span class="ui">«Create link»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Выберите <span class="ui">Admin</span>, в поле впишите
+            <code>Аня, администратор</code>, нажмите
+            <span class="ui">«Create link»</span>.
+          </div>
+          <div class="exp">
+            Текст
+            <span class="ui"
+              >«Send this link to the person you invite. It works once, until
+              &lt;дата и время через 7 дней&gt;, and is shown only now.»</span
+            >, поле <span class="ui">Invitation link</span> со ссылкой
+            <code>http://localhost:5173/invite/…</code>, кнопка копирования,
+            внизу <span class="ui">«Done»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите кнопку копирования (<span class="ui">«Copy link»</span>).
+          </div>
+          <div class="exp">
+            Появляется <span class="ui">«Copied»</span>. Вставьте в заметки —
+            ссылка целиком. Сохраните её как <b>ССЫЛКА-А</b>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Done»</span>.</div>
+          <div class="exp">
+            Модалка закрыта; в <span class="ui">Invitations</span> строка
+            <span class="ui">«Admin · Аня, администратор»</span>, под ней
+            <span class="ui"
+              >«Invited by Олег Владелец · Valid until &lt;дата&gt;»</span
+            >
+            и кнопка <span class="ui">«Revoke»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Снова <span class="ui">«Invite»</span>, ничего не меняя, нажмите
+            <span class="ui">«Cancel»</span>.
+          </div>
+          <div class="exp">Модалка закрыта, новых приглашений нет.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t5">
+      <div class="hd">
+        <h3>5. Принятие приглашения с регистрацией (администратор)</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно А (не вошедший), ССЫЛКА-А из сценария 4</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Откройте ССЫЛКУ-А.</div>
+          <div class="exp">
+            Заголовок <span class="ui">«Join Студия Йога Плюс Центр»</span>,
+            текст
+            <span class="ui">«Олег Владелец invites you as an admin»</span>,
+            поля <span class="ui">Your name</span>,
+            <span class="ui">Email</span>, <span class="ui">Password</span>,
+            кнопка <span class="ui">«Create account and join»</span>, ниже
+            <span class="ui">«Already have an account? Sign in»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Your name <code>Аня Админ</code>, Email
+            <code>admin.qa@example.com</code>, Password
+            <code>qa-pass-1234</code>, нажмите
+            <span class="ui">«Create account and join»</span>.
+          </div>
+          <div class="exp">
+            Адрес <code>/</code>; навигация
+            <span class="ui">Dashboard · Schedule · Settings · Team</span>;
+            заголовок «Студия Йога Плюс Центр». Своего бизнеса у Ани нет — она
+            сразу в команде.
+          </div>
+        </li>
+        <li>
+          <div class="act">В окне О обновите <code>/team</code>.</div>
+          <div class="exp">
+            В Members две строки: Олег Владелец — <span class="ui">Owner</span>;
+            Аня Админ, <code>admin.qa@example.com</code> —
+            <span class="ui">Admin</span> с кнопками
+            <span class="ui">«Make master»</span> и
+            <span class="ui">«Remove»</span>. В Invitations снова
+            <span class="ui">«No pending invitations»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">В окне А откройте ССЫЛКУ-А ещё раз.</div>
+          <div class="exp">
+            Экран <span class="ui">«This invitation no longer works»</span> с
+            текстом
+            <span class="ui"
+              >«It was used, cancelled or has expired. Ask the person who
+              invited you for a new link.»</span
+            >
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t6">
+      <div class="hd">
+        <h3>6. Администратор приглашает мастера, мастер регистрируется</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно А, администратор Аня, <code>/team</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Посмотрите на раздел Members.</div>
+          <div class="exp">
+            У строки владельца нет кнопок; у своей строки (Admin) тоже нет
+            кнопок смены роли и удаления.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Invite»</span>.</div>
+          <div class="exp">
+            В модалке нет выбора роли (администратор может звать только
+            мастеров); есть поле заметки и
+            <span class="ui">«Create link»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Заметка <code>Маша</code>, <span class="ui">«Create link»</span>,
+            скопируйте ссылку (<b>ССЫЛКА-М</b>), <span class="ui">«Done»</span>.
+          </div>
+          <div class="exp">
+            В Invitations <span class="ui">«Master · Маша»</span>,
+            <span class="ui">«Invited by Аня Админ · Valid until …»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">В окне М откройте ССЫЛКУ-М.</div>
+          <div class="exp">
+            <span class="ui">«Join Студия Йога Плюс Центр»</span>,
+            <span class="ui">«Аня Админ invites you as a master»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Your name <code>Маша Мастер</code>, Email
+            <code>master.qa@example.com</code>, Password
+            <code>qa-pass-1234</code>,
+            <span class="ui">«Create account and join»</span>.
+          </div>
+          <div class="exp">
+            Адрес <code>/</code>; навигация только
+            <span class="ui">Dashboard · Schedule</span> — без Settings и Team.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">Schedule</span>.</div>
+          <div class="exp">
+            <span class="ui"
+              >«You have no schedule yet. Ask the owner or an admin to add
+              one.»</span
+            >
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t7">
+      <div class="hd">
+        <h3>7. Принятие приглашения уже зарегистрированным человеком</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно Б (инкогнито), <code>localhost:5173/sign-up</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Зарегистрируйте второго владельца: <code>Борис</code>,
+            <code>owner2.qa@example.com</code>, <code>qa-pass-1234</code>,
+            бизнес <code>Фитнес Б</code>, адрес по умолчанию, пояс по умолчанию.
+            Затем <span class="ui">«Sign out»</span>.
+          </div>
+          <div class="exp">После выхода — <code>/sign-in</code>.</div>
+        </li>
+        <li>
+          <div class="act">
+            В окне О на <code>/team</code> создайте приглашение
+            <span class="ui">Master</span> с заметкой <code>Борис</code>,
+            скопируйте (<b>ССЫЛКА-Б</b>).
+          </div>
+          <div class="exp">Приглашение в списке.</div>
+        </li>
+        <li>
+          <div class="act">
+            В окне Б откройте ССЫЛКУ-Б и нажмите
+            <span class="ui">«Sign in»</span> под формой.
+          </div>
+          <div class="exp">
+            Адрес <code>/sign-in?invitation=…</code>, форма входа; под ней
+            ссылка <span class="ui">«Create an account»</span> ведёт обратно на
+            приглашение, а не на <code>/sign-up</code>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Войдите как <code>owner2.qa@example.com</code>.</div>
+          <div class="exp">
+            Возврат на <code>/invite/…</code>:
+            <span class="ui">«Join Студия Йога Плюс Центр»</span>,
+            <span class="ui">«Signed in as owner2.qa@example.com»</span>, кнопки
+            <span class="ui">«Join»</span> и <span class="ui">«Sign out»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Join»</span>.</div>
+          <div class="exp">
+            Открывается кабинет. Записать, какой бизнес показан — «Фитнес Б» или
+            «Студия Йога Плюс Центр» (переключателя бизнесов пока нет; это
+            открытый вопрос).
+          </div>
+        </li>
+        <li>
+          <div class="act">В окне О обновите <code>/team</code>.</div>
+          <div class="exp">
+            Борис в Members с ролью <span class="ui">Master</span>.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t8">
+      <div class="hd">
+        <h3>8. Смена роли и удаление участника</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно О, владелец, <code>/team</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            У Маши Мастер нажмите <span class="ui">«Make admin»</span>.
+          </div>
+          <div class="exp">
+            На кнопке спиннер, остальные кнопки на время запроса неактивны;
+            затем роль Маши <span class="ui">Admin</span>, кнопка сменилась на
+            <span class="ui">«Make master»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">В окне М обновите страницу.</div>
+          <div class="exp">
+            В навигации Маши появились <span class="ui">Settings</span> и
+            <span class="ui">Team</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В окне О нажмите у Маши <span class="ui">«Make master»</span>; в
+            окне М обновите.
+          </div>
+          <div class="exp">Снова Master; Settings и Team пропали.</div>
+        </li>
+        <li>
+          <div class="act">
+            В окне А (администратор) на <code>/team</code> посмотрите на Машу и
+            Бориса.
+          </div>
+          <div class="exp">
+            У мастеров кнопки <span class="ui">«Remove»</span>, кнопок «Make
+            admin» нет (админ не повышает до админа).
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В окне О у Бориса нажмите <span class="ui">«Remove»</span>.
+          </div>
+          <div class="exp">
+            Модалка <span class="ui">«Remove Борис from the team?»</span> с
+            текстом
+            <span class="ui"
+              >«They will no longer sign in to Студия Йога Плюс Центр. Their
+              schedule stays, without an account.»</span
+            >, кнопки <span class="ui">«Cancel»</span> и красная
+            <span class="ui">«Remove»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Cancel»</span>, затем снова
+            <span class="ui">«Remove»</span> и в модалке
+            <span class="ui">«Remove»</span>.
+          </div>
+          <div class="exp">
+            Первый раз ничего не удалено. Второй — Бориса нет в Members.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t9">
+      <div class="hd">
+        <h3>9. Мастер без аккаунта и приглашение на его график</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно О, владелец, <code>/team</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            В <span class="ui">Masters without an account</span> в поле
+            <span class="ui">Name</span> введите <code>Пётр Тренер</code>,
+            нажмите <span class="ui">«Add»</span>.
+          </div>
+          <div class="exp">
+            Поле очистилось; в списке строка
+            <span class="ui">Пётр Тренер</span> с кнопкой
+            <span class="ui">«Invite»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Add»</span> с пустым полем.
+          </div>
+          <div class="exp">Под полем <span class="ui">«Required»</span>.</div>
+        </li>
+        <li>
+          <div class="act">Перейдите в <span class="ui">Schedule</span>.</div>
+          <div class="exp">
+            Теперь есть график: поле <span class="ui">Master</span> не показано
+            (выбор один) — сразу переключатель
+            <span class="ui">One-to-one / Groups</span> и разделы графика Петра.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Вернитесь в Team, у Петра нажмите <span class="ui">«Invite»</span>.
+          </div>
+          <div class="exp">
+            Модалка <span class="ui">«Invite to the team»</span> с подзаголовком
+            <span class="ui">«For Пётр Тренер’s schedule»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Роль Master, <span class="ui">«Create link»</span>, скопируйте
+            (<b>ССЫЛКА-П</b>), <span class="ui">«Done»</span>.
+          </div>
+          <div class="exp">
+            В Invitations строка <span class="ui">«Master»</span> и под ней
+            <span class="ui">«For Пётр Тренер’s schedule»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В окне М выйдите (<span class="ui">«Sign out»</span>), откройте
+            ССЫЛКУ-П, зарегистрируйтесь: <code>Пётр</code>,
+            <code>petr.qa@example.com</code>, <code>qa-pass-1234</code>.
+          </div>
+          <div class="exp">
+            Кабинет; в <span class="ui">Schedule</span> у Петра его график (то,
+            что настроено на шаге 3 / в сценариях 11–13).
+          </div>
+        </li>
+        <li>
+          <div class="act">В окне О обновите Team.</div>
+          <div class="exp">
+            Пётр в Members с пометкой <span class="ui">«Takes clients»</span>;
+            из Masters without an account он исчез.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t10">
+      <div class="hd">
+        <h3>10. «Add a schedule» для участника и отзыв приглашения</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно О, владелец, <code>/team</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Посмотрите на свою строку и строку Маши.</div>
+          <div class="exp">
+            У обоих кнопка <span class="ui">«Add a schedule»</span> (графика ещё
+            нет), пометки «Takes clients» нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Add a schedule»</span> у себя.
+          </div>
+          <div class="exp">
+            Кнопка исчезла, появилась пометка
+            <span class="ui">«Takes clients»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">То же у Маши.</div>
+          <div class="exp">
+            У Маши <span class="ui">«Takes clients»</span>. В окне М после
+            перезагрузки Schedule показывает её график.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Создайте приглашение Master без заметки и, не открывая ссылку,
+            нажмите <span class="ui">«Revoke»</span> у него в списке.
+            Скопированную ссылку сохраните (<b>ССЫЛКА-R</b>).
+          </div>
+          <div class="exp">
+            Строка пропала, <span class="ui">«No pending invitations»</span>.
+            ССЫЛКА-R понадобится в сценарии 23.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t11">
+      <div class="hd">
+        <h3>11. График: недельные часы</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно М (Маша), <code>/schedule</code>, режим
+          <span class="ui">One-to-one</span>
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Посмотрите на страницу.</div>
+          <div class="exp">
+            Вкладки <span class="ui">One-to-one</span> (выбрана) и
+            <span class="ui">Groups</span>; раздел
+            <span class="ui">Weekly hours</span>: 7 дней с
+            <span class="ui">Monday</span> по <span class="ui">Sunday</span>, у
+            каждого чекбокс <span class="ui">Working</span>;
+            <span class="ui">Booking step</span> с вариантами
+            <span class="ui">10 min … 60 min</span>; кнопки
+            <span class="ui">«Save»</span> и
+            <span class="ui">«Cancel»</span> неактивны. Ниже разделы
+            <span class="ui">Separate dates</span> и
+            <span class="ui">Time off</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Отметьте <span class="ui">Working</span> у Monday.
+          </div>
+          <div class="exp">
+            Появился интервал <code>09:00 – 18:00</code> и кнопка
+            <span class="ui">«+ Interval»</span>; Save и Cancel стали активны.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Поменяйте конец на <code>13:00</code> и нажмите
+            <span class="ui">«+ Interval»</span>.
+          </div>
+          <div class="exp">
+            Второй интервал начинается после первого (с 13:00) длиной 2 часа:
+            <code>13:00 – 15:00</code>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Поменяйте второй интервал на <code>14:00 – 19:00</code>. Отметьте
+            Tuesday–Friday (по умолчанию 09:00–18:00). В Booking step выберите
+            <span class="ui">60 min</span>. Нажмите
+            <span class="ui">«Save»</span>.
+          </div>
+          <div class="exp">
+            Спиннер на Save, поля на время запроса заблокированы; затем Save и
+            Cancel снова неактивны.
+          </div>
+        </li>
+        <li>
+          <div class="act">Обновите страницу.</div>
+          <div class="exp">
+            Всё сохранилось: Monday два интервала, Tue–Fri по одному, шаг 60
+            min.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Удалите крестиком (<span class="ui">«Monday: remove interval»</span
+            >) оба интервала понедельника.
+          </div>
+          <div class="exp">
+            После удаления последнего интервала галочка Working у Monday
+            снимается сама.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Cancel»</span>.</div>
+          <div class="exp">
+            Понедельник вернулся к сохранённому виду, кнопки неактивны.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Сделайте Sunday рабочим с интервалом <code>22:00 – 02:00</code> и
+            сохраните.
+          </div>
+          <div class="exp">
+            Записать результат: интервал через полночь либо принимается (до
+            02:00 понедельника), либо ошибка
+            <span class="ui">«The end must be after the start»</span>.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t12">
+      <div class="hd">
+        <h3>12. График: отдельные даты</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно М, <code>/schedule</code>, One-to-one, недельные часы из сценария
+          11 сохранены
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Посмотрите на раздел <span class="ui">Separate dates</span>.
+          </div>
+          <div class="exp">
+            <span class="ui"
+              >«No separate dates. Add one to change a single day.»</span
+            >
+            и кнопка <span class="ui">«+ Date»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«+ Date»</span>.</div>
+          <div class="exp">
+            Модалка <span class="ui">«Add a date»</span>: поле
+            <span class="ui">Date</span>, строка <span class="ui">Day</span> с
+            отмеченным Working и интервалом 09:00–18:00,
+            <span class="ui">Booking step</span>, кнопки
+            <span class="ui">Cancel</span>/<span class="ui">Save</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Откройте календарь в поле Date.</div>
+          <div class="exp">
+            Дни раньше сегодняшнего (по поясу бизнеса) неактивны.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Выберите ближайший четверг, интервал <code>10:00 – 14:00</code>,
+            <span class="ui">«Save»</span>.
+          </div>
+          <div class="exp">
+            Модалка закрыта; в списке строка с датой четверга и
+            <code>10:00–14:00</code>, кнопки <span class="ui">«Change»</span> и
+            <span class="ui">«Delete»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Добавьте ещё одну дату — ближайшую пятницу — и снимите галочку
+            Working.
+          </div>
+          <div class="exp">
+            Booking step исчез; после Save в списке пятница с
+            <span class="ui">«Day off»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            У четверга нажмите <span class="ui">«Change»</span>.
+          </div>
+          <div class="exp">
+            Модалка <span class="ui">«Change a date»</span>, поле даты
+            неактивно, интервал 10:00–14:00. Поменяйте на 11:00–15:00, Save — в
+            списке новое время.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            У пятницы нажмите <span class="ui">«Delete»</span>.
+          </div>
+          <div class="exp">
+            Диалог <span class="ui">«Delete this date?»</span> с датой, кнопки
+            <span class="ui">«Cancel»</span> и <span class="ui">«Delete»</span>.
+            После Delete пятница пропала.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t13">
+      <div class="hd">
+        <h3>13. График: отгулы</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно М, <code>/schedule</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            В разделе <span class="ui">Time off</span> посмотрите текст.
+          </div>
+          <div class="exp">
+            <span class="ui">«No time off planned.»</span> и кнопка
+            <span class="ui">«+ Time off»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«+ Time off»</span>.</div>
+          <div class="exp">
+            Модалка <span class="ui">«Add time off»</span>, поля
+            <span class="ui">«Days off (from – to)»</span> и
+            <span class="ui">«Note (optional)»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Выберите диапазон с 1 по 5 декабря, заметка <code>Отпуск</code>,
+            <span class="ui">«Save»</span>.
+          </div>
+          <div class="exp">
+            В списке строка с диапазоном 1–5 декабря,
+            <span class="ui">Отпуск</span> и кнопка
+            <span class="ui">«Delete»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Добавьте отгул на один день — завтра, без заметки.
+          </div>
+          <div class="exp">
+            Вторая строка без заметки; список по возрастанию даты.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Переключитесь на вкладку <span class="ui">Groups</span>.
+          </div>
+          <div class="exp">
+            Раздел Time off со всеми отгулами остаётся и в режиме групп.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Удалите однодневный отгул (<span class="ui">«Delete»</span> →
+            <span class="ui">«Delete this time off?»</span> →
+            <span class="ui">«Delete»</span>).
+          </div>
+          <div class="exp">Строка пропала.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t14">
+      <div class="hd">
+        <h3>14. График: режим групп, создание и правка группы</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О, владелец, <code>/schedule</code>, в поле
+          <span class="ui">Master</span> выбран Пётр Тренер
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Нажмите вкладку <span class="ui">Groups</span>.</div>
+          <div class="exp">
+            Вкладка выбрана; вместо Weekly hours и Separate dates — разделы
+            <span class="ui">Groups</span> (<span class="ui"
+              >«No groups yet.»</span
+            >, <span class="ui">«+ Group»</span>) и
+            <span class="ui">One-off sessions</span> (<span class="ui"
+              >«No coming one-off sessions.»</span
+            >, <span class="ui">«+ One-off session»</span>), ниже Time off.
+          </div>
+        </li>
+        <li>
+          <div class="act">Обновите страницу.</div>
+          <div class="exp">Режим Groups сохранился.</div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«+ Group»</span>.</div>
+          <div class="exp">
+            Модалка <span class="ui">«New group»</span>:
+            <span class="ui">Name</span>,
+            <span class="ui">«What to bring (optional)»</span> с плейсхолдером
+            <span class="ui">«Boots, water, a towel…»</span>,
+            <span class="ui">Days</span> (теги дней недели),
+            <span class="ui">Starts at</span>, <span class="ui">Ends at</span>,
+            <span class="ui">Seats</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Name <code>Футбол дети</code>; описание — длинный текст на 6–8
+            строк; Days: Monday и Wednesday; 17:00–18:30; Seats <code>12</code>.
+            <span class="ui">«Save»</span>.
+          </div>
+          <div class="exp">
+            Карточка: <span class="ui">Футбол дети</span>, дни и время,
+            <span class="ui">«up to 12 people»</span>, описание обрезано до 3
+            строк и кнопка <span class="ui">«more»</span>; кнопки
+            <span class="ui">Change</span>, <span class="ui">Dates</span>,
+            <span class="ui">Delete</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«more»</span>, затем
+            <span class="ui">«less»</span>.
+          </div>
+          <div class="exp">
+            Описание раскрывается целиком и сворачивается обратно.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Создайте вторую группу <code>Йога</code>, Friday, 20:00–21:00, Seats
+            <code>1</code>, без описания.
+          </div>
+          <div class="exp">
+            Карточка с <span class="ui">«up to 1 person»</span> (единственное
+            число), без кнопки more.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            У «Йога» нажмите <span class="ui">«Change»</span>, поменяйте конец
+            на <code>21:30</code>, Save.
+          </div>
+          <div class="exp">
+            Модалка <span class="ui">«Change the group»</span> с текущими
+            значениями; после Save в карточке новое время.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Удалите «Йога»: <span class="ui">«Delete»</span> →
+            <span class="ui">«Delete this group?»</span> →
+            <span class="ui">«Delete»</span>.
+          </div>
+          <div class="exp">Карточка пропала.</div>
+        </li>
+        <li>
+          <div class="act">
+            Переключитесь на <span class="ui">One-to-one</span> и обратно на
+            <span class="ui">Groups</span>.
+          </div>
+          <div class="exp">
+            Записать: сохраняются ли данные обоих режимов (группа «Футбол дети»
+            на месте после возврата).
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t15">
+      <div class="hd">
+        <h3>15. Группа: отмена и восстановление занятия</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О, <code>/schedule</code>, Пётр, Groups, группа «Футбол дети»
+          (Mon, Wed 17:00–18:30)
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            У группы нажмите <span class="ui">«Dates»</span>.
+          </div>
+          <div class="exp">
+            Модалка <span class="ui">«Футбол дети: cancelled days»</span>, текст
+            <span class="ui">«No cancelled days.»</span>, кнопки
+            <span class="ui">«Cancel a day»</span> и
+            <span class="ui">«Close»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Cancel a day»</span>.</div>
+          <div class="exp">
+            Модалка <span class="ui">«Cancel a session»</span>, поле
+            <span class="ui">«Day to cancel»</span>, кнопки
+            <span class="ui">«Cancel»</span> и
+            <span class="ui">«Cancel the session»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Выберите ближайший понедельник (после сегодня) и нажмите
+            <span class="ui">«Cancel the session»</span>.
+          </div>
+          <div class="exp">
+            Возврат к списку: строка с датой этого понедельника и кнопкой
+            <span class="ui">«Restore»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Restore»</span>.</div>
+          <div class="exp">
+            Строка пропала, снова <span class="ui">«No cancelled days.»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Снова отмените ближайший понедельник и закройте модалку (<span
+              class="ui"
+              >«Close»</span
+            >).
+          </div>
+          <div class="exp">Понадобится в сценарии 16.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t16">
+      <div class="hd">
+        <h3>16. Разовые занятия и пересечения</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О, <code>/schedule</code>, Пётр, Groups; ближайший понедельник у
+          «Футбол дети» отменён (сценарий 15)
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«+ One-off session»</span>.
+          </div>
+          <div class="exp">
+            Модалка <span class="ui">«New one-off session»</span>: Name, What to
+            bring, <span class="ui">Date</span>, Starts at, Ends at, Seats.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Name <code>Мастер-класс</code>, Date — ближайшая среда, 17:30–18:00,
+            Seats 5, Save.
+          </div>
+          <div class="exp">
+            Под формой
+            <span class="ui">«Overlaps another session: Футбол дети»</span>;
+            модалка открыта.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Поменяйте дату на ближайший понедельник (отменённый), Save.
+          </div>
+          <div class="exp">
+            Сохранено; в списке One-off sessions дата и время,
+            <span class="ui">«up to 5 people»</span>, кнопка
+            <span class="ui">Delete</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте <span class="ui">Dates</span> у «Футбол дети» и нажмите
+            <span class="ui">«Restore»</span> у этого понедельника.
+          </div>
+          <div class="exp">
+            Текст
+            <span class="ui"
+              >«Can't restore: One-off session «Мастер-класс» is at that time.
+              Delete it first.»</span
+            >; дата осталась отменённой.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Закройте, удалите «Мастер-класс» (<span class="ui"
+              >«Delete this one-off session?»</span
+            >
+            → Delete), снова Restore.
+          </div>
+          <div class="exp">Восстановилось.</div>
+        </li>
+        <li>
+          <div class="act">
+            Создайте группу <code>Бег</code>, Monday, 18:00–19:00.
+          </div>
+          <div class="exp">
+            <span class="ui">«Overlaps another session: Футбол дети»</span> —
+            группы мастера не пересекаются.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Создайте разовое занятие на сегодня, которое уже закончилось
+            (например, 00:10–00:20).
+          </div>
+          <div class="exp">
+            У поля Ends at
+            <span class="ui">«This time has already passed»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Создайте разовое занятие на сегодня, которое закончится через 2
+            минуты, подождите 3 минуты.
+          </div>
+          <div class="exp">
+            Записать: исчезает ли оно из списка само (список прячет
+            закончившиеся) или после перезагрузки.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t17">
+      <div class="hd">
+        <h3>17. Чей график видит каждая роль</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Графики есть у Олега, Маши, Петра (сценарии 9, 10). Окна О, А, М
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Окно О, <code>/schedule</code>, кликните в поле
+            <span class="ui">Master</span>.
+          </div>
+          <div class="exp">
+            Список: Олег Владелец, Маша Мастер, Пётр (и график Бориса, если он
+            остался без аккаунта после сценария 8 — записать). Выбор меняет весь
+            график ниже.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В окне О у Маши поменяйте шаг записи и сохраните; в окне М обновите
+            Schedule.
+          </div>
+          <div class="exp">Маша видит изменение владельца.</div>
+        </li>
+        <li>
+          <div class="act">
+            Окно А (Аня — администратор, своего графика нет).
+          </div>
+          <div class="exp">
+            В списке Master только мастера (Маша, Пётр…), графика владельца нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">Окно М (Маша).</div>
+          <div class="exp">Поля Master нет — только её собственный график.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t18">
+      <div class="hd">
+        <h3>18. Русский интерфейс</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О; в настройках Chrome поставьте «Русский» первым языком и
+          перезапустите вкладку
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Откройте <code>/</code>.</div>
+          <div class="exp">
+            Навигация
+            <span class="ui">Кабинет · График · Настройки · Команда</span>,
+            кнопка <span class="ui">«Выйти»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте <span class="ui">Настройки</span>,
+            <span class="ui">Команда</span>, <span class="ui">График</span>,
+            откройте каждую модалку.
+          </div>
+          <div class="exp">
+            Заголовок <span class="ui">«Настройки бизнеса»</span>; вкладки
+            <span class="ui">Индивидуальные клиенты / Группы</span>; нигде нет
+            английского текста, ключей вида <code>schedule.groups.…</code>; даты
+            и названия месяцев в календаре по-русски, неделя с понедельника.
+          </div>
+        </li>
+        <li>
+          <div class="act">Выйдите.</div>
+          <div class="exp">
+            Заголовок <span class="ui">«Вход»</span>, кнопка
+            <span class="ui">«Войти»</span>, ссылка
+            <span class="ui">«Создать аккаунт»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Верните английский первым языком.</div>
+          <div class="exp">
+            После перезагрузки — английский. Переключателя языка в приложении
+            нет — это ожидаемо.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t19">
+      <div class="hd">
+        <h3>19. PWA: установка и офлайн</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          В BookedUp-front:
+          <code>npm run build &amp;&amp; npx vite preview</code> →
+          <code>http://localhost:4173</code> (бэк запущен). Окно О
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Откройте <code>localhost:4173</code>, войдите как владелец.
+          </div>
+          <div class="exp">
+            Кабинет. В адресной строке Chrome значок установки приложения.
+          </div>
+        </li>
+        <li>
+          <div class="act">Установите приложение и откройте его.</div>
+          <div class="exp">
+            Отдельное окно без адресной строки, иконка BookedUp, шрифт
+            Montserrat.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            DevTools → Application → Service workers: отметьте Offline, обновите
+            окно.
+          </div>
+          <div class="exp">
+            Оболочка приложения грузится (не страница «нет сети» Chrome); данные
+            не загружаются — видна ошибка загрузки с
+            <span class="ui">«Try again»</span> (записать, какая).
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Снимите Offline, нажмите <span class="ui">«Try again»</span>.
+          </div>
+          <div class="exp">Данные загрузились.</div>
+        </li>
+        <li>
+          <div class="act">
+            На телефоне (iOS Safari → «На экран Домой»; Android Chrome →
+            «Установить») по адресу компьютера в локальной сети.
+          </div>
+          <div class="exp">
+            Иконка на домашнем экране, открывается во весь экран, верх контента
+            не залезает под чёлку/статус-бар.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t20">
+      <div class="hd">
+        <h3>20. Ошибки регистрации: поля, занятый email и адрес</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно Б (инкогнито, не вошедший), <code>/sign-up</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Сразу нажмите <span class="ui">«Continue»</span>.
+          </div>
+          <div class="exp">
+            Под Your name <span class="ui">«Required»</span>, под Email ошибка,
+            под Password <span class="ui">«At least 8 characters»</span>; фокус
+            в первом ошибочном поле; шаг 2 не открылся.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Email <code>не-почта</code>, пароль <code>1234567</code>.
+          </div>
+          <div class="exp">
+            <span class="ui">«Enter a valid email»</span>,
+            <span class="ui">«At least 8 characters»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Имя <code>Тест</code>, Email
+            <code>owner.qa@example.com</code> (занятый), пароль
+            <code>qa-pass-1234</code>, Continue. Название <code>Тест</code>,
+            адрес <code>yoga-plus-qa</code> (занятый), Create account.
+          </div>
+          <div class="exp">
+            Записать, какое сообщение показано первым. Ожидается: возврат на шаг
+            1 с <span class="ui">«This email is already registered»</span> у
+            Email и фокусом в нём, а на шаге 2 у адреса
+            <span class="ui">«This address is taken»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Поменяйте email на свободный <code>owner3.qa@example.com</code>,
+            Continue, Create account.
+          </div>
+          <div class="exp">
+            У адреса <span class="ui">«This address is taken»</span>, фокус в
+            поле адреса.
+          </div>
+        </li>
+        <li>
+          <div class="act">Сотрите адрес и введите <code>Bad--Slug</code>.</div>
+          <div class="exp">
+            <span class="ui">«Latin letters, digits and single hyphens»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Очистите Time zone, нажмите Create account.</div>
+          <div class="exp">
+            <span class="ui">«Pick a time zone from the list»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Сотрите адрес полностью и начните менять название.
+          </div>
+          <div class="exp">Адрес снова подставляется из названия.</div>
+        </li>
+        <li>
+          <div class="act">Название из 101 символа.</div>
+          <div class="exp"><span class="ui">«Too long»</span>.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t21">
+      <div class="hd">
+        <h3>21. Ошибки входа и лимит попыток</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно Б, <code>/sign-in</code>, аккаунт
+          <code>owner2.qa@example.com</code>
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Sign in»</span> с пустыми полями.
+          </div>
+          <div class="exp">Ошибки у полей, запроса нет.</div>
+        </li>
+        <li>
+          <div class="act">
+            Email <code>owner2.qa@example.com</code>, пароль
+            <code>wrong-pass</code>, Sign in.
+          </div>
+          <div class="exp">
+            <span class="ui">«Invalid email or password»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Email <code>nobody.qa@example.com</code>, любой пароль.
+          </div>
+          <div class="exp">
+            Тот же текст — существование email не раскрывается.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Ещё 4 раза неверный пароль для <code>owner2.qa@example.com</code>,
+            затем правильный.
+          </div>
+          <div class="exp">
+            Начиная с шестой попытки —
+            <span class="ui">«Too many attempts. Try again later.»</span>, даже
+            с верным паролем. Перезапуск бэка снимает блокировку.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Email с пробелами и заглавными: <code> Owner.QA@Example.com </code>,
+            верный пароль.
+          </div>
+          <div class="exp">
+            Записать: входит или «Invalid email or password».
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t22">
+      <div class="hd">
+        <h3>22. Прямые адреса: роли и гость</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно М (мастер Маша), затем окно Б после выхода</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Окно М: в адресной строке <code>localhost:5173/settings</code>.
+          </div>
+          <div class="exp">Перенаправление на <code>/</code>, дашборд.</div>
+        </li>
+        <li>
+          <div class="act">Окно М: <code>localhost:5173/team</code>.</div>
+          <div class="exp">Перенаправление на <code>/</code>.</div>
+        </li>
+        <li>
+          <div class="act">
+            Окно Б не вошедший: <code>/</code>, <code>/schedule</code>,
+            <code>/team</code>, <code>/settings</code>.
+          </div>
+          <div class="exp">Каждый раз <code>/sign-in</code>.</div>
+        </li>
+        <li>
+          <div class="act">
+            Любое окно: <code>localhost:5173/nonexistent</code>.
+          </div>
+          <div class="exp">
+            Записать, что показано (отдельной страницы 404 в роутере нет).
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t23">
+      <div class="hd">
+        <h3>23. Ссылка-приглашение больше не работает</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно Б, не вошедший</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Откройте ССЫЛКУ-R (отозванную в сценарии 10).</div>
+          <div class="exp">
+            <span class="ui">«This invitation no longer works»</span> и
+            <span class="ui">«It was used, cancelled or has expired…»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте ССЫЛКУ-R, отрезав последние 5 символов.
+          </div>
+          <div class="exp">
+            Тот же экран (неправильная форма токена — мёртвая ссылка).
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте <code>localhost:5173/invite/abc</code>.
+          </div>
+          <div class="exp">Тот же экран.</div>
+        </li>
+        <li>
+          <div class="act">
+            Создайте новое приглашение (окно О), откройте его в окне Б,
+            заполните форму, но перед отправкой в окне О нажмите
+            <span class="ui">«Revoke»</span>. Затем в окне Б
+            <span class="ui">«Create account and join»</span>.
+          </div>
+          <div class="exp">
+            Под формой
+            <span class="ui"
+              >«This invitation no longer works. Ask for a new one.»</span
+            >.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t24">
+      <div class="hd">
+        <h3>24. Приглашение в команду, где человек уже есть</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О создаёт приглашение Master; окно М (Маша уже в команде, вошла)
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">В окне М откройте новую ссылку.</div>
+          <div class="exp">
+            <span class="ui">«Signed in as master.qa@example.com»</span>, кнопки
+            Join и Sign out.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Join»</span>.</div>
+          <div class="exp">
+            <span class="ui"
+              >«Couldn't join: you may already be in this team, or the schedule
+              offered to you is taken. Ask for a new invitation.»</span
+            >
+          </div>
+        </li>
+        <li>
+          <div class="act">В окне О обновите Team.</div>
+          <div class="exp">
+            Записать: приглашение осталось в списке или исчезло.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Создайте приглашение на график Петра без аккаунта… (если такого нет
+            — добавьте мастера <code>Ира</code> и пригласите на её график).
+            Откройте ссылку в окне Б, зарегистрируйтесь. Затем ту же «Ира»:
+            создайте второе приглашение и примите его в другом окне.
+          </div>
+          <div class="exp">
+            Второе — <span class="ui">«Couldn't join…»</span> (график уже
+            занят), либо «Invite» у Иры уже не показывается — записать.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t25">
+      <div class="hd">
+        <h3>25. Удалённый участник: «You’re not in a business»</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно М (Маша в кабинете на <code>/schedule</code>), окно О на
+          <code>/team</code>
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">В окне О удалите Машу из команды.</div>
+          <div class="exp">
+            Маши нет в Members; её график появился в
+            <span class="ui">Masters without an account</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">В окне М обновите страницу.</div>
+          <div class="exp">
+            Заголовок <span class="ui">«You’re not in a business»</span> и текст
+            <span class="ui"
+              >«This account is no longer a member of any business. To join one,
+              open the invitation link someone on its team sends you.»</span
+            >; навигации нет, есть <span class="ui">«Sign out»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В окне М, не перезагружая, попробуйте сохранить что-нибудь в графике
+            до шага 2 (повторите сценарий, сначала изменив поле, потом удалив
+            Машу, потом нажав Save).
+          </div>
+          <div class="exp">
+            <span class="ui">«Couldn't save the hours. Try again.»</span> или
+            переход на «You’re not in a business» — записать.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В окне О пригласите Машу на её бывший график (кнопка
+            <span class="ui">«Invite»</span> у её графика), в окне М откройте
+            ссылку и нажмите Join.
+          </div>
+          <div class="exp">
+            Маша снова в кабинете, график с прежними часами.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t26">
+      <div class="hd">
+        <h3>26. Команду изменили в другом окне</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окна О и А, оба на <code>/team</code>, страницы загружены до шага 1
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">В окне О удалите Петра.</div>
+          <div class="exp">В О Петра нет.</div>
+        </li>
+        <li>
+          <div class="act">
+            В окне А (не обновляя) нажмите у Петра
+            <span class="ui">«Remove»</span> → <span class="ui">«Remove»</span>.
+          </div>
+          <div class="exp">
+            Над списком
+            <span class="ui"
+              >«Someone changed the team meanwhile. Here it is as it is
+              now.»</span
+            >; список обновился, Петра нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В окне О создайте приглашение; в окне А (без обновления) отзовите
+            приглашение, которое О уже отозвал (подготовьте: оба видят одно
+            приглашение, О отзывает первым).
+          </div>
+          <div class="exp">Тот же текст про изменение команды.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t27">
+      <div class="hd">
+        <h3>27. Недельные часы: ошибки формы</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно О, <code>/schedule</code>, любой мастер в One-to-one</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">У Monday поставьте интервал 18:00–09:00, Save.</div>
+          <div class="exp">
+            У интервала
+            <span class="ui">«The end must be after the start»</span>, фокус на
+            нём, запроса нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Сделайте два интервала понедельника 09:00–13:00 и 12:00–15:00.
+          </div>
+          <div class="exp">
+            У второго <span class="ui">«Overlaps another interval»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Интервал 09:00–09:30 при Booking step
+            <span class="ui">60 min</span>.
+          </div>
+          <div class="exp">
+            <span class="ui"
+              >«The booking step is longer than the interval»</span
+            >; при смене шага на 30 min ошибка пропадает сразу.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Отметьте Working у Tuesday и удалите его интервал так, чтобы день
+            остался рабочим (если галочка снимается сама — записать и пропустить
+            шаг).
+          </div>
+          <div class="exp">
+            <span class="ui">«Add an interval or mark the day off»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Измените поле и, не сохраняя, нажмите <span class="ui">Team</span> в
+            навигации.
+          </div>
+          <div class="exp">
+            Записать: предупреждает ли приложение о несохранённых изменениях или
+            молча уходит.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t28">
+      <div class="hd">
+        <h3>28. Отдельные даты и отгулы: ошибки формы</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно М, <code>/schedule</code>, One-to-one, в Separate dates есть
+          четверг из сценария 12
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act"><span class="ui">«+ Date»</span>, сразу Save.</div>
+          <div class="exp">У даты <span class="ui">«Pick a date»</span>.</div>
+        </li>
+        <li>
+          <div class="act">Выберите тот же четверг, Save.</div>
+          <div class="exp">
+            <span class="ui"
+              >«This date is already in the list. Change it there.»</span
+            >
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте <span class="ui">«+ Date»</span> около полуночи по поясу
+            бизнеса, выберите сегодня и сохраните после полуночи.
+          </div>
+          <div class="exp">
+            <span class="ui">«This date is in the past»</span> у поля даты.
+            (Можно имитировать: бизнес в поясе, где скоро полночь — см. сценарий
+            34.)
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            <span class="ui">«+ Time off»</span>, выберите только начало
+            диапазона, Save.
+          </div>
+          <div class="exp">
+            <span class="ui">«Pick the first and the last day»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Заметка длиннее 200 символов.</div>
+          <div class="exp">В поле не вводится больше 200 символов.</div>
+        </li>
+        <li>
+          <div class="act">
+            Отгул, пересекающий существующий (2–3 декабря при 1–5 декабря).
+          </div>
+          <div class="exp">Записать: сохраняется или ошибка.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t29">
+      <div class="hd">
+        <h3>29. Группы и разовые занятия: ошибки формы</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно О, <code>/schedule</code>, Пётр, Groups</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act"><span class="ui">«+ Group»</span>, сразу Save.</div>
+          <div class="exp">
+            Name <span class="ui">«Required»</span>, Days
+            <span class="ui">«Pick at least one day»</span>, время
+            <span class="ui">«Required»</span>, Seats
+            <span class="ui">«A whole number from 1 to 1000»</span>; фокус на
+            первом ошибочном (если первыми ошибочны дни — на тегах дней).
+          </div>
+        </li>
+        <li>
+          <div class="act">Starts at и Ends at одинаковые: 10:00–10:00.</div>
+          <div class="exp">
+            <span class="ui">«The end can't be the same as the start»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Starts 23:00, Ends 01:00, Seats <code>0</code>, затем
+            <code>1001</code>, затем <code>2.5</code>.
+          </div>
+          <div class="exp">
+            Время через полночь принято (конец — следующий день); все три
+            значения мест — ошибка про 1–1000.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте <span class="ui">Dates</span> →
+            <span class="ui">«Cancel a day»</span>, выберите вторник (группа
+            Mon/Wed), <span class="ui">«Cancel the session»</span>.
+          </div>
+          <div class="exp">
+            <span class="ui">«The group doesn't meet on this day»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Выберите уже отменённый понедельник.</div>
+          <div class="exp">
+            <span class="ui">«This day is already cancelled»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Разовое занятие без даты, Save.</div>
+          <div class="exp">У даты <span class="ui">«Required»</span>.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t30">
+      <div class="hd">
+        <h3>30. Бэк недоступен</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О в кабинете; остановите бэк (Ctrl+C в его терминале) в нужный
+          момент
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Остановите бэк, откройте <code>/schedule</code> в новой вкладке.
+          </div>
+          <div class="exp">
+            Экран ошибки кабинета
+            <span class="ui">«Couldn't load your account»</span> с
+            <span class="ui">«Try again»</span> (не перенаправление на вход).
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Запустите бэк, нажмите <span class="ui">«Try again»</span>.
+          </div>
+          <div class="exp">Страница загрузилась.</div>
+        </li>
+        <li>
+          <div class="act">
+            На загруженной <code>/team</code> остановите бэк и нажмите
+            <span class="ui">«Add a schedule»</span> /
+            <span class="ui">«Invite» → «Create link»</span>.
+          </div>
+          <div class="exp">
+            <span class="ui"
+              >«Couldn't save. Check the connection and try again.»</span
+            >
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            На загруженной <code>/schedule</code> (бэк выключен) поменяйте часы
+            и Save; добавьте отгул; удалите дату.
+          </div>
+          <div class="exp">
+            Соответственно
+            <span class="ui">«Couldn't save the hours. Try again.»</span>,
+            <span class="ui">«Couldn't save the time off. Try again.»</span>,
+            <span class="ui">«Couldn't delete the date. Try again.»</span>;
+            введённые данные не пропали.
+          </div>
+        </li>
+        <li>
+          <div class="act">Переключите вкладку режима (бэк выключен).</div>
+          <div class="exp">
+            <span class="ui">«Couldn't change the type. Try again.»</span>,
+            вкладка осталась на прежнем режиме.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            На <code>/sign-in</code> и <code>/sign-up</code> отправьте форму при
+            выключенном бэке.
+          </div>
+          <div class="exp">
+            <span class="ui">«Something went wrong. Try again.»</span>
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте ссылку-приглашение при выключенном бэке.
+          </div>
+          <div class="exp">
+            <span class="ui">«Couldn't load the invitation»</span> и
+            <span class="ui">«Try again»</span>.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t31">
+      <div class="hd">
+        <h3>31. Сессия закончилась в другой вкладке</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О, две вкладки: 1 — <code>/schedule</code>, 2 —
+          <code>/team</code>
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Во вкладке 2 нажмите <span class="ui">«Sign out»</span>.
+          </div>
+          <div class="exp">Вкладка 2 — <code>/sign-in</code>.</div>
+        </li>
+        <li>
+          <div class="act">Во вкладке 1 поменяйте часы и нажмите Save.</div>
+          <div class="exp">
+            Переход на <code>/sign-in</code> (или ошибка сохранения — записать).
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Войдите заново во вкладке 2, во вкладке 1 перейдите по навигации.
+          </div>
+          <div class="exp">Кабинет снова работает в обеих вкладках.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t32">
+      <div class="hd">
+        <h3>32. Перезагрузка и кнопка «Назад» браузера</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно О, владелец</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Пройдите Dashboard → Schedule → Team → Settings, затем трижды
+            «Назад».
+          </div>
+          <div class="exp">
+            Settings → Team → Schedule → Dashboard по порядку, без мигания
+            экрана входа.
+          </div>
+        </li>
+        <li>
+          <div class="act">На каждой странице нажмите F5.</div>
+          <div class="exp">Остаётесь на той же странице с теми же данными.</div>
+        </li>
+        <li>
+          <div class="act">На шаге 2 регистрации нажмите F5.</div>
+          <div class="exp">
+            Записать: снова шаг 1 с пустыми полями (данные не хранятся) —
+            ожидаемо.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте модалку приглашения и создайте ссылку, нажмите «Назад»
+            браузера.
+          </div>
+          <div class="exp">
+            Записать: закрылась ли модалка, ушла ли страница; ссылка больше не
+            показывается — приглашение висит в списке, его можно отозвать.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t33">
+      <div class="hd">
+        <h3>33. Телефон 390px и экранная клавиатура</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Chrome DevTools → device toolbar, iPhone 12/13 (390×844); затем
+          реальный телефон в той же Wi-Fi (фронт:
+          <code>npm run dev -- --host</code>, бэк с
+          <code>SESSION_COOKIE_SECURE=false</code> в .env)
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Пройдите <code>/sign-in</code>, <code>/sign-up</code>, кабинет,
+            Team, Schedule.
+          </div>
+          <div class="exp">
+            Нет горизонтальной прокрутки; навигация помещается; кнопки форм
+            (<span class="ui">Continue</span>,
+            <span class="ui">Create account</span>,
+            <span class="ui">Save</span>/<span class="ui">Cancel</span>
+            недельных часов) прижаты к низу экрана.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте модалки (Invite, Add a date, New group).
+          </div>
+          <div class="exp">
+            Модалка выезжает снизу; календарь — нижний лист с
+            <span class="ui">«Apply»</span>; длинная форма прокручивается
+            внутри.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            На реальном телефоне тапните поле в регистрации и в недельных часах.
+          </div>
+          <div class="exp">
+            Клавиатура не закрывает поле и кнопку; страница не увеличивается при
+            фокусе (поля 16px).
+          </div>
+        </li>
+        <li>
+          <div class="act">Выбор Time zone и Master на телефоне.</div>
+          <div class="exp">Открывается лист с поиском.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t34">
+      <div class="hd">
+        <h3>34. Часовой пояс бизнеса не совпадает с браузером</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно Б: зарегистрируйте бизнес с поясом
+          <code>Pacific/Kiritimati</code> (UTC+14), график себе через Team →
+          «Add a schedule»
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Откройте Settings.</div>
+          <div class="exp">
+            <span class="ui">«It’s HH:MM there now»</span> — время Киритимати,
+            не локальное.
+          </div>
+        </li>
+        <li>
+          <div class="act">В Schedule откройте «+ Date» и «+ Time off».</div>
+          <div class="exp">
+            Минимальная дата — «сегодня» по Киритимати (может быть уже завтра по
+            вашему времени).
+          </div>
+        </li>
+        <li>
+          <div class="act">Добавьте отгул на один день, посмотрите список.</div>
+          <div class="exp">
+            Показан ровно выбранный день, без сдвига на соседний.
+          </div>
+        </li>
+        <li>
+          <div class="act">Создайте приглашение.</div>
+          <div class="exp">«Valid until» — во времени бизнеса.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t35">
+      <div class="hd">
+        <h3>35. Страница записи <code>/book/…</code></h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно Б, не вошедший</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Откройте <code>localhost:5173/book/yoga-plus-qa</code>.
+          </div>
+          <div class="exp">
+            <span class="ui">«Booking: yoga-plus-qa»</span>, без требования
+            входа.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте <code>localhost:5173/book/no-such-business</code>.
+          </div>
+          <div class="exp">
+            Тот же заголовок со словом из адреса — страница пока заглушка и
+            бизнес не проверяет. Ожидаемо до E7.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t36">
+      <div class="hd">
+        <h3>
+          36. Приглашение уже вошедшего человека, выход со страницы приглашения
+        </h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О создаёт приглашение Master; окно Б, вошёл
+          <code>owner2.qa@example.com</code> (Борис удалён в сценарии 8)
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">В окне Б откройте ссылку.</div>
+          <div class="exp">
+            <span class="ui">«Signed in as owner2.qa@example.com»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Sign out»</span> на этой странице.
+          </div>
+          <div class="exp">
+            Остаётесь на той же странице приглашения; вместо Join — форма
+            регистрации (имя, email, пароль). Приглашение не потеряно.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Sign in»</span>, войдите как
+            <code>owner2.qa@example.com</code>, нажмите
+            <span class="ui">«Join»</span>.
+          </div>
+          <div class="exp">Кабинет; в Team окна О Борис снова Master.</div>
+        </li>
+        <li>
+          <div class="act">
+            Создайте ещё одно приглашение; в окне Б откройте его, в соседней
+            вкладке Б выйдите, вернитесь и нажмите
+            <span class="ui">«Join»</span>.
+          </div>
+          <div class="exp">
+            Страница переключается на форму гостя (без перехода на /sign-in),
+            приглашение на месте.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В форме гостя введите <code>owner.qa@example.com</code> (занятый) и
+            <span class="ui">«Create account and join»</span>.
+          </div>
+          <div class="exp">
+            У Email <span class="ui">«This email is already registered»</span>.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <p>
+      <b>Вручную не проверить:</b> истечение приглашения через 7 дней (бэк:
+      <code>invitations</code> integration-тесты; фронт показывает тот же экран,
+      что для отозванной ссылки — сценарий 23); переключение на новую версию PWA
+      только в фоне и не при несохранённом вводе
+      (<code>src/pwa/updatePolicy.ts</code>, unit-тесты и
+      <code>npm run test:pwa</code>); блокировки и гонки при одновременной
+      записи графика (integration-тесты BookedUp-back <code>schedule</code>);
+      записи клиентов (E6) — в интерфейсе их ещё нет, таблица на бэке покрыта
+      integration-тестами.
+    </p>
+  </section>
+</div>
