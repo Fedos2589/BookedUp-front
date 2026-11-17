@@ -18,6 +18,31 @@ leaves a question this file doesn't answer.
 ships in ted-ui `v0.5.0`, which `package.json` already pins. One branch `e6/calendar`, one PR,
 reviewed by Opus before merge.
 
+**Before F3 — two small tasks in other repos** (each its own branch, plan and PR; the common plan
+and its «Steps» table get a row for each):
+
+- **B11 (BookedUp-back):** `GET …/slots` also returns meetings that have started or are over, on
+  request — a query flag (`includePast`, name is the back's call), allowed for the roles that open
+  the calendar. Today slots start from «now» (`slots.ts` `notBefore`), so a started meeting and its
+  bookings would drop out of the grid. Without the flag the answer is unchanged (booking screens
+  keep asking for what can be booked). Check: a meeting that started an hour ago is in the answer
+  with the flag and not without it; `capacity` / `booked` / `full` are right for it.
+- **K4 (ted-ui):** `ScheduleGridItem` gets a `faded?: boolean` (pale overlay, still readable and
+  still clickable), a Storybook story, a tag, bump here. Not a local style: AGENTS.md — a missing
+  look is a change in the kit.
+
+## Decision: past meetings stay on the grid, faded
+
+The grid loads **all** meetings (groups, one-off sessions) of the shown range — a day, or the whole
+week — **including the ones that are over**, so a started or finished meeting keeps its place and its
+bookings. A meeting that has **ended** is drawn faded (a pale overlay), so it reads as «gone by».
+Nothing can be booked into it: no «add», no click-to-book; for today only a walk-in (F9) is left,
+nothing at all for a day before today.
+
+- **Over** = `endsAt` ≤ now on the business's clock (`useNow`). A meeting in progress is not faded.
+- Faded only meetings; bookings in hours mode keep their status colour.
+- It needs two things from outside this repo, both before F3 — see «Before this step».
+
 ## What the back gives (B1–B10, done)
 
 All under `/businesses/:businessId/appointments`:
@@ -63,6 +88,8 @@ All under `/businesses/:businessId/appointments`:
 3. A master never sees another master's column or bookings, whatever the URL says.
 4. After an hours `NO_SHOW` or a cancel the grid refetches slots as well as bookings.
 5. A walk-in is offered only on a started meeting, and the count copes with `N > M`.
+6. A meeting that has started or ended is still on the grid with its bookings; an ended one is
+   faded and cannot be booked into, on any day of the week view.
 
 ---
 
@@ -99,8 +126,9 @@ next local day; group slot label shows free seats. Commit `feat(calendar): booki
 
 **Files:** `src/pages/calendar/CalendarPage.tsx`, create `src/pages/calendar/useCalendarData.ts`.
 
-Fetch appointments + slots for the shown range (TanStack Query, Orval hooks), render
-`ScheduleGrid` with `toColumns` and `visibleRange`; loading / error states like `SchedulePage`.
+Fetch appointments + slots for the shown range (TanStack Query, Orval hooks) — the whole day, the
+whole week — **with the past meetings** (B11's flag), render `ScheduleGrid` with `toColumns` and
+`visibleRange`; loading / error states like `SchedulePage`.
 
 **Check:** page test with mocked API: day view shows one column per master and a booking's client
 name; week view shows 7 columns. Commit `feat(calendar): day and week grid`.
@@ -115,6 +143,20 @@ taken», grid refetches. `useUnsavedInput`.
 
 **Check:** page test: create → booking appears; 409 → message shown, modal stays. Commit
 `feat(calendar): book a free slot`.
+
+### - [ ] F11: past meetings are faded and closed to booking
+
+**Needs:** B11 (the back returns past meetings) and K4 (kit `faded`) merged and bumped. After F3.
+
+**Files:** `src/pages/calendar/toColumns.ts`, `toColumns.test.ts` (a `now` input, `faded` on ended
+meetings), `src/pages/calendar/CalendarPage.tsx` (passes `useNow()`), locales.
+
+An ended meeting (`endsAt` ≤ now) gets `faded` and says «ended» in its accessible text. Clicking it
+still opens F5's modal, which then shows the bookings and **no «add»** (a short note why); in F9 the
+walk-in stays for today's meetings.
+
+**Check:** `toColumns` test: ended meeting faded, one in progress not; page test: last week's meeting
+is on the grid with its bookings, has no «add». Commit `feat(calendar): past meetings`.
 
 ### - [ ] F5: seats in group meetings
 
@@ -173,7 +215,7 @@ On 409 `hasBookings` show «N bookings on this date — cancel or move them firs
 **When:** after the `e6/calendar` PR is merged (the PR number and the merge are known only then).
 **Repo:** BookedUp-back — `git switch -c docs/e6-front-done origin/main` there.
 **Files:** `~/work/BookedUp-back/docs/superpowers/plans/2026-11-12-e6-calendar.md` — only the row `F`
-of the «Steps» table: status → `done — F1–F9, PR #N`.
+of the «Steps» table: status → `done — F1–F11, PR #N`.
 
 **Check:** `git diff` in BookedUp-back shows that one row and nothing else. Commit there
 `docs(plan): E6 front done`; don't push.
