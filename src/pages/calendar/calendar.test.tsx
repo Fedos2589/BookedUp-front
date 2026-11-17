@@ -126,6 +126,37 @@ test('the week view has a column per day of one master', async () => {
   expect(within(grid).getAllByRole('group')).toHaveLength(7)
 })
 
+test("last week's meeting stays on the grid and says it is over", async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-25T12:00:00Z'))
+  const meeting = {
+    staffId: staff[0].id,
+    startsAt: '2026-11-17T11:00:00Z', // 18:00 in Bangkok
+    endsAt: '2026-11-17T12:00:00Z',
+    title: 'Judo',
+    description: null,
+    capacity: 8,
+    booked: 3,
+    full: false,
+    groupId: '00000000-0000-4000-8000-000000000041',
+    oneOffSessionId: null,
+  }
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [`GET /api/businesses/${businessId}/appointments?${query('2026-11-16', '2026-11-22', staff[0].id)}`]:
+      [200, []],
+    [`GET /api/businesses/${businessId}/slots?${query('2026-11-16', '2026-11-22', staff[0].id)}`]:
+      [200, [meeting]],
+  })
+  renderApp(`/calendar?view=week&date=${day}`)
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  expect(
+    await within(grid).findByText(/Judo: 5 of 8 free \(ended\)/),
+  ).toBeTruthy()
+})
+
 test('a failed load says so and offers to try again', async () => {
   fakeApi({
     'GET /api/me': [200, account],

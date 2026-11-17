@@ -74,7 +74,9 @@ export function CalendarGrid({
     appointments: data.appointments,
     slots: data.slots,
     timeZone,
+    now,
     labels: {
+      ended: (text) => t('calendar.ended', { text }),
       day: (d) => dayLabel(d, i18n.language),
       seats: (title, free, capacity) =>
         t('calendar.seats', {

@@ -165,6 +165,7 @@
     "grid": "Bookings",
     "meeting": "Meeting",
     "seats": "{{title}}: {{free}} of {{capacity}} free",
+    "ended": "{{text}} (ended)",
     "prev": {
       "day": "Previous day",
       "week": "Previous week"

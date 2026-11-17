@@ -144,7 +144,7 @@ taken», grid refetches. `useUnsavedInput`.
 **Check:** page test: create → booking appears; 409 → message shown, modal stays. Commit
 `feat(calendar): book a free slot`.
 
-### - [ ] F11: past meetings are faded and closed to booking
+### - [x] F11: past meetings are faded and closed to booking
 
 **Needs:** B11 (the back returns past meetings) and K4 (kit `faded`) merged and bumped. After F3.
 

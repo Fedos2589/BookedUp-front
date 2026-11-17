@@ -12,7 +12,9 @@ const labels = {
   day: (date: string) => `day ${date}`,
   seats: (title: string | null, free: number, capacity: number) =>
     `${title ?? ''} ${free} of ${capacity}`,
+  ended: (text: string) => `${text} (ended)`,
 }
+const now = new Date('2026-11-17T11:30:00Z') // inside the 18:00–19:00 meeting
 const staff = (id: string, name: string): StaffControllerList200Item => ({
   id,
   name,
@@ -60,6 +62,7 @@ test('the day view: a column per master with the bookings of that master', () =>
     appointments: [booking({}), booking({ id: 'a2', staffId: 'petr' })],
     slots: [],
     timeZone,
+    now,
     labels,
   })
   expect(columns.map((c) => [c.id, c.label])).toEqual([
@@ -85,6 +88,7 @@ test('the week view: a column per day of one master', () => {
     appointments: [booking({}), booking({ id: 'x', staffId: 'petr' })],
     slots: [],
     timeZone,
+    now,
     labels,
   })
   expect(columns.map((c) => [c.id, c.label])).toEqual(
@@ -104,6 +108,7 @@ test('a booking at 23:30 UTC lands on the next local day, by the business clock'
     ],
     slots: [],
     timeZone,
+    now,
     labels,
   })
   expect(column.items[0]).toMatchObject({ startMinute: 390, endMinute: 450 })
@@ -120,6 +125,7 @@ test('a booking running past midnight ends at 1440 in the column it starts in', 
     ],
     slots: [],
     timeZone,
+    now,
     labels,
   })
   expect(column.items[0]).toMatchObject({ startMinute: 1410, endMinute: 1440 })
@@ -134,6 +140,7 @@ test('a group meeting shows its free seats; its seats and free hours are not ite
       meeting({ groupId: null, startsAt: '2026-11-17T05:00:00Z' }), // free hours
     ],
     timeZone,
+    now,
     labels,
   })
   expect(column.items).toHaveLength(1)
@@ -150,6 +157,7 @@ test('a full meeting reads 0 free; an over-booked one never goes negative', () =
     appointments: [],
     slots: [meeting({ booked: 10, full: true })],
     timeZone,
+    now,
     labels,
   })
   expect(column.items[0].children).toBe('Judo 0 of 8')
@@ -165,6 +173,7 @@ test('status sets the colour', () => {
     ],
     slots: [],
     timeZone,
+    now,
     labels,
   })
   expect(column.items.map((i) => i.colorScheme)).toEqual([
@@ -186,7 +195,44 @@ test('a clock change: minutes are the wall clock of the business, not UTC', () =
     ],
     slots: [],
     timeZone: 'Europe/Berlin',
+    now,
     labels,
   })
   expect(column.items[0]).toMatchObject({ startMinute: 90, endMinute: 210 })
+})
+
+test('an ended meeting is faded and says so; one in progress is not', () => {
+  const [column] = toColumns({
+    range: { view: 'day', date: '2026-11-17', staff: [vera] },
+    appointments: [],
+    slots: [
+      meeting({
+        groupId: 'over',
+        startsAt: '2026-11-17T08:00:00Z',
+        endsAt: '2026-11-17T09:00:00Z',
+      }),
+      meeting({}),
+    ],
+    timeZone,
+    now,
+    labels,
+  })
+  expect(column.items[0]).toMatchObject({
+    faded: true,
+    children: 'Judo 5 of 8 (ended)',
+  })
+  expect(column.items[1].faded).toBeFalsy()
+  expect(column.items[1].children).toBe('Judo 5 of 8')
+})
+
+test('a meeting ending exactly now is over', () => {
+  const [column] = toColumns({
+    range: { view: 'day', date: '2026-11-17', staff: [vera] },
+    appointments: [],
+    slots: [meeting({})],
+    timeZone,
+    now: new Date('2026-11-17T12:00:00Z'),
+    labels,
+  })
+  expect(column.items[0].faded).toBe(true)
 })
