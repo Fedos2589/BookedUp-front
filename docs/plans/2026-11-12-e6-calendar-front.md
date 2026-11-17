@@ -158,7 +158,7 @@ walk-in stays for today's meetings.
 **Check:** `toColumns` test: ended meeting faded, one in progress not; page test: last week's meeting
 is on the grid with its bookings, has no «add». Commit `feat(calendar): past meetings`.
 
-### - [ ] F5a: the client form as its own piece
+### - [x] F5a: the client form as its own piece
 
 **Files:** `src/pages/calendar/NewBookingModal.tsx`, create `src/pages/calendar/ClientFields.tsx`
 (name, phone, note fields) and `src/pages/calendar/useClientForm.ts` (the `useForm` with

@@ -1,11 +1,7 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { type RefObject, useId, useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Combobox } from 'ted-ui/Combobox'
-import { Input } from 'ted-ui/Input'
 import { Modal } from 'ted-ui/Modal'
-import { PhoneNumberField } from 'ted-ui/PhoneNumberField/PhoneNumberField'
 import { Typography } from 'ted-ui/Typography'
 
 import { useAppointmentsControllerCreate } from '@/api/appointments/appointments'
@@ -15,14 +11,9 @@ import type {
 } from '@/api/generated.schemas'
 import { ApiError } from '@/apiFetch'
 import { dateTimeIn, timeIn } from '@/dates'
-import { fieldErrorText } from '@/forms/fieldError'
-import { useUnsavedInput } from '@/pwa/unsavedInput'
-import {
-  type BookingForm,
-  bookingSchema,
-  clientPhone,
-  slotKey,
-} from './newBooking'
+import { ClientFields } from './ClientFields'
+import { slotKey } from './newBooking'
+import { useClientForm } from './useClientForm'
 import styles from './Calendar.module.scss'
 
 type Slot = SlotsControllerSlots200Item
@@ -56,25 +47,13 @@ export function NewBookingModal({
   const first = initial ?? slots[0]
   const [chosen, setChosen] = useState(first && slotKey(first))
   const slot = slots.find((s) => slotKey(s) === chosen)
-  const form = useForm<BookingForm>({
-    resolver: zodResolver(bookingSchema),
-    defaultValues: {
-      clientName: '',
-      country: i18n.language === 'ru' ? 'RU' : 'US',
-      phone: '',
-      note: '',
-    },
-  })
+  const { form, clientOf } = useClientForm()
   const create = useAppointmentsControllerCreate({
     mutation: { onSettled: onChanged },
   })
-  const country = useWatch({ control: form.control, name: 'country' })
-  const phone = useWatch({ control: form.control, name: 'phone' })
-  useUnsavedInput(form.formState.isDirty)
 
   const label = (s: Slot) =>
     `${masters.find((m) => m.id === s.staffId)?.name ?? ''} · ${dateTimeIn(new Date(s.startsAt), timeZone, i18n.language)}–${timeIn(new Date(s.endsAt), timeZone)}`
-  const errors = form.formState.errors
 
   return (
     <Modal
@@ -105,8 +84,8 @@ export function NewBookingModal({
         className={styles.form}
         noValidate
         onSubmit={form.handleSubmit((values) => {
-          const phone = clientPhone(values.country, values.phone)
-          if (!slot || !phone) return
+          const client = clientOf(values)
+          if (!slot || !client) return
           create.mutate(
             {
               businessId,
@@ -114,9 +93,7 @@ export function NewBookingModal({
                 staffId: slot.staffId,
                 startsAt: slot.startsAt,
                 endsAt: slot.endsAt,
-                clientName: values.clientName,
-                clientPhone: phone,
-                ...(values.note && { note: values.note }),
+                ...client,
               },
             },
             { onSuccess: onClose },
@@ -140,33 +117,7 @@ export function NewBookingModal({
             {t('calendar.new.noFree')}
           </Typography>
         )}
-        <Input
-          label={t('calendar.new.name')}
-          fullWidth
-          error={!!errors.clientName}
-          errorText={fieldErrorText(t, errors.clientName)}
-          {...form.register('clientName')}
-        />
-        <PhoneNumberField
-          label={t('calendar.new.phone')}
-          country={country}
-          nationalNumber={phone}
-          onCountryChange={(c) =>
-            form.setValue('country', c, { shouldDirty: true })
-          }
-          onNationalNumberChange={(n) =>
-            form.setValue('phone', n, { shouldDirty: true })
-          }
-          error={!!errors.phone}
-          errorText={fieldErrorText(t, errors.phone)}
-        />
-        <Input
-          label={t('calendar.new.note')}
-          fullWidth
-          error={!!errors.note}
-          errorText={fieldErrorText(t, errors.note)}
-          {...form.register('note')}
-        />
+        <ClientFields form={form} />
         {create.isError && (
           <Typography variant="t4" color="red-300" role="alert">
             {create.error instanceof ApiError && create.error.status === 409
