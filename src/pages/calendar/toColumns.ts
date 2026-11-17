@@ -10,6 +10,7 @@ import type {
   StaffControllerList200Item,
 } from '@/api/generated.schemas'
 import { localMoment } from '@/dates'
+import { meetingItemId } from './meetingOf'
 
 export type CalendarLabels = {
   day: (date: string) => string
@@ -84,7 +85,7 @@ function itemsByColumn(
     )
     const over = new Date(s.endsAt).getTime() <= now.getTime()
     add(s.staffId, s.startsAt, s.endsAt, (place) => ({
-      id: `${meetingId}@${s.startsAt}`,
+      id: meetingItemId(s),
       startMinute: place.startMinute,
       endMinute: place.endMinute,
       children: over ? labels.ended(seats) : seats,

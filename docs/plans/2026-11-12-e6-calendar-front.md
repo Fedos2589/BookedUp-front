@@ -194,7 +194,9 @@ time, so after it the grid refetches slots too.
 **Check:** page test: confirm → status shown; cancel → item leaves the grid. Commit
 `feat(calendar): booking status and cancel`.
 
-### - [ ] F9: add a walk-in to a started meeting
+### - [x] F9: add a walk-in to a started meeting
+
+_Done in PR #26 with the review fixes (`joinMode` in `meetingOf.ts`: seat ahead, walk-in once started on its own day)._
 
 **Files:** `src/pages/calendar/SessionModal.tsx`, locales.
 

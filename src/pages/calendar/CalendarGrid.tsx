@@ -13,7 +13,7 @@ import { dayLabel } from '@/dates'
 import { useNow } from '@/useNow'
 import { type CalendarView, weekDates } from './calendarSearch'
 import { NewBookingModal } from './NewBookingModal'
-import { meetingOf } from './meetingOf'
+import { joinMode, meetingOf } from './meetingOf'
 import { freeHoursSlots, slotAt } from './newBooking'
 import { SessionModal } from './SessionModal'
 import styles from './Calendar.module.scss'
@@ -44,6 +44,8 @@ export function CalendarGrid({
   // The booking dialog, for the slot that was clicked, if any.
   const now = useNow()
   const newButton = useRef<HTMLButtonElement>(null)
+  // Where focus returns after a meeting's dialog: the grid items cannot take it.
+  const gridBox = useRef<HTMLDivElement>(null)
   const [booking, setBooking] = useState<{ slot?: Slot }>()
   // The meeting whose seats are open, by its grid item id.
   const [openItem, setOpenItem] = useState<string>()
@@ -126,21 +128,24 @@ export function CalendarGrid({
       >
         {t('calendar.new.button')}
       </Button>
-      <ScheduleGrid
-        aria-label={t('calendar.grid')}
-        columns={columns}
-        startMinute={range.startMinute}
-        endMinute={range.endMinute}
-        onEmptyClick={bookAt}
-        onItemClick={(_, itemId) => setOpenItem(itemId)}
-      />
+      <div ref={gridBox} tabIndex={-1} className={styles.gridBox}>
+        <ScheduleGrid
+          aria-label={t('calendar.grid')}
+          columns={columns}
+          startMinute={range.startMinute}
+          endMinute={range.endMinute}
+          onEmptyClick={bookAt}
+          onItemClick={(_, itemId) => setOpenItem(itemId)}
+        />
+      </div>
       {meeting && (
         <SessionModal
           businessId={businessId}
           timeZone={timeZone}
           meeting={meeting}
+          mode={joinMode(meeting.slot, now, timeZone)}
           ended={new Date(meeting.slot.endsAt) <= now}
-          finalFocus={newButton}
+          finalFocus={gridBox}
           onChanged={data.refetch}
           onClose={() => setOpenItem(undefined)}
         />

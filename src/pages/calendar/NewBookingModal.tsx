@@ -10,9 +10,8 @@ import type {
   StaffControllerList200Item,
 } from '@/api/generated.schemas'
 import { ApiError } from '@/apiFetch'
-import { dateTimeIn, timeIn } from '@/dates'
 import { ClientFields } from './ClientFields'
-import { slotKey } from './newBooking'
+import { slotKey, slotRange } from './newBooking'
 import { useClientForm } from './useClientForm'
 import styles from './Calendar.module.scss'
 
@@ -53,7 +52,7 @@ export function NewBookingModal({
   })
 
   const label = (s: Slot) =>
-    `${masters.find((m) => m.id === s.staffId)?.name ?? ''} · ${dateTimeIn(new Date(s.startsAt), timeZone, i18n.language)}–${timeIn(new Date(s.endsAt), timeZone)}`
+    `${masters.find((m) => m.id === s.staffId)?.name ?? ''} · ${slotRange(s, timeZone, i18n.language) ?? ''}`
 
   return (
     <Modal

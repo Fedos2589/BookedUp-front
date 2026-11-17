@@ -200,9 +200,13 @@
       "list": "Booked",
       "add": "Add",
       "close": "Close",
-      "ended": "This meeting is over, so no one can be added.",
+      "ended": "This meeting is over.",
       "full": "Every place is taken.",
-      "filled": "Every place was just taken."
+      "filled": "Every place was just taken.",
+      "over": "All {{capacity}} taken, +{{over}} over",
+      "walkIn": "Add someone who came",
+      "notStarted": "This meeting hasn't started yet. Book a seat instead.",
+      "changed": "This meeting has changed. Check the calendar and try again."
     }
   },
   "schedule": {

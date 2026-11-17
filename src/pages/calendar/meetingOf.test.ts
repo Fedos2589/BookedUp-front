@@ -4,7 +4,7 @@ import type {
   AppointmentsControllerList200Item as Appointment,
   SlotsControllerSlots200Item as Slot,
 } from '@/api/generated.schemas'
-import { meetingOf } from './meetingOf'
+import { joinMode, meetingItemId, meetingOf } from './meetingOf'
 
 const startsAt = '2026-11-17T11:00:00Z'
 const judo: Slot = {
@@ -63,4 +63,32 @@ test('a one-off session is found by its own id', () => {
 test('a booking item or a meeting that is gone is not a meeting', () => {
   expect(meetingOf('some-booking-id', [judo], [])).toBeUndefined()
   expect(meetingOf(`g9@${startsAt}`, [judo], [])).toBeUndefined()
+})
+
+test('the item id of a meeting is the one meetingOf looks for', () => {
+  expect(meetingItemId(judo)).toBe(`g1@${startsAt}`)
+  expect(meetingOf(meetingItemId(judo), [judo], [])?.slot).toBe(judo)
+})
+
+const bangkok = 'Asia/Bangkok'
+const at = (iso: string) => new Date(iso)
+
+test('a meeting ahead takes a seat while there is one, and nothing once it is full', () => {
+  const now = at('2026-11-17T10:00:00Z')
+  expect(joinMode(judo, now, bangkok)).toBe('seat')
+  expect(joinMode({ ...judo, full: true }, now, bangkok)).toBe('closed')
+})
+
+test('a meeting that has started takes a walk-in, full or not, the same day', () => {
+  const during = at('2026-11-17T11:20:00Z')
+  expect(joinMode(judo, during, bangkok)).toBe('walkIn')
+  expect(joinMode({ ...judo, full: true }, during, bangkok)).toBe('walkIn')
+  // over, but still today on the business clock (18:00–19:00 Bangkok)
+  expect(joinMode(judo, at('2026-11-17T14:00:00Z'), bangkok)).toBe('walkIn')
+})
+
+test('a meeting of an earlier day takes no one', () => {
+  expect(joinMode(judo, at('2026-11-25T12:00:00Z'), bangkok)).toBe('closed')
+  // 18:00 Bangkok on the 17th is still the 17th there, already the 18th in UTC+14
+  expect(joinMode(judo, at('2026-11-17T17:30:00Z'), bangkok)).toBe('closed')
 })
