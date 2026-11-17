@@ -68,7 +68,7 @@ All under `/businesses/:businessId/appointments`:
 
 ## Step F — front (branch `e6/calendar`)
 
-### - [ ] F1: API client and `/calendar` page shell
+### - [x] F1: API client and `/calendar` page shell
 
 **Files:** `src/api/*` (`npm run api:generate` against the back on `main`), `src/app/router.tsx`
 (child of the cabinet route), `src/pages/cabinet/CabinetLayout.tsx` (nav item), create
