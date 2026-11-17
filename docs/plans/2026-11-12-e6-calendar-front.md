@@ -168,7 +168,7 @@ A pure extraction: F4's dialog uses them, F5b / F9 reuse them. No behaviour chan
 
 **Check:** `npm test` — F4's page tests pass untouched. Commit `refactor(calendar): client form shared`.
 
-### - [ ] F5b: seats in group meetings
+### - [x] F5b: seats in group meetings
 
 **Files:** create `src/pages/calendar/SessionModal.tsx`, `src/pages/calendar/meetingOf.ts` (+ test:
 grid item id `${meetingId}@${startsAt}` → the meeting's slot and its bookings), `CalendarGrid.tsx`

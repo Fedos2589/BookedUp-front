@@ -300,3 +300,115 @@ test('hours that have passed, or are the masters of nobody on screen, are not of
   const button = await screen.findByRole('button', { name: 'New booking' })
   expect((button as HTMLButtonElement).disabled).toBe(true)
 })
+
+const judo = {
+  staffId: staff[0].id,
+  startsAt: '2026-11-17T11:00:00Z', // 18:00 in Bangkok
+  endsAt: '2026-11-17T12:00:00Z',
+  title: 'Judo',
+  description: null,
+  capacity: 3,
+  booked: 1,
+  full: false,
+  groupId: '00000000-0000-4000-8000-000000000041',
+  oneOffSessionId: null,
+}
+const seatOf = (id: string, clientName: string) => ({
+  ...booking,
+  id,
+  clientName,
+  startsAt: judo.startsAt,
+  endsAt: judo.endsAt,
+  groupId: judo.groupId,
+})
+const meetingUrls = {
+  list: `GET /api/businesses/${businessId}/appointments?${query(day, day)}`,
+  slots: `GET /api/businesses/${businessId}/slots?${query(day, day)}`,
+}
+
+test('a seat is added to a group meeting and the count grows', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T01:00:00Z'))
+  let added = false
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [meetingUrls.list]: () => [
+      200,
+      added
+        ? [seatOf('a1', 'Anna'), seatOf('a2', 'Olga')]
+        : [seatOf('a1', 'Anna')],
+    ],
+    [meetingUrls.slots]: () => [200, [{ ...judo, booked: added ? 2 : 1 }]],
+    [`POST /api/businesses/${businessId}/appointments`]: () => {
+      added = true
+      return [201, seatOf('a2', 'Olga')]
+    },
+  })
+  renderApp(`/calendar?date=${day}`)
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Judo: 2 of 3 free/))
+
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).getByText('Free 2 of 3')).toBeTruthy()
+  expect(within(dialog).getByText('Anna')).toBeTruthy()
+  fireEvent.change(within(dialog).getByLabelText('Name'), {
+    target: { value: 'Olga' },
+  })
+  fireEvent.change(within(dialog).getByLabelText('Phone'), {
+    target: { value: '+66 81 234 5678' },
+  })
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Add' }))
+
+  expect(await within(dialog).findByText('Free 1 of 3')).toBeTruthy()
+  expect(within(dialog).getByText('Olga')).toBeTruthy()
+  expect(api.calls.find((c) => c.route.startsWith('POST'))?.body).toEqual({
+    staffId: staff[0].id,
+    startsAt: judo.startsAt,
+    endsAt: judo.endsAt,
+    clientName: 'Olga',
+    clientPhone: '+66812345678',
+    groupId: judo.groupId,
+  })
+})
+
+test('a full meeting, and one that is over, show their seats and cannot take another', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T01:00:00Z'))
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [meetingUrls.list]: [200, [seatOf('a1', 'Anna')]],
+    [meetingUrls.slots]: [
+      200,
+      [{ ...judo, capacity: 1, booked: 1, full: true }],
+    ],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Judo: 0 of 1 free/))
+
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).getByText('Anna')).toBeTruthy()
+  expect(within(dialog).getByText('Every place is taken.')).toBeTruthy()
+  expect(within(dialog).queryByRole('button', { name: 'Add' })).toBeNull()
+})
+
+test("last week's meeting shows its bookings and no way to add one", async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-25T12:00:00Z'))
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [meetingUrls.list]: [200, [seatOf('a1', 'Anna')]],
+    [meetingUrls.slots]: [200, [judo]],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Judo: 2 of 3 free \(ended\)/))
+
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).getByText('Anna')).toBeTruthy()
+  expect(within(dialog).getByText(/meeting is over/)).toBeTruthy()
+  expect(within(dialog).queryByRole('button', { name: 'Add' })).toBeNull()
+})

@@ -13,7 +13,9 @@ import { dayLabel } from '@/dates'
 import { useNow } from '@/useNow'
 import { type CalendarView, weekDates } from './calendarSearch'
 import { NewBookingModal } from './NewBookingModal'
+import { meetingOf } from './meetingOf'
 import { freeHoursSlots, slotAt } from './newBooking'
+import { SessionModal } from './SessionModal'
 import styles from './Calendar.module.scss'
 import { toColumns } from './toColumns'
 import { useCalendarData } from './useCalendarData'
@@ -43,6 +45,8 @@ export function CalendarGrid({
   const now = useNow()
   const newButton = useRef<HTMLButtonElement>(null)
   const [booking, setBooking] = useState<{ slot?: Slot }>()
+  // The meeting whose seats are open, by its grid item id.
+  const [openItem, setOpenItem] = useState<string>()
   const dates = view === 'week' ? weekDates(date) : [date]
   const data = useCalendarData(businessId, {
     from: dates[0],
@@ -108,6 +112,9 @@ export function CalendarGrid({
     if (slot) setBooking({ slot })
   }
 
+  // Looked up in the loaded data, so a reload shows its seats as they are now.
+  const meeting = openItem && meetingOf(openItem, data.slots, data.appointments)
+
   return (
     <>
       <Button
@@ -125,7 +132,19 @@ export function CalendarGrid({
         startMinute={range.startMinute}
         endMinute={range.endMinute}
         onEmptyClick={bookAt}
+        onItemClick={(_, itemId) => setOpenItem(itemId)}
       />
+      {meeting && (
+        <SessionModal
+          businessId={businessId}
+          timeZone={timeZone}
+          meeting={meeting}
+          ended={new Date(meeting.slot.endsAt) <= now}
+          finalFocus={newButton}
+          onChanged={data.refetch}
+          onClose={() => setOpenItem(undefined)}
+        />
+      )}
       {booking && (
         <NewBookingModal
           businessId={businessId}

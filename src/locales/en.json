@@ -193,6 +193,16 @@
       "noFree": "No free time in this range",
       "notFree": "This time was just taken. Pick another.",
       "saveFailed": "Couldn't save the booking. Try again."
+    },
+    "session": {
+      "free": "Free {{free}} of {{capacity}}",
+      "none": "Nobody has booked yet",
+      "list": "Booked",
+      "add": "Add",
+      "close": "Close",
+      "ended": "This meeting is over, so no one can be added.",
+      "full": "Every place is taken.",
+      "filled": "Every place was just taken."
     }
   },
   "schedule": {
