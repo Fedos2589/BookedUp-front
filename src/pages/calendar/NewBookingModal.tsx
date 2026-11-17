@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useId, useState } from 'react'
+import { type RefObject, useId, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Combobox } from 'ted-ui/Combobox'
@@ -17,7 +17,12 @@ import { ApiError } from '@/apiFetch'
 import { dateTimeIn, timeIn } from '@/dates'
 import { fieldErrorText } from '@/forms/fieldError'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
-import { type BookingForm, bookingSchema, clientPhone } from './newBooking'
+import {
+  type BookingForm,
+  bookingSchema,
+  clientPhone,
+  slotKey,
+} from './newBooking'
 import styles from './Calendar.module.scss'
 
 type Slot = SlotsControllerSlots200Item
@@ -31,6 +36,7 @@ export function NewBookingModal({
   slots,
   masters,
   initial,
+  finalFocus,
   onChanged,
   onClose,
 }: {
@@ -39,12 +45,17 @@ export function NewBookingModal({
   slots: Slot[]
   masters: StaffControllerList200Item[]
   initial?: Slot
+  finalFocus: RefObject<HTMLElement | null>
   onChanged: () => void
   onClose: () => void
 }) {
   const { t, i18n } = useTranslation()
   const formId = useId()
-  const [slot, setSlot] = useState<Slot | undefined>(initial ?? slots[0])
+  // Chosen by key, found in the current list: a slot taken meanwhile leaves the
+  // list and is no longer chosen, instead of being sent again.
+  const first = initial ?? slots[0]
+  const [chosen, setChosen] = useState(first && slotKey(first))
+  const slot = slots.find((s) => slotKey(s) === chosen)
   const form = useForm<BookingForm>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
@@ -70,6 +81,7 @@ export function NewBookingModal({
       isVisible
       title={t('calendar.new.title')}
       onClose={onClose}
+      finalFocus={finalFocus}
       buttons={[
         {
           variant: 'ghost',
@@ -115,14 +127,19 @@ export function NewBookingModal({
           label={t('calendar.new.slot')}
           options={slots}
           value={slot ?? null}
-          onValueChange={(next) => next && setSlot(next)}
+          onValueChange={(next) => next && setChosen(slotKey(next))}
           itemToStringLabel={label}
           isItemEqualToValue={(a, b) =>
             a.startsAt === b.startsAt && a.staffId === b.staffId
           }
-          getItemKey={(s) => `${s.staffId}@${s.startsAt}`}
+          getItemKey={slotKey}
           openOnFocus
         />
+        {slots.length === 0 && (
+          <Typography variant="t4" color="grey-500" role="status">
+            {t('calendar.new.noFree')}
+          </Typography>
+        )}
         <Input
           label={t('calendar.new.name')}
           fullWidth

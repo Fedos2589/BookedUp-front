@@ -155,6 +155,12 @@ const free = {
 const listUrl = `GET /api/businesses/${businessId}/appointments?${query(day, day)}`
 const slotsUrl = `GET /api/businesses/${businessId}/slots?${query(day, day)}`
 
+// A morning in Bangkok, before the free hour (12:00 there).
+const beforeFree = () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T01:00:00Z'))
+}
+
 async function fillNewBooking() {
   fireEvent.click(await screen.findByRole('button', { name: 'New booking' }))
   const dialog = await screen.findByRole('dialog')
@@ -168,6 +174,7 @@ async function fillNewBooking() {
 }
 
 test('a free hour is booked from the New booking button and shows on the grid', async () => {
+  beforeFree()
   let created = false
   const api = fakeApi({
     'GET /api/me': [200, account],
@@ -195,16 +202,18 @@ test('a free hour is booked from the New booking button and shows on the grid', 
   })
 })
 
-test('a slot taken meanwhile says so, keeps the dialog and reloads the grid', async () => {
+test('a slot taken meanwhile says so, keeps the dialog, reloads the grid and drops the slot', async () => {
+  beforeFree()
+  let taken = false
   const api = fakeApi({
     'GET /api/me': [200, account],
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: [200, []],
-    [slotsUrl]: [200, [free]],
-    [`POST /api/businesses/${businessId}/appointments`]: [
-      409,
-      { statusCode: 409, error: 'Conflict', code: 'notFree' },
-    ],
+    [slotsUrl]: () => [200, taken ? [] : [free]],
+    [`POST /api/businesses/${businessId}/appointments`]: () => {
+      taken = true
+      return [409, { statusCode: 409, error: 'Conflict', code: 'notFree' }]
+    },
   })
   renderApp(`/calendar?date=${day}`)
   const dialog = await fillNewBooking()
@@ -217,4 +226,46 @@ test('a slot taken meanwhile says so, keeps the dialog and reloads the grid', as
   ).toBeTruthy()
   expect(screen.getByRole('dialog')).toBeTruthy()
   await waitFor(() => expect(loads()).toBeGreaterThan(before))
+  // The taken hour is gone from the choice, so it cannot be sent again.
+  await waitFor(() =>
+    expect(
+      (
+        within(dialog).getByRole('button', {
+          name: 'Book',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true),
+  )
+})
+
+test('hours that have passed, or are the masters of nobody on screen, are not offered', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T07:00:00Z')) // after the free hour
+  const archived = {
+    ...staff[0],
+    id: '00000000-0000-4000-8000-000000000023',
+    name: 'Gone',
+    archived: true,
+  }
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, archived]],
+    [listUrl]: [200, []],
+    [slotsUrl]: [
+      200,
+      [
+        free, // passed
+        {
+          ...free,
+          staffId: archived.id,
+          startsAt: '2026-11-17T09:00:00Z',
+          endsAt: '2026-11-17T10:00:00Z',
+        }, // ahead, but not a column on screen
+      ],
+    ],
+  })
+  renderApp(`/calendar?date=${day}`)
+
+  const button = await screen.findByRole('button', { name: 'New booking' })
+  expect((button as HTMLButtonElement).disabled).toBe(true)
 })

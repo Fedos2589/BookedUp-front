@@ -6,20 +6,27 @@ import { localMoment } from '@/dates'
 
 type Slot = SlotsControllerSlots200Item
 
-// Free time of a master, as opposed to a meeting (a group or a one-off session).
-export const freeHoursSlots = (slots: Slot[]) =>
-  slots.filter((s) => !s.groupId && !s.oneOffSessionId)
+const slotKey = (s: Slot) => `${s.staffId}@${s.startsAt}`
+
+// Free time of a master that is still ahead, as opposed to a meeting (a group
+// or a one-off session). The grid also loads the past, which cannot be booked.
+export const freeHoursSlots = (slots: Slot[], now: Date) =>
+  slots.filter(
+    (s) => !s.groupId && !s.oneOffSessionId && new Date(s.startsAt) >= now,
+  )
+
+export { slotKey }
 
 // The free hours under a click on empty space: the master's column and the
 // minute on the business's clock, the end not included.
 export function slotAt(
-  slots: Slot[],
+  free: Slot[],
   staffId: string,
   date: string,
   minute: number,
   timeZone: string,
 ) {
-  return freeHoursSlots(slots).find((s) => {
+  return free.find((s) => {
     const start = localMoment(s.startsAt, timeZone)
     const end = localMoment(s.endsAt, timeZone)
     if (s.staffId !== staffId || start?.date !== date || !end) return false

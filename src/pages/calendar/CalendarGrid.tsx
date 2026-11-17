@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { ScheduleGrid, visibleRange } from 'ted-ui/ScheduleGrid'
@@ -10,6 +10,7 @@ import type {
   StaffControllerList200Item,
 } from '@/api/generated.schemas'
 import { dayLabel } from '@/dates'
+import { useNow } from '@/useNow'
 import { type CalendarView, weekDates } from './calendarSearch'
 import { NewBookingModal } from './NewBookingModal'
 import { freeHoursSlots, slotAt } from './newBooking'
@@ -39,6 +40,8 @@ export function CalendarGrid({
 }) {
   const { t, i18n } = useTranslation()
   // The booking dialog, for the slot that was clicked, if any.
+  const now = useNow()
+  const newButton = useRef<HTMLButtonElement>(null)
   const [booking, setBooking] = useState<{ slot?: Slot }>()
   const dates = view === 'week' ? weekDates(date) : [date]
   const data = useCalendarData(businessId, {
@@ -86,22 +89,27 @@ export function CalendarGrid({
     emptyDay,
   )
 
-  const free = freeHoursSlots(data.slots)
+  // What can be booked: ahead of now, and of a master with a column on screen.
+  const onScreen = new Set(masters.map((m) => m.id))
+  const free = freeHoursSlots(data.slots, now).filter((s) =>
+    onScreen.has(s.staffId),
+  )
   // A column is a master (day view) or a date (week view).
-  const bookAt = (columnId: string, minute: number) =>
-    setBooking({
-      slot: slotAt(
-        data.slots!,
-        view === 'week' ? master.id : columnId,
-        view === 'week' ? columnId : date,
-        minute,
-        timeZone,
-      ),
-    })
+  const bookAt = (columnId: string, minute: number) => {
+    const slot = slotAt(
+      free,
+      view === 'week' ? master.id : columnId,
+      view === 'week' ? columnId : date,
+      minute,
+      timeZone,
+    )
+    if (slot) setBooking({ slot })
+  }
 
   return (
     <>
       <Button
+        ref={newButton}
         variant="solid"
         colorScheme="black"
         disabled={free.length === 0}
@@ -123,6 +131,7 @@ export function CalendarGrid({
           slots={free}
           masters={masters}
           initial={booking.slot}
+          finalFocus={newButton}
           onChanged={data.refetch}
           onClose={() => setBooking(undefined)}
         />
