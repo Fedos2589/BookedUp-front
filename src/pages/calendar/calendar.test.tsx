@@ -610,3 +610,102 @@ test('a move the back refuses says so and keeps the dialog', async () => {
     ),
   ).toBeTruthy()
 })
+
+const moveUrl = `PATCH /api/businesses/${businessId}/appointments/${booking.id}`
+const dayFreeUrl = `GET /api/businesses/${businessId}/slots?from=${day}&to=${day}`
+
+async function openMove() {
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Olga/))
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
+  return screen.findByRole('dialog', { name: 'Move booking' })
+}
+
+test('a booking is moved to a free hour of the day and the grid reloads', async () => {
+  beforeFree()
+  let moved = false
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: () => [
+      200,
+      [
+        moved
+          ? { ...booking, startsAt: free.startsAt, endsAt: free.endsAt }
+          : booking,
+      ],
+    ],
+    [slotsUrl]: [200, []],
+    [dayFreeUrl]: [200, [free]],
+    [moveUrl]: () => {
+      moved = true
+      return [200, { ...booking, startsAt: free.startsAt, endsAt: free.endsAt }]
+    },
+  })
+  renderApp(`/calendar?date=${day}`)
+  const dialog = await openMove()
+  await waitFor(() =>
+    expect(
+      (
+        within(dialog).getByRole('button', {
+          name: 'Move',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false),
+  )
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
+
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  expect(api.calls.find((c) => c.route === moveUrl)?.body).toEqual({
+    staffId: staff[0].id,
+    startsAt: free.startsAt,
+    endsAt: free.endsAt,
+  })
+})
+
+test('a time taken meanwhile says so, keeps the dialog and reloads the free hours', async () => {
+  beforeFree()
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: [200, [booking]],
+    [slotsUrl]: [200, []],
+    [dayFreeUrl]: [200, [free]],
+    [moveUrl]: [409, { statusCode: 409, error: 'Conflict', code: 'notFree' }],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const dialog = await openMove()
+  await waitFor(() =>
+    expect(
+      (
+        within(dialog).getByRole('button', {
+          name: 'Move',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false),
+  )
+  const loads = () => api.calls.filter((c) => c.route === dayFreeUrl).length
+  const before = loads()
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
+
+  expect(
+    await within(dialog).findByText('This time was just taken. Pick another.'),
+  ).toBeTruthy()
+  await waitFor(() => expect(loads()).toBeGreaterThan(before))
+})
+
+test('a finished booking has no Move', async () => {
+  beforeFree()
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: [200, [{ ...booking, status: 'DONE' }]],
+    [slotsUrl]: [200, []],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Olga/))
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).queryByRole('button', { name: 'Move' })).toBeNull()
+})

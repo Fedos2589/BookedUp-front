@@ -207,7 +207,7 @@ In F5's modal, once the meeting has started: «add someone who came» (same clie
 **Check:** page test: started meeting → «add someone who came» shown, «add» hidden; full meeting →
 walk-in still added and the count reads over capacity. Commit `feat(calendar): walk-ins`.
 
-### - [ ] F7: move a booking
+### - [x] F7: move a booking
 
 **Files:** `src/pages/calendar/BookingModal.tsx`, create `src/pages/calendar/MoveBooking.tsx`.
 

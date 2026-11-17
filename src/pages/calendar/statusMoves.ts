@@ -14,3 +14,7 @@ export function statusMoves(
     'CANCELLED',
   ]
 }
+
+// Only a booking still to come in its life can go to another time.
+export const canMove = (status: Status) =>
+  status === 'BOOKED' || status === 'CONFIRMED'

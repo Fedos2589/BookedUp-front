@@ -162,6 +162,7 @@ export function CalendarGrid({
           businessId={businessId}
           timeZone={timeZone}
           booking={opened}
+          masters={masters}
           started={new Date(opened.startsAt) <= now}
           finalFocus={gridBox}
           onChanged={data.refetch}
