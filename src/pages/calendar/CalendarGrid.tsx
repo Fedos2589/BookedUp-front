@@ -1,12 +1,18 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { ScheduleGrid, visibleRange } from 'ted-ui/ScheduleGrid'
 import { Spinner } from 'ted-ui/Spinner/Spinner'
 import { Typography } from 'ted-ui/Typography'
 
-import type { StaffControllerList200Item } from '@/api/generated.schemas'
+import type {
+  SlotsControllerSlots200Item as Slot,
+  StaffControllerList200Item,
+} from '@/api/generated.schemas'
 import { dayLabel } from '@/dates'
 import { type CalendarView, weekDates } from './calendarSearch'
+import { NewBookingModal } from './NewBookingModal'
+import { freeHoursSlots, slotAt } from './newBooking'
 import styles from './Calendar.module.scss'
 import { toColumns } from './toColumns'
 import { useCalendarData } from './useCalendarData'
@@ -32,6 +38,8 @@ export function CalendarGrid({
   master: StaffControllerList200Item
 }) {
   const { t, i18n } = useTranslation()
+  // The booking dialog, for the slot that was clicked, if any.
+  const [booking, setBooking] = useState<{ slot?: Slot }>()
   const dates = view === 'week' ? weekDates(date) : [date]
   const data = useCalendarData(businessId, {
     from: dates[0],
@@ -78,12 +86,47 @@ export function CalendarGrid({
     emptyDay,
   )
 
+  const free = freeHoursSlots(data.slots)
+  // A column is a master (day view) or a date (week view).
+  const bookAt = (columnId: string, minute: number) =>
+    setBooking({
+      slot: slotAt(
+        data.slots!,
+        view === 'week' ? master.id : columnId,
+        view === 'week' ? columnId : date,
+        minute,
+        timeZone,
+      ),
+    })
+
   return (
-    <ScheduleGrid
-      aria-label={t('calendar.grid')}
-      columns={columns}
-      startMinute={range.startMinute}
-      endMinute={range.endMinute}
-    />
+    <>
+      <Button
+        variant="solid"
+        colorScheme="black"
+        disabled={free.length === 0}
+        onClick={() => setBooking({})}
+      >
+        {t('calendar.new.button')}
+      </Button>
+      <ScheduleGrid
+        aria-label={t('calendar.grid')}
+        columns={columns}
+        startMinute={range.startMinute}
+        endMinute={range.endMinute}
+        onEmptyClick={bookAt}
+      />
+      {booking && (
+        <NewBookingModal
+          businessId={businessId}
+          timeZone={timeZone}
+          slots={free}
+          masters={masters}
+          initial={booking.slot}
+          onChanged={data.refetch}
+          onClose={() => setBooking(undefined)}
+        />
+      )}
+    </>
   )
 }

@@ -23,3 +23,9 @@
   align-items: center;
   gap: var(--spacing-8);
 }
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
