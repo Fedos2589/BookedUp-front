@@ -38,11 +38,14 @@ import type {
   GroupsControllerAddSessionBody,
   GroupsControllerCancel200,
   GroupsControllerCancel400,
+  GroupsControllerCancel409,
   GroupsControllerChange200,
   GroupsControllerChange400,
   GroupsControllerChange409,
   GroupsControllerChangeBody,
   GroupsControllerList200Item,
+  GroupsControllerRemove409,
+  GroupsControllerRemoveSession409,
   GroupsControllerSessions200Item,
   GroupsControllerUncancel409,
   SlotsControllerSlots200Item,
@@ -50,6 +53,7 @@ import type {
   SlotsControllerSlotsParams,
   StaffScheduleControllerAddTimeOff201,
   StaffScheduleControllerAddTimeOff400,
+  StaffScheduleControllerAddTimeOff409,
   StaffScheduleControllerAddTimeOffBody,
   StaffScheduleControllerDayOverrides200Item,
   StaffScheduleControllerPutDayOverride200,
@@ -926,7 +930,7 @@ return apiFetch<StaffScheduleControllerAddTimeOff201>(getStaffScheduleController
 
 export const getStaffScheduleControllerAddTimeOffMutationKey = () => ['staffScheduleControllerAddTimeOff'] as const;
 
-export const getStaffScheduleControllerAddTimeOffMutationOptions = <TError = ErrorType<StaffScheduleControllerAddTimeOff400 | void>,
+export const getStaffScheduleControllerAddTimeOffMutationOptions = <TError = ErrorType<StaffScheduleControllerAddTimeOff400 | void | StaffScheduleControllerAddTimeOff409>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof staffScheduleControllerAddTimeOff>>, TError,StaffScheduleControllerAddTimeOffMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof staffScheduleControllerAddTimeOff>>, TError,StaffScheduleControllerAddTimeOffMutationVariables, TContext> => {
 
@@ -955,10 +959,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type StaffScheduleControllerAddTimeOffMutationResult = NonNullable<Awaited<ReturnType<typeof staffScheduleControllerAddTimeOff>>>
     export type StaffScheduleControllerAddTimeOffMutationBody = StaffScheduleControllerAddTimeOffBody
-    export type StaffScheduleControllerAddTimeOffMutationError = ErrorType<StaffScheduleControllerAddTimeOff400 | void>
+    export type StaffScheduleControllerAddTimeOffMutationError = ErrorType<StaffScheduleControllerAddTimeOff400 | void | StaffScheduleControllerAddTimeOff409>
     export type StaffScheduleControllerAddTimeOffMutationVariables = {businessId: string;staffId: string;data: StaffScheduleControllerAddTimeOffBody}
 
-    export const useStaffScheduleControllerAddTimeOff = <TError = ErrorType<StaffScheduleControllerAddTimeOff400 | void>,
+    export const useStaffScheduleControllerAddTimeOff = <TError = ErrorType<StaffScheduleControllerAddTimeOff400 | void | StaffScheduleControllerAddTimeOff409>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof staffScheduleControllerAddTimeOff>>, TError,StaffScheduleControllerAddTimeOffMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof staffScheduleControllerAddTimeOff>>,
@@ -1395,7 +1399,7 @@ export const groupsControllerRemove = async (businessId: string,
 
 export const getGroupsControllerRemoveMutationKey = () => ['groupsControllerRemove'] as const;
 
-export const getGroupsControllerRemoveMutationOptions = <TError = ErrorType<void>,
+export const getGroupsControllerRemoveMutationOptions = <TError = ErrorType<void | GroupsControllerRemove409>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof groupsControllerRemove>>, TError,GroupsControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof groupsControllerRemove>>, TError,GroupsControllerRemoveMutationVariables, TContext> => {
 
@@ -1424,10 +1428,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type GroupsControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof groupsControllerRemove>>>
 
-    export type GroupsControllerRemoveMutationError = ErrorType<void>
+    export type GroupsControllerRemoveMutationError = ErrorType<void | GroupsControllerRemove409>
     export type GroupsControllerRemoveMutationVariables = {businessId: string;staffId: string;groupId: string}
 
-    export const useGroupsControllerRemove = <TError = ErrorType<void>,
+    export const useGroupsControllerRemove = <TError = ErrorType<void | GroupsControllerRemove409>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof groupsControllerRemove>>, TError,GroupsControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof groupsControllerRemove>>,
@@ -1468,7 +1472,7 @@ export const groupsControllerCancel = async (businessId: string,
 
 export const getGroupsControllerCancelMutationKey = () => ['groupsControllerCancel'] as const;
 
-export const getGroupsControllerCancelMutationOptions = <TError = ErrorType<GroupsControllerCancel400 | void>,
+export const getGroupsControllerCancelMutationOptions = <TError = ErrorType<GroupsControllerCancel400 | void | GroupsControllerCancel409>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof groupsControllerCancel>>, TError,GroupsControllerCancelMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof groupsControllerCancel>>, TError,GroupsControllerCancelMutationVariables, TContext> => {
 
@@ -1497,10 +1501,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type GroupsControllerCancelMutationResult = NonNullable<Awaited<ReturnType<typeof groupsControllerCancel>>>
 
-    export type GroupsControllerCancelMutationError = ErrorType<GroupsControllerCancel400 | void>
+    export type GroupsControllerCancelMutationError = ErrorType<GroupsControllerCancel400 | void | GroupsControllerCancel409>
     export type GroupsControllerCancelMutationVariables = {businessId: string;staffId: string;groupId: string;date: string}
 
-    export const useGroupsControllerCancel = <TError = ErrorType<GroupsControllerCancel400 | void>,
+    export const useGroupsControllerCancel = <TError = ErrorType<GroupsControllerCancel400 | void | GroupsControllerCancel409>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof groupsControllerCancel>>, TError,GroupsControllerCancelMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof groupsControllerCancel>>,
@@ -1853,7 +1857,7 @@ export const groupsControllerRemoveSession = async (businessId: string,
 
 export const getGroupsControllerRemoveSessionMutationKey = () => ['groupsControllerRemoveSession'] as const;
 
-export const getGroupsControllerRemoveSessionMutationOptions = <TError = ErrorType<void>,
+export const getGroupsControllerRemoveSessionMutationOptions = <TError = ErrorType<void | GroupsControllerRemoveSession409>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof groupsControllerRemoveSession>>, TError,GroupsControllerRemoveSessionMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof groupsControllerRemoveSession>>, TError,GroupsControllerRemoveSessionMutationVariables, TContext> => {
 
@@ -1882,10 +1886,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type GroupsControllerRemoveSessionMutationResult = NonNullable<Awaited<ReturnType<typeof groupsControllerRemoveSession>>>
 
-    export type GroupsControllerRemoveSessionMutationError = ErrorType<void>
+    export type GroupsControllerRemoveSessionMutationError = ErrorType<void | GroupsControllerRemoveSession409>
     export type GroupsControllerRemoveSessionMutationVariables = {businessId: string;staffId: string;id: string}
 
-    export const useGroupsControllerRemoveSession = <TError = ErrorType<void>,
+    export const useGroupsControllerRemoveSession = <TError = ErrorType<void | GroupsControllerRemoveSession409>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof groupsControllerRemoveSession>>, TError,GroupsControllerRemoveSessionMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof groupsControllerRemoveSession>>,
