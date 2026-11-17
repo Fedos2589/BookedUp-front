@@ -639,6 +639,39 @@ export type StaffScheduleControllerAddTimeOff400 = {
   message: string[];
 };
 
+export type StaffScheduleControllerAddTimeOff409StatusCode = typeof StaffScheduleControllerAddTimeOff409StatusCode[keyof typeof StaffScheduleControllerAddTimeOff409StatusCode];
+
+
+export const StaffScheduleControllerAddTimeOff409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type StaffScheduleControllerAddTimeOff409Error = typeof StaffScheduleControllerAddTimeOff409Error[keyof typeof StaffScheduleControllerAddTimeOff409Error];
+
+
+export const StaffScheduleControllerAddTimeOff409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type StaffScheduleControllerAddTimeOff409Code = typeof StaffScheduleControllerAddTimeOff409Code[keyof typeof StaffScheduleControllerAddTimeOff409Code];
+
+
+export const StaffScheduleControllerAddTimeOff409Code = {
+  hasBookings: 'hasBookings',
+} as const;
+
+export type StaffScheduleControllerAddTimeOff409 = {
+  statusCode: StaffScheduleControllerAddTimeOff409StatusCode;
+  error: StaffScheduleControllerAddTimeOff409Error;
+  message: string;
+  code: StaffScheduleControllerAddTimeOff409Code;
+  /**
+     * The bookings in the way
+     * @items.pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  appointmentIds: string[];
+};
+
 export type GroupsControllerList200Item = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -947,6 +980,39 @@ export type GroupsControllerChange409 = {
   conflictsWith: GroupsControllerChange409ConflictsWith;
 };
 
+export type GroupsControllerRemove409StatusCode = typeof GroupsControllerRemove409StatusCode[keyof typeof GroupsControllerRemove409StatusCode];
+
+
+export const GroupsControllerRemove409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type GroupsControllerRemove409Error = typeof GroupsControllerRemove409Error[keyof typeof GroupsControllerRemove409Error];
+
+
+export const GroupsControllerRemove409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type GroupsControllerRemove409Code = typeof GroupsControllerRemove409Code[keyof typeof GroupsControllerRemove409Code];
+
+
+export const GroupsControllerRemove409Code = {
+  hasBookings: 'hasBookings',
+} as const;
+
+export type GroupsControllerRemove409 = {
+  statusCode: GroupsControllerRemove409StatusCode;
+  error: GroupsControllerRemove409Error;
+  message: string;
+  code: GroupsControllerRemove409Code;
+  /**
+     * The bookings in the way
+     * @items.pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  appointmentIds: string[];
+};
+
 export type GroupsControllerCancel200 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -994,6 +1060,39 @@ export type GroupsControllerCancel400 = {
   statusCode: GroupsControllerCancel400StatusCode;
   error: string;
   message: string[];
+};
+
+export type GroupsControllerCancel409StatusCode = typeof GroupsControllerCancel409StatusCode[keyof typeof GroupsControllerCancel409StatusCode];
+
+
+export const GroupsControllerCancel409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type GroupsControllerCancel409Error = typeof GroupsControllerCancel409Error[keyof typeof GroupsControllerCancel409Error];
+
+
+export const GroupsControllerCancel409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type GroupsControllerCancel409Code = typeof GroupsControllerCancel409Code[keyof typeof GroupsControllerCancel409Code];
+
+
+export const GroupsControllerCancel409Code = {
+  hasBookings: 'hasBookings',
+} as const;
+
+export type GroupsControllerCancel409 = {
+  statusCode: GroupsControllerCancel409StatusCode;
+  error: GroupsControllerCancel409Error;
+  message: string;
+  code: GroupsControllerCancel409Code;
+  /**
+     * The bookings in the way
+     * @items.pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  appointmentIds: string[];
 };
 
 export type GroupsControllerUncancel409StatusCode = typeof GroupsControllerUncancel409StatusCode[keyof typeof GroupsControllerUncancel409StatusCode];
@@ -1170,6 +1269,39 @@ export type GroupsControllerAddSession409 = {
   conflictsWith: GroupsControllerAddSession409ConflictsWith;
 };
 
+export type GroupsControllerRemoveSession409StatusCode = typeof GroupsControllerRemoveSession409StatusCode[keyof typeof GroupsControllerRemoveSession409StatusCode];
+
+
+export const GroupsControllerRemoveSession409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type GroupsControllerRemoveSession409Error = typeof GroupsControllerRemoveSession409Error[keyof typeof GroupsControllerRemoveSession409Error];
+
+
+export const GroupsControllerRemoveSession409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type GroupsControllerRemoveSession409Code = typeof GroupsControllerRemoveSession409Code[keyof typeof GroupsControllerRemoveSession409Code];
+
+
+export const GroupsControllerRemoveSession409Code = {
+  hasBookings: 'hasBookings',
+} as const;
+
+export type GroupsControllerRemoveSession409 = {
+  statusCode: GroupsControllerRemoveSession409StatusCode;
+  error: GroupsControllerRemoveSession409Error;
+  message: string;
+  code: GroupsControllerRemoveSession409Code;
+  /**
+     * The bookings in the way
+     * @items.pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  appointmentIds: string[];
+};
+
 export type SlotsControllerSlotsParams = {
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
   from: string;
@@ -1197,11 +1329,13 @@ export type SlotsControllerSlots200Item = {
      */
   capacity: number;
   /**
-     * How many have booked it; 0 until bookings exist
+     * How many have booked it
      * @minimum 0
      * @maximum 9007199254740991
      */
   booked: number;
+  /** Every place is booked: shown, but cannot be booked */
+  full: boolean;
   /**
      * The group it is a meeting of
      * @nullable
@@ -1227,6 +1361,514 @@ export type SlotsControllerSlots400 = {
   statusCode: SlotsControllerSlots400StatusCode;
   error: string;
   message: string[];
+};
+
+export type AppointmentsControllerCreateBody = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  endsAt: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  clientName: string;
+  /**
+     * @maxLength 16
+     * @pattern ^\+[1-9]\d{6,14}$
+     */
+  clientPhone: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  note?: string | null;
+  /**
+     * Book a seat in the meeting of this group at this time
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId?: string;
+  /**
+     * Book a seat in this one-off session
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId?: string;
+};
+
+export type AppointmentsControllerCreate201Status = typeof AppointmentsControllerCreate201Status[keyof typeof AppointmentsControllerCreate201Status];
+
+
+export const AppointmentsControllerCreate201Status = {
+  BOOKED: 'BOOKED',
+  CONFIRMED: 'CONFIRMED',
+  DONE: 'DONE',
+  NO_SHOW: 'NO_SHOW',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type AppointmentsControllerCreate201 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  status: AppointmentsControllerCreate201Status;
+  clientName: string;
+  clientPhone: string;
+  /** @nullable */
+  note: string | null;
+  /**
+     * The group whose meeting it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * The one-off session it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type AppointmentsControllerCreate400StatusCode = typeof AppointmentsControllerCreate400StatusCode[keyof typeof AppointmentsControllerCreate400StatusCode];
+
+
+export const AppointmentsControllerCreate400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type AppointmentsControllerCreate400 = {
+  statusCode: AppointmentsControllerCreate400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type AppointmentsControllerCreate409StatusCode = typeof AppointmentsControllerCreate409StatusCode[keyof typeof AppointmentsControllerCreate409StatusCode];
+
+
+export const AppointmentsControllerCreate409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type AppointmentsControllerCreate409Error = typeof AppointmentsControllerCreate409Error[keyof typeof AppointmentsControllerCreate409Error];
+
+
+export const AppointmentsControllerCreate409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+/**
+ * notFree: no such slot or taken; full: every seat of the meeting is taken
+ */
+export type AppointmentsControllerCreate409Code = typeof AppointmentsControllerCreate409Code[keyof typeof AppointmentsControllerCreate409Code];
+
+
+export const AppointmentsControllerCreate409Code = {
+  notFree: 'notFree',
+  full: 'full',
+} as const;
+
+export type AppointmentsControllerCreate409 = {
+  statusCode: AppointmentsControllerCreate409StatusCode;
+  error: AppointmentsControllerCreate409Error;
+  message: string;
+  /** notFree: no such slot or taken; full: every seat of the meeting is taken */
+  code: AppointmentsControllerCreate409Code;
+};
+
+export type AppointmentsControllerListParams = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  from: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  to: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId?: string;
+  includeCancelled?: string;
+};
+
+export type AppointmentsControllerList200ItemStatus = typeof AppointmentsControllerList200ItemStatus[keyof typeof AppointmentsControllerList200ItemStatus];
+
+
+export const AppointmentsControllerList200ItemStatus = {
+  BOOKED: 'BOOKED',
+  CONFIRMED: 'CONFIRMED',
+  DONE: 'DONE',
+  NO_SHOW: 'NO_SHOW',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type AppointmentsControllerList200Item = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  status: AppointmentsControllerList200ItemStatus;
+  clientName: string;
+  clientPhone: string;
+  /** @nullable */
+  note: string | null;
+  /**
+     * The group whose meeting it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * The one-off session it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type AppointmentsControllerList400StatusCode = typeof AppointmentsControllerList400StatusCode[keyof typeof AppointmentsControllerList400StatusCode];
+
+
+export const AppointmentsControllerList400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type AppointmentsControllerList400 = {
+  statusCode: AppointmentsControllerList400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type AppointmentsControllerWalkInBody = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  endsAt: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  clientName: string;
+  /**
+     * @maxLength 16
+     * @pattern ^\+[1-9]\d{6,14}$
+     */
+  clientPhone: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  note?: string | null;
+  /**
+     * Book a seat in the meeting of this group at this time
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId?: string;
+  /**
+     * Book a seat in this one-off session
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId?: string;
+};
+
+export type AppointmentsControllerWalkIn201Status = typeof AppointmentsControllerWalkIn201Status[keyof typeof AppointmentsControllerWalkIn201Status];
+
+
+export const AppointmentsControllerWalkIn201Status = {
+  BOOKED: 'BOOKED',
+  CONFIRMED: 'CONFIRMED',
+  DONE: 'DONE',
+  NO_SHOW: 'NO_SHOW',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type AppointmentsControllerWalkIn201 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  status: AppointmentsControllerWalkIn201Status;
+  clientName: string;
+  clientPhone: string;
+  /** @nullable */
+  note: string | null;
+  /**
+     * The group whose meeting it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * The one-off session it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type AppointmentsControllerWalkIn400StatusCode = typeof AppointmentsControllerWalkIn400StatusCode[keyof typeof AppointmentsControllerWalkIn400StatusCode];
+
+
+export const AppointmentsControllerWalkIn400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type AppointmentsControllerWalkIn400 = {
+  statusCode: AppointmentsControllerWalkIn400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type AppointmentsControllerWalkIn409StatusCode = typeof AppointmentsControllerWalkIn409StatusCode[keyof typeof AppointmentsControllerWalkIn409StatusCode];
+
+
+export const AppointmentsControllerWalkIn409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type AppointmentsControllerWalkIn409Error = typeof AppointmentsControllerWalkIn409Error[keyof typeof AppointmentsControllerWalkIn409Error];
+
+
+export const AppointmentsControllerWalkIn409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+/**
+ * notFree: no such meeting at this time; notStarted: the meeting is ahead — book a seat instead
+ */
+export type AppointmentsControllerWalkIn409Code = typeof AppointmentsControllerWalkIn409Code[keyof typeof AppointmentsControllerWalkIn409Code];
+
+
+export const AppointmentsControllerWalkIn409Code = {
+  notFree: 'notFree',
+  notStarted: 'notStarted',
+} as const;
+
+export type AppointmentsControllerWalkIn409 = {
+  statusCode: AppointmentsControllerWalkIn409StatusCode;
+  error: AppointmentsControllerWalkIn409Error;
+  message: string;
+  /** notFree: no such meeting at this time; notStarted: the meeting is ahead — book a seat instead */
+  code: AppointmentsControllerWalkIn409Code;
+};
+
+export type AppointmentsControllerChangeStatusBodyStatus = typeof AppointmentsControllerChangeStatusBodyStatus[keyof typeof AppointmentsControllerChangeStatusBodyStatus];
+
+
+export const AppointmentsControllerChangeStatusBodyStatus = {
+  BOOKED: 'BOOKED',
+  CONFIRMED: 'CONFIRMED',
+  DONE: 'DONE',
+  NO_SHOW: 'NO_SHOW',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type AppointmentsControllerChangeStatusBody = {
+  status: AppointmentsControllerChangeStatusBodyStatus;
+};
+
+export type AppointmentsControllerChangeStatus200Status = typeof AppointmentsControllerChangeStatus200Status[keyof typeof AppointmentsControllerChangeStatus200Status];
+
+
+export const AppointmentsControllerChangeStatus200Status = {
+  BOOKED: 'BOOKED',
+  CONFIRMED: 'CONFIRMED',
+  DONE: 'DONE',
+  NO_SHOW: 'NO_SHOW',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type AppointmentsControllerChangeStatus200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  status: AppointmentsControllerChangeStatus200Status;
+  clientName: string;
+  clientPhone: string;
+  /** @nullable */
+  note: string | null;
+  /**
+     * The group whose meeting it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * The one-off session it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type AppointmentsControllerChangeStatus400StatusCode = typeof AppointmentsControllerChangeStatus400StatusCode[keyof typeof AppointmentsControllerChangeStatus400StatusCode];
+
+
+export const AppointmentsControllerChangeStatus400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type AppointmentsControllerChangeStatus400 = {
+  statusCode: AppointmentsControllerChangeStatus400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type AppointmentsControllerChangeStatus409StatusCode = typeof AppointmentsControllerChangeStatus409StatusCode[keyof typeof AppointmentsControllerChangeStatus409StatusCode];
+
+
+export const AppointmentsControllerChangeStatus409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type AppointmentsControllerChangeStatus409Error = typeof AppointmentsControllerChangeStatus409Error[keyof typeof AppointmentsControllerChangeStatus409Error];
+
+
+export const AppointmentsControllerChangeStatus409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+/**
+ * badTransition: not an allowed move from the current status; notStarted: DONE / NO_SHOW before the start
+ */
+export type AppointmentsControllerChangeStatus409Code = typeof AppointmentsControllerChangeStatus409Code[keyof typeof AppointmentsControllerChangeStatus409Code];
+
+
+export const AppointmentsControllerChangeStatus409Code = {
+  badTransition: 'badTransition',
+  notStarted: 'notStarted',
+} as const;
+
+export type AppointmentsControllerChangeStatus409 = {
+  statusCode: AppointmentsControllerChangeStatus409StatusCode;
+  error: AppointmentsControllerChangeStatus409Error;
+  message: string;
+  /** badTransition: not an allowed move from the current status; notStarted: DONE / NO_SHOW before the start */
+  code: AppointmentsControllerChangeStatus409Code;
+};
+
+export type AppointmentsControllerMoveBody = {
+  /**
+     * The master to move to; none: the same master
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  staffId?: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  endsAt: string;
+  /**
+     * Move to the meeting of this group at this time
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId?: string;
+  /**
+     * Move to this one-off session
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId?: string;
+};
+
+export type AppointmentsControllerMove200Status = typeof AppointmentsControllerMove200Status[keyof typeof AppointmentsControllerMove200Status];
+
+
+export const AppointmentsControllerMove200Status = {
+  BOOKED: 'BOOKED',
+  CONFIRMED: 'CONFIRMED',
+  DONE: 'DONE',
+  NO_SHOW: 'NO_SHOW',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type AppointmentsControllerMove200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  status: AppointmentsControllerMove200Status;
+  clientName: string;
+  clientPhone: string;
+  /** @nullable */
+  note: string | null;
+  /**
+     * The group whose meeting it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * The one-off session it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type AppointmentsControllerMove400StatusCode = typeof AppointmentsControllerMove400StatusCode[keyof typeof AppointmentsControllerMove400StatusCode];
+
+
+export const AppointmentsControllerMove400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type AppointmentsControllerMove400 = {
+  statusCode: AppointmentsControllerMove400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type AppointmentsControllerMove409StatusCode = typeof AppointmentsControllerMove409StatusCode[keyof typeof AppointmentsControllerMove409StatusCode];
+
+
+export const AppointmentsControllerMove409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type AppointmentsControllerMove409Error = typeof AppointmentsControllerMove409Error[keyof typeof AppointmentsControllerMove409Error];
+
+
+export const AppointmentsControllerMove409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+/**
+ * notFree / full: as for booking; badTransition: only BOOKED and CONFIRMED bookings move
+ */
+export type AppointmentsControllerMove409Code = typeof AppointmentsControllerMove409Code[keyof typeof AppointmentsControllerMove409Code];
+
+
+export const AppointmentsControllerMove409Code = {
+  notFree: 'notFree',
+  full: 'full',
+  badTransition: 'badTransition',
+} as const;
+
+export type AppointmentsControllerMove409 = {
+  statusCode: AppointmentsControllerMove409StatusCode;
+  error: AppointmentsControllerMove409Error;
+  message: string;
+  /** notFree / full: as for booking; badTransition: only BOOKED and CONFIRMED bookings move */
+  code: AppointmentsControllerMove409Code;
 };
 
 export type MembersControllerList200ItemRole = typeof MembersControllerList200ItemRole[keyof typeof MembersControllerList200ItemRole];

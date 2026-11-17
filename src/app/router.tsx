@@ -10,6 +10,8 @@ import {
 import { redirectIfSignedIn, requireAccount } from '@/auth/session'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { CabinetLayout } from '@/pages/cabinet/CabinetLayout'
+import { CalendarPage } from '@/pages/calendar/CalendarPage'
+import { calendarSearchOf } from '@/pages/calendar/calendarSearch'
 import { BookingPage } from '@/pages/BookingPage'
 import { DashboardError } from '@/pages/DashboardError'
 import { DashboardPage } from '@/pages/DashboardPage'
@@ -65,6 +67,15 @@ const scheduleRoute = createRoute({
   component: SchedulePage,
 })
 
+// The bookings: a day or a week of them. View, day and master live in the
+// address, so a link opens exactly what was looked at.
+const calendarRoute = createRoute({
+  getParentRoute: () => cabinetRoute,
+  path: '/calendar',
+  validateSearch: calendarSearchOf,
+  component: CalendarPage,
+})
+
 // `?invitation=<token>`: signed in, go back to that invitation, not the cabinet.
 const signInRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -112,6 +123,7 @@ const bookingRoute = createRoute({
 export const routeTree = rootRoute.addChildren([
   cabinetRoute.addChildren([
     dashboardRoute,
+    calendarRoute,
     scheduleRoute,
     settingsRoute,
     teamRoute,

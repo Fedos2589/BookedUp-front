@@ -31,6 +31,8 @@ const abilities = {
   viewSettings: (role: Role) => role === 'OWNER' || role === 'ADMIN',
   // The team page: whoever manages someone in it (the back's manageTeam).
   viewTeam: (role: Role) => rolesManagedBy(role).length > 0,
+  // The calendar of every master: whoever runs the business; a master sees their own.
+  viewAllCalendars: (role: Role) => role === 'OWNER' || role === 'ADMIN',
 } as const satisfies Record<string, (role: Role) => boolean>
 
 export type Ability = keyof typeof abilities

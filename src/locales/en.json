@@ -77,6 +77,7 @@
   "cabinet": {
     "navigation": "Cabinet",
     "dashboard": "Dashboard",
+    "calendar": "Calendar",
     "schedule": "Schedule",
     "settings": "Settings",
     "team": "Team",
@@ -155,6 +156,27 @@
     "goneTitle": "This invitation no longer works",
     "goneText": "It was used, cancelled or has expired. Ask the person who invited you for a new link.",
     "loadFailed": "Couldn't load the invitation"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "loadFailed": "Couldn't load the calendar",
+    "today": "Today",
+    "placeholder": "The grid is coming next.",
+    "prev": {
+      "day": "Previous day",
+      "week": "Previous week"
+    },
+    "next": {
+      "day": "Next day",
+      "week": "Next week"
+    },
+    "view": {
+      "label": "View",
+      "day": "Day",
+      "week": "Week"
+    },
+    "noMasters": "There are no masters to show yet. Add one on the Team page.",
+    "noMastersAskOwner": "You have no calendar yet. Ask the owner or an admin to add you as a master."
   },
   "schedule": {
     "title": "Schedule",

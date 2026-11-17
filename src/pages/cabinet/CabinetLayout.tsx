@@ -29,6 +29,11 @@ export function CabinetLayout() {
               </Link>
             </Typography>
             <Typography variant="t3">
+              <Link to="/calendar" className={styles.link}>
+                {t('cabinet.calendar')}
+              </Link>
+            </Typography>
+            <Typography variant="t3">
               <Link to="/schedule" className={styles.link}>
                 {t('cabinet.schedule')}
               </Link>
