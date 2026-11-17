@@ -1309,7 +1309,17 @@ export type SlotsControllerSlotsParams = {
   to: string;
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   staffId?: string;
+  /** Also meetings that have started or are over (the calendar grid); default: from now on */
+  includePast?: SlotsControllerSlotsIncludePast;
 };
+
+export type SlotsControllerSlotsIncludePast = typeof SlotsControllerSlotsIncludePast[keyof typeof SlotsControllerSlotsIncludePast];
+
+
+export const SlotsControllerSlotsIncludePast = {
+  true: 'true',
+  false: 'false',
+} as const;
 
 export type SlotsControllerSlots200Item = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
@@ -1489,8 +1499,18 @@ export type AppointmentsControllerListParams = {
   to: string;
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   staffId?: string;
+  /** Also meetings that have started or are over (the calendar grid); default: from now on */
+  includePast?: AppointmentsControllerListIncludePast;
   includeCancelled?: string;
 };
+
+export type AppointmentsControllerListIncludePast = typeof AppointmentsControllerListIncludePast[keyof typeof AppointmentsControllerListIncludePast];
+
+
+export const AppointmentsControllerListIncludePast = {
+  true: 'true',
+  false: 'false',
+} as const;
 
 export type AppointmentsControllerList200ItemStatus = typeof AppointmentsControllerList200ItemStatus[keyof typeof AppointmentsControllerList200ItemStatus];
 
