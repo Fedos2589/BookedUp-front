@@ -10,10 +10,13 @@ import type {
   StaffControllerList200Item,
 } from '@/api/generated.schemas'
 import { localMoment } from '@/dates'
+import { meetingItemId } from './meetingOf'
 
 export type CalendarLabels = {
   day: (date: string) => string
   seats: (title: string | null, free: number, capacity: number) => string
+  // A meeting that is over says so in its accessible text, not by pale alone.
+  ended: (text: string) => string
 }
 
 const colorOf: Record<
@@ -45,6 +48,7 @@ function itemsByColumn(
   appointments: AppointmentsControllerList200Item[],
   slots: SlotsControllerSlots200Item[],
   timeZone: string,
+  now: Date,
   labels: CalendarLabels,
 ) {
   const byColumn = new Map<string, ScheduleGridItem[]>()
@@ -74,16 +78,19 @@ function itemsByColumn(
     // Free hours are empty space in the grid; only meetings are items.
     const meetingId = s.groupId ?? s.oneOffSessionId
     if (!meetingId) continue
+    const seats = labels.seats(
+      s.title,
+      Math.max(s.capacity - s.booked, 0),
+      s.capacity,
+    )
+    const over = new Date(s.endsAt).getTime() <= now.getTime()
     add(s.staffId, s.startsAt, s.endsAt, (place) => ({
-      id: `${meetingId}@${s.startsAt}`,
+      id: meetingItemId(s),
       startMinute: place.startMinute,
       endMinute: place.endMinute,
-      children: labels.seats(
-        s.title,
-        Math.max(s.capacity - s.booked, 0),
-        s.capacity,
-      ),
+      children: over ? labels.ended(seats) : seats,
       colorScheme: s.full ? 'grey' : 'blue',
+      faded: over,
     }))
   }
   return byColumn
@@ -102,15 +109,17 @@ export function toColumns({
   appointments,
   slots,
   timeZone,
+  now,
   labels,
 }: {
   range: CalendarRange
   appointments: AppointmentsControllerList200Item[]
   slots: SlotsControllerSlots200Item[]
   timeZone: string
+  now: Date
   labels: CalendarLabels
 }): ScheduleGridColumn[] {
-  const items = itemsByColumn(appointments, slots, timeZone, labels)
+  const items = itemsByColumn(appointments, slots, timeZone, now, labels)
   const column = (
     id: string,
     label: string,

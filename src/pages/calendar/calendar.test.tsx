@@ -126,6 +126,37 @@ test('the week view has a column per day of one master', async () => {
   expect(within(grid).getAllByRole('group')).toHaveLength(7)
 })
 
+test("last week's meeting stays on the grid and says it is over", async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-25T12:00:00Z'))
+  const meeting = {
+    staffId: staff[0].id,
+    startsAt: '2026-11-17T11:00:00Z', // 18:00 in Bangkok
+    endsAt: '2026-11-17T12:00:00Z',
+    title: 'Judo',
+    description: null,
+    capacity: 8,
+    booked: 3,
+    full: false,
+    groupId: '00000000-0000-4000-8000-000000000041',
+    oneOffSessionId: null,
+  }
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [`GET /api/businesses/${businessId}/appointments?${query('2026-11-16', '2026-11-22', staff[0].id)}`]:
+      [200, []],
+    [`GET /api/businesses/${businessId}/slots?${query('2026-11-16', '2026-11-22', staff[0].id)}`]:
+      [200, [meeting]],
+  })
+  renderApp(`/calendar?view=week&date=${day}`)
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  expect(
+    await within(grid).findByText(/Judo: 5 of 8 free \(ended\)/),
+  ).toBeTruthy()
+})
+
 test('a failed load says so and offers to try again', async () => {
   fakeApi({
     'GET /api/me': [200, account],
@@ -155,6 +186,12 @@ const free = {
 const listUrl = `GET /api/businesses/${businessId}/appointments?${query(day, day)}`
 const slotsUrl = `GET /api/businesses/${businessId}/slots?${query(day, day)}`
 
+// A morning in Bangkok, before the free hour (12:00 there).
+const beforeFree = () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T01:00:00Z'))
+}
+
 async function fillNewBooking() {
   fireEvent.click(await screen.findByRole('button', { name: 'New booking' }))
   const dialog = await screen.findByRole('dialog')
@@ -168,6 +205,7 @@ async function fillNewBooking() {
 }
 
 test('a free hour is booked from the New booking button and shows on the grid', async () => {
+  beforeFree()
   let created = false
   const api = fakeApi({
     'GET /api/me': [200, account],
@@ -195,16 +233,18 @@ test('a free hour is booked from the New booking button and shows on the grid', 
   })
 })
 
-test('a slot taken meanwhile says so, keeps the dialog and reloads the grid', async () => {
+test('a slot taken meanwhile says so, keeps the dialog, reloads the grid and drops the slot', async () => {
+  beforeFree()
+  let taken = false
   const api = fakeApi({
     'GET /api/me': [200, account],
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: [200, []],
-    [slotsUrl]: [200, [free]],
-    [`POST /api/businesses/${businessId}/appointments`]: [
-      409,
-      { statusCode: 409, error: 'Conflict', code: 'notFree' },
-    ],
+    [slotsUrl]: () => [200, taken ? [] : [free]],
+    [`POST /api/businesses/${businessId}/appointments`]: () => {
+      taken = true
+      return [409, { statusCode: 409, error: 'Conflict', code: 'notFree' }]
+    },
   })
   renderApp(`/calendar?date=${day}`)
   const dialog = await fillNewBooking()
@@ -217,4 +257,237 @@ test('a slot taken meanwhile says so, keeps the dialog and reloads the grid', as
   ).toBeTruthy()
   expect(screen.getByRole('dialog')).toBeTruthy()
   await waitFor(() => expect(loads()).toBeGreaterThan(before))
+  // The taken hour is gone from the choice, so it cannot be sent again.
+  await waitFor(() =>
+    expect(
+      (
+        within(dialog).getByRole('button', {
+          name: 'Book',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true),
+  )
 })
+
+test('hours that have passed, or are the masters of nobody on screen, are not offered', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T07:00:00Z')) // after the free hour
+  const archived = {
+    ...staff[0],
+    id: '00000000-0000-4000-8000-000000000023',
+    name: 'Gone',
+    archived: true,
+  }
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, archived]],
+    [listUrl]: [200, []],
+    [slotsUrl]: [
+      200,
+      [
+        free, // passed
+        {
+          ...free,
+          staffId: archived.id,
+          startsAt: '2026-11-17T09:00:00Z',
+          endsAt: '2026-11-17T10:00:00Z',
+        }, // ahead, but not a column on screen
+      ],
+    ],
+  })
+  renderApp(`/calendar?date=${day}`)
+
+  const button = await screen.findByRole('button', { name: 'New booking' })
+  expect((button as HTMLButtonElement).disabled).toBe(true)
+})
+
+const judo = {
+  staffId: staff[0].id,
+  startsAt: '2026-11-17T11:00:00Z', // 18:00 in Bangkok
+  endsAt: '2026-11-17T12:00:00Z',
+  title: 'Judo',
+  description: null,
+  capacity: 3,
+  booked: 1,
+  full: false,
+  groupId: '00000000-0000-4000-8000-000000000041',
+  oneOffSessionId: null,
+}
+const seatOf = (id: string, clientName: string) => ({
+  ...booking,
+  id,
+  clientName,
+  startsAt: judo.startsAt,
+  endsAt: judo.endsAt,
+  groupId: judo.groupId,
+})
+const meetingUrls = {
+  list: `GET /api/businesses/${businessId}/appointments?${query(day, day)}`,
+  slots: `GET /api/businesses/${businessId}/slots?${query(day, day)}`,
+}
+
+test('a seat is added to a group meeting and the count grows', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T01:00:00Z'))
+  let added = false
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [meetingUrls.list]: () => [
+      200,
+      added
+        ? [seatOf('a1', 'Anna'), seatOf('a2', 'Olga')]
+        : [seatOf('a1', 'Anna')],
+    ],
+    [meetingUrls.slots]: () => [200, [{ ...judo, booked: added ? 2 : 1 }]],
+    [`POST /api/businesses/${businessId}/appointments`]: () => {
+      added = true
+      return [201, seatOf('a2', 'Olga')]
+    },
+  })
+  renderApp(`/calendar?date=${day}`)
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Judo: 2 of 3 free/))
+
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).getByText('Free 2 of 3')).toBeTruthy()
+  expect(within(dialog).getByText('Anna')).toBeTruthy()
+  fireEvent.change(within(dialog).getByLabelText('Name'), {
+    target: { value: 'Olga' },
+  })
+  fireEvent.change(within(dialog).getByLabelText('Phone'), {
+    target: { value: '+66 81 234 5678' },
+  })
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Add' }))
+
+  expect(await within(dialog).findByText('Free 1 of 3')).toBeTruthy()
+  expect(within(dialog).getByText('Olga')).toBeTruthy()
+  expect(api.calls.find((c) => c.route.startsWith('POST'))?.body).toEqual({
+    staffId: staff[0].id,
+    startsAt: judo.startsAt,
+    endsAt: judo.endsAt,
+    clientName: 'Olga',
+    clientPhone: '+66812345678',
+    groupId: judo.groupId,
+  })
+})
+
+test('a full meeting, and one that is over, show their seats and cannot take another', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T01:00:00Z'))
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [meetingUrls.list]: [200, [seatOf('a1', 'Anna')]],
+    [meetingUrls.slots]: [
+      200,
+      [{ ...judo, capacity: 1, booked: 1, full: true }],
+    ],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Judo: 0 of 1 free/))
+
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).getByText('Anna')).toBeTruthy()
+  expect(within(dialog).getByText('Every place is taken.')).toBeTruthy()
+  expect(within(dialog).queryByRole('button', { name: 'Add' })).toBeNull()
+})
+
+test("last week's meeting shows its bookings and no way to add one", async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-25T12:00:00Z'))
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [meetingUrls.list]: [200, [seatOf('a1', 'Anna')]],
+    [meetingUrls.slots]: [200, [judo]],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Judo: 2 of 3 free \(ended\)/))
+
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).getByText('Anna')).toBeTruthy()
+  expect(within(dialog).getByText(/meeting is over/)).toBeTruthy()
+  expect(within(dialog).queryByRole('button', { name: 'Add' })).toBeNull()
+})
+
+test('a meeting that is on takes a walk-in, even over capacity, not a seat', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T11:20:00Z')) // 18:20 in Bangkok
+  let added = false
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [meetingUrls.list]: [200, [seatOf('a1', 'Anna')]],
+    [meetingUrls.slots]: () => [
+      200,
+      [{ ...judo, capacity: 1, booked: added ? 2 : 1, full: true }],
+    ],
+    [`POST /api/businesses/${businessId}/appointments/walk-ins`]: () => {
+      added = true
+      return [201, { ...seatOf('a2', 'Olga'), status: 'DONE' }]
+    },
+  })
+  renderApp(`/calendar?date=${day}`)
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Judo: 0 of 1 free/))
+
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).queryByRole('button', { name: 'Add' })).toBeNull()
+  fireEvent.change(within(dialog).getByLabelText('Name'), {
+    target: { value: 'Olga' },
+  })
+  fireEvent.change(within(dialog).getByLabelText('Phone'), {
+    target: { value: '+66 81 234 5678' },
+  })
+  fireEvent.click(
+    within(dialog).getByRole('button', { name: 'Add someone who came' }),
+  )
+
+  expect(await within(dialog).findByText('All 1 taken, +1 over')).toBeTruthy()
+  expect(api.calls.find((c) => c.route.includes('walk-ins'))?.body).toEqual({
+    staffId: staff[0].id,
+    startsAt: judo.startsAt,
+    endsAt: judo.endsAt,
+    clientName: 'Olga',
+    clientPhone: '+66812345678',
+    groupId: judo.groupId,
+  })
+})
+
+test.each([
+  ['full', 'Every place was just taken.'],
+  ['notFree', 'This meeting has changed. Check the calendar and try again.'],
+])(
+  'a seat refused with %s says what happened, not "full"',
+  async (code, text) => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-11-17T01:00:00Z'))
+    fakeApi({
+      'GET /api/me': [200, account],
+      [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+      [meetingUrls.list]: [200, [seatOf('a1', 'Anna')]],
+      [meetingUrls.slots]: [200, [judo]],
+      [`POST /api/businesses/${businessId}/appointments`]: [
+        409,
+        { statusCode: 409, error: 'Conflict', message: code, code },
+      ],
+    })
+    renderApp(`/calendar?date=${day}`)
+    const grid = await screen.findByRole('group', { name: 'Bookings' })
+    fireEvent.click(await within(grid).findByText(/Judo: 2 of 3 free/))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByLabelText('Name'), {
+      target: { value: 'Olga' },
+    })
+    fireEvent.change(within(dialog).getByLabelText('Phone'), {
+      target: { value: '+66 81 234 5678' },
+    })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add' }))
+
+    expect(await within(dialog).findByText(text)).toBeTruthy()
+  },
+)

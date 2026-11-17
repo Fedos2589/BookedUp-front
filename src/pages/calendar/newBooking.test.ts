@@ -26,16 +26,22 @@ const group = slot('2026-11-17T05:00:00Z', '2026-11-17T06:00:00Z', {
   groupId: 'g',
 })
 
+test('a free hour that has started is no longer bookable', () => {
+  const now = new Date('2026-11-17T03:00:01Z')
+  expect(freeHoursSlots([ten], now)).toEqual([])
+})
+
 test('only free hours are bookable here, meetings are not', () => {
-  expect(freeHoursSlots([ten, group])).toEqual([ten])
+  expect(
+    freeHoursSlots([ten, group], new Date('2026-11-17T00:00:00Z')),
+  ).toEqual([ten])
 })
 
 test('a click on empty space finds the slot under it on the business clock', () => {
   const at = (staffId: string, date: string, minute: number) =>
-    slotAt([ten, group], staffId, date, minute, 'Asia/Bangkok')
+    slotAt([ten], staffId, date, minute, 'Asia/Bangkok')
   expect(at('vera', '2026-11-17', 10 * 60 + 30)).toBe(ten)
   expect(at('vera', '2026-11-17', 11 * 60)).toBeUndefined() // the end is not inside
-  expect(at('vera', '2026-11-17', 12 * 60 + 30)).toBeUndefined() // a meeting
   expect(at('petr', '2026-11-17', 10 * 60 + 30)).toBeUndefined()
   expect(at('vera', '2026-11-18', 10 * 60 + 30)).toBeUndefined()
 })

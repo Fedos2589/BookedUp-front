@@ -14,7 +14,6 @@ export function useCalendarData(
   return {
     appointments: appointments.data,
     slots: slots.data,
-    isPending: appointments.isPending || slots.isPending,
     isError:
       (appointments.isError && !appointments.data) ||
       (slots.isError && !slots.data),

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { ScheduleGrid, visibleRange } from 'ted-ui/ScheduleGrid'
@@ -10,9 +10,12 @@ import type {
   StaffControllerList200Item,
 } from '@/api/generated.schemas'
 import { dayLabel } from '@/dates'
+import { useNow } from '@/useNow'
 import { type CalendarView, weekDates } from './calendarSearch'
 import { NewBookingModal } from './NewBookingModal'
+import { joinMode, meetingOf } from './meetingOf'
 import { freeHoursSlots, slotAt } from './newBooking'
+import { SessionModal } from './SessionModal'
 import styles from './Calendar.module.scss'
 import { toColumns } from './toColumns'
 import { useCalendarData } from './useCalendarData'
@@ -39,7 +42,13 @@ export function CalendarGrid({
 }) {
   const { t, i18n } = useTranslation()
   // The booking dialog, for the slot that was clicked, if any.
+  const now = useNow()
+  const newButton = useRef<HTMLButtonElement>(null)
+  // Where focus returns after a meeting's dialog: the grid items cannot take it.
+  const gridBox = useRef<HTMLDivElement>(null)
   const [booking, setBooking] = useState<{ slot?: Slot }>()
+  // The meeting whose seats are open, by its grid item id.
+  const [openItem, setOpenItem] = useState<string>()
   const dates = view === 'week' ? weekDates(date) : [date]
   const data = useCalendarData(businessId, {
     from: dates[0],
@@ -71,7 +80,9 @@ export function CalendarGrid({
     appointments: data.appointments,
     slots: data.slots,
     timeZone,
+    now,
     labels: {
+      ended: (text) => t('calendar.ended', { text }),
       day: (d) => dayLabel(d, i18n.language),
       seats: (title, free, capacity) =>
         t('calendar.seats', {
@@ -86,22 +97,30 @@ export function CalendarGrid({
     emptyDay,
   )
 
-  const free = freeHoursSlots(data.slots)
+  // What can be booked: ahead of now, and of a master with a column on screen.
+  const onScreen = new Set(masters.map((m) => m.id))
+  const free = freeHoursSlots(data.slots, now).filter((s) =>
+    onScreen.has(s.staffId),
+  )
   // A column is a master (day view) or a date (week view).
-  const bookAt = (columnId: string, minute: number) =>
-    setBooking({
-      slot: slotAt(
-        data.slots!,
-        view === 'week' ? master.id : columnId,
-        view === 'week' ? columnId : date,
-        minute,
-        timeZone,
-      ),
-    })
+  const bookAt = (columnId: string, minute: number) => {
+    const slot = slotAt(
+      free,
+      view === 'week' ? master.id : columnId,
+      view === 'week' ? columnId : date,
+      minute,
+      timeZone,
+    )
+    if (slot) setBooking({ slot })
+  }
+
+  // Looked up in the loaded data, so a reload shows its seats as they are now.
+  const meeting = openItem && meetingOf(openItem, data.slots, data.appointments)
 
   return (
     <>
       <Button
+        ref={newButton}
         variant="solid"
         colorScheme="black"
         disabled={free.length === 0}
@@ -109,13 +128,28 @@ export function CalendarGrid({
       >
         {t('calendar.new.button')}
       </Button>
-      <ScheduleGrid
-        aria-label={t('calendar.grid')}
-        columns={columns}
-        startMinute={range.startMinute}
-        endMinute={range.endMinute}
-        onEmptyClick={bookAt}
-      />
+      <div ref={gridBox} tabIndex={-1} className={styles.gridBox}>
+        <ScheduleGrid
+          aria-label={t('calendar.grid')}
+          columns={columns}
+          startMinute={range.startMinute}
+          endMinute={range.endMinute}
+          onEmptyClick={bookAt}
+          onItemClick={(_, itemId) => setOpenItem(itemId)}
+        />
+      </div>
+      {meeting && (
+        <SessionModal
+          businessId={businessId}
+          timeZone={timeZone}
+          meeting={meeting}
+          mode={joinMode(meeting.slot, now, timeZone)}
+          ended={new Date(meeting.slot.endsAt) <= now}
+          finalFocus={gridBox}
+          onChanged={data.refetch}
+          onClose={() => setOpenItem(undefined)}
+        />
+      )}
       {booking && (
         <NewBookingModal
           businessId={businessId}
@@ -123,6 +157,7 @@ export function CalendarGrid({
           slots={free}
           masters={masters}
           initial={booking.slot}
+          finalFocus={newButton}
           onChanged={data.refetch}
           onClose={() => setBooking(undefined)}
         />
