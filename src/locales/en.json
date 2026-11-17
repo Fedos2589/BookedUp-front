@@ -57,7 +57,8 @@
     "slotTooLong": "The booking step is longer than the interval",
     "dateRequired": "Pick a date",
     "pastDate": "This date is in the past",
-    "dateTaken": "This date is already in the list. Change it there."
+    "dateTaken": "This date is already in the list. Change it there.",
+    "phone": "Enter a valid phone number"
   },
   "common": {
     "loading": "Loading",
@@ -161,7 +162,9 @@
     "title": "Calendar",
     "loadFailed": "Couldn't load the calendar",
     "today": "Today",
-    "placeholder": "The grid is coming next.",
+    "grid": "Bookings",
+    "meeting": "Meeting",
+    "seats": "{{title}}: {{free}} of {{capacity}} free",
     "prev": {
       "day": "Previous day",
       "week": "Previous week"
@@ -176,7 +179,20 @@
       "week": "Week"
     },
     "noMasters": "There are no masters to show yet. Add one on the Team page.",
-    "noMastersAskOwner": "You have no calendar yet. Ask the owner or an admin to add you as a master."
+    "noMastersAskOwner": "You have no calendar yet. Ask the owner or an admin to add you as a master.",
+    "new": {
+      "button": "New booking",
+      "title": "New booking",
+      "slot": "Time",
+      "name": "Name",
+      "phone": "Phone",
+      "note": "Note",
+      "cancel": "Cancel",
+      "submit": "Book",
+      "noFree": "No free time in this range",
+      "notFree": "This time was just taken. Pick another.",
+      "saveFailed": "Couldn't save the booking. Try again."
+    }
   },
   "schedule": {
     "title": "Schedule",

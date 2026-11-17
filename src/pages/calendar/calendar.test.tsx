@@ -1,5 +1,11 @@
 // @vitest-environment happy-dom
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { addDays, dateIn } from '@/dates'
@@ -60,4 +66,155 @@ test('the navigation opens the calendar and the arrows move its date', async () 
 
   fireEvent.click(await screen.findByRole('button', { name: 'Today' }))
   await waitFor(() => expect(dateNow()).toBe(today))
+})
+
+const day = '2026-11-17' // a Tuesday; the week is 16–22 Nov
+const query = (from: string, to: string, staffId?: string) =>
+  `from=${from}&to=${to}${staffId ? `&staffId=${staffId}` : ''}&includePast=true`
+const booking = {
+  id: '00000000-0000-4000-8000-000000000031',
+  staffId: staff[0].id,
+  startsAt: '2026-11-17T03:00:00Z', // 10:00 in Bangkok
+  endsAt: '2026-11-17T04:00:00Z',
+  status: 'BOOKED',
+  clientName: 'Olga',
+  clientPhone: '+66000000',
+  note: null,
+  groupId: null,
+  oneOffSessionId: null,
+}
+const petr = {
+  ...staff[0],
+  id: '00000000-0000-4000-8000-000000000022',
+  name: 'Petr',
+}
+
+test('the day view has a column per master and the bookings of the day, past meetings asked for', async () => {
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, petr]],
+    [`GET /api/businesses/${businessId}/appointments?${query(day, day)}`]: [
+      200,
+      [booking],
+    ],
+    [`GET /api/businesses/${businessId}/slots?${query(day, day)}`]: [200, []],
+  })
+  renderApp(`/calendar?date=${day}`)
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  expect(await within(grid).findByText(/Olga/)).toBeTruthy()
+  expect(within(grid).getByRole('group', { name: 'Vera' })).toBeTruthy()
+  expect(within(grid).getByRole('group', { name: 'Petr' })).toBeTruthy()
+  expect(api.calls.map((c) => c.route)).toContain(
+    `GET /api/businesses/${businessId}/slots?${query(day, day)}`,
+  )
+})
+
+test('the week view has a column per day of one master', async () => {
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [`GET /api/businesses/${businessId}/appointments?${query('2026-11-16', '2026-11-22', staff[0].id)}`]:
+      [200, [booking]],
+    [`GET /api/businesses/${businessId}/slots?${query('2026-11-16', '2026-11-22', staff[0].id)}`]:
+      [200, []],
+  })
+  renderApp(`/calendar?view=week&date=${day}`)
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  expect(await within(grid).findByText(/Olga/)).toBeTruthy()
+  expect(within(grid).getAllByRole('group')).toHaveLength(7)
+})
+
+test('a failed load says so and offers to try again', async () => {
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [`GET /api/businesses/${businessId}/appointments?${query(day, day)}`]: [
+      500,
+    ],
+    [`GET /api/businesses/${businessId}/slots?${query(day, day)}`]: [200, []],
+  })
+  renderApp(`/calendar?date=${day}`)
+  expect(await screen.findByRole('alert')).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Try again' })).toBeTruthy()
+})
+
+const free = {
+  staffId: staff[0].id,
+  startsAt: '2026-11-17T05:00:00Z', // 12:00 in Bangkok
+  endsAt: '2026-11-17T06:00:00Z',
+  title: null,
+  description: null,
+  capacity: 1,
+  booked: 0,
+  full: false,
+  groupId: null,
+  oneOffSessionId: null,
+}
+const listUrl = `GET /api/businesses/${businessId}/appointments?${query(day, day)}`
+const slotsUrl = `GET /api/businesses/${businessId}/slots?${query(day, day)}`
+
+async function fillNewBooking() {
+  fireEvent.click(await screen.findByRole('button', { name: 'New booking' }))
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.change(within(dialog).getByLabelText('Name'), {
+    target: { value: 'Olga' },
+  })
+  fireEvent.change(within(dialog).getByLabelText('Phone'), {
+    target: { value: '+66 81 234 5678' },
+  })
+  return dialog
+}
+
+test('a free hour is booked from the New booking button and shows on the grid', async () => {
+  let created = false
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: () => [200, created ? [booking] : []],
+    [slotsUrl]: [200, [free]],
+    [`POST /api/businesses/${businessId}/appointments`]: () => {
+      created = true
+      return [201, booking]
+    },
+  })
+  renderApp(`/calendar?date=${day}`)
+  const dialog = await fillNewBooking()
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Book' }))
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  expect(await within(grid).findByText(/Olga/)).toBeTruthy()
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(api.calls.find((c) => c.route.startsWith('POST'))?.body).toEqual({
+    staffId: staff[0].id,
+    startsAt: free.startsAt,
+    endsAt: free.endsAt,
+    clientName: 'Olga',
+    clientPhone: '+66812345678',
+  })
+})
+
+test('a slot taken meanwhile says so, keeps the dialog and reloads the grid', async () => {
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: [200, []],
+    [slotsUrl]: [200, [free]],
+    [`POST /api/businesses/${businessId}/appointments`]: [
+      409,
+      { statusCode: 409, error: 'Conflict', code: 'notFree' },
+    ],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const dialog = await fillNewBooking()
+  const loads = () => api.calls.filter((c) => c.route === listUrl).length
+  const before = loads()
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Book' }))
+
+  expect(
+    await within(dialog).findByText('This time was just taken. Pick another.'),
+  ).toBeTruthy()
+  expect(screen.getByRole('dialog')).toBeTruthy()
+  await waitFor(() => expect(loads()).toBeGreaterThan(before))
 })

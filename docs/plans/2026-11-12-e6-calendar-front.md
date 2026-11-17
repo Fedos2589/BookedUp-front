@@ -122,7 +122,7 @@ its column.
 **Check:** `npm test -- toColumns` — both views; Asia/Bangkok booking at 23:30 UTC lands on the
 next local day; group slot label shows free seats. Commit `feat(calendar): bookings into grid columns`.
 
-### - [ ] F3: day and week grid
+### - [x] F3: day and week grid
 
 **Files:** `src/pages/calendar/CalendarPage.tsx`, create `src/pages/calendar/useCalendarData.ts`.
 
@@ -133,7 +133,7 @@ whole week — **with the past meetings** (B11's flag), render `ScheduleGrid` wi
 **Check:** page test with mocked API: day view shows one column per master and a booking's client
 name; week view shows 7 columns. Commit `feat(calendar): day and week grid`.
 
-### - [ ] F4: create a booking in an hours slot
+### - [x] F4: create a booking in an hours slot
 
 **Files:** create `src/pages/calendar/NewBookingModal.tsx` (+ form hook file if needed), locales.
 
