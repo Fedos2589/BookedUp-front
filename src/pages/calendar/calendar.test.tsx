@@ -1,5 +1,11 @@
 // @vitest-environment happy-dom
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { addDays, dateIn } from '@/dates'
@@ -60,4 +66,76 @@ test('the navigation opens the calendar and the arrows move its date', async () 
 
   fireEvent.click(await screen.findByRole('button', { name: 'Today' }))
   await waitFor(() => expect(dateNow()).toBe(today))
+})
+
+const day = '2026-11-17' // a Tuesday; the week is 16–22 Nov
+const query = (from: string, to: string, staffId?: string) =>
+  `from=${from}&to=${to}${staffId ? `&staffId=${staffId}` : ''}&includePast=true`
+const booking = {
+  id: '00000000-0000-4000-8000-000000000031',
+  staffId: staff[0].id,
+  startsAt: '2026-11-17T03:00:00Z', // 10:00 in Bangkok
+  endsAt: '2026-11-17T04:00:00Z',
+  status: 'BOOKED',
+  clientName: 'Olga',
+  clientPhone: '+66000000',
+  note: null,
+  groupId: null,
+  oneOffSessionId: null,
+}
+const petr = {
+  ...staff[0],
+  id: '00000000-0000-4000-8000-000000000022',
+  name: 'Petr',
+}
+
+test('the day view has a column per master and the bookings of the day, past meetings asked for', async () => {
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, petr]],
+    [`GET /api/businesses/${businessId}/appointments?${query(day, day)}`]: [
+      200,
+      [booking],
+    ],
+    [`GET /api/businesses/${businessId}/slots?${query(day, day)}`]: [200, []],
+  })
+  renderApp(`/calendar?date=${day}`)
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  expect(await within(grid).findByText(/Olga/)).toBeTruthy()
+  expect(within(grid).getByRole('group', { name: 'Vera' })).toBeTruthy()
+  expect(within(grid).getByRole('group', { name: 'Petr' })).toBeTruthy()
+  expect(api.calls.map((c) => c.route)).toContain(
+    `GET /api/businesses/${businessId}/slots?${query(day, day)}`,
+  )
+})
+
+test('the week view has a column per day of one master', async () => {
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [`GET /api/businesses/${businessId}/appointments?${query('2026-11-16', '2026-11-22', staff[0].id)}`]:
+      [200, [booking]],
+    [`GET /api/businesses/${businessId}/slots?${query('2026-11-16', '2026-11-22', staff[0].id)}`]:
+      [200, []],
+  })
+  renderApp(`/calendar?view=week&date=${day}`)
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  expect(await within(grid).findByText(/Olga/)).toBeTruthy()
+  expect(within(grid).getAllByRole('group')).toHaveLength(7)
+})
+
+test('a failed load says so and offers to try again', async () => {
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [`GET /api/businesses/${businessId}/appointments?${query(day, day)}`]: [
+      500,
+    ],
+    [`GET /api/businesses/${businessId}/slots?${query(day, day)}`]: [200, []],
+  })
+  renderApp(`/calendar?date=${day}`)
+  expect(await screen.findByRole('alert')).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Try again' })).toBeTruthy()
 })

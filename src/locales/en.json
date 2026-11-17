@@ -161,7 +161,9 @@
     "title": "Calendar",
     "loadFailed": "Couldn't load the calendar",
     "today": "Today",
-    "placeholder": "The grid is coming next.",
+    "grid": "Bookings",
+    "meeting": "Meeting",
+    "seats": "{{title}}: {{free}} of {{capacity}} free",
     "prev": {
       "day": "Previous day",
       "week": "Previous week"

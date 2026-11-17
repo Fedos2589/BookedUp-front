@@ -10,6 +10,7 @@ import { useCurrentBusiness } from '@/business/currentBusiness'
 import { roleCan } from '@/business/roles'
 import { dateIn } from '@/dates'
 import { useNow } from '@/useNow'
+import { CalendarGrid } from './CalendarGrid'
 import { CalendarHeader } from './CalendarHeader'
 import styles from './Calendar.module.scss'
 
@@ -17,7 +18,6 @@ const route = getRouteApi('/cabinet/calendar')
 
 // The bookings of the business, a day (a column per master) or a week (one
 // master). A master is shown their own column only, whatever the address says.
-// The grid itself comes with F3; here the header and who is looked at.
 export function CalendarPage() {
   const { t } = useTranslation()
   const business = useCurrentBusiness()
@@ -80,9 +80,14 @@ export function CalendarPage() {
             masters={masters}
             master={master}
           />
-          <Typography variant="t3" component="p">
-            {t('calendar.placeholder')}
-          </Typography>
+          <CalendarGrid
+            businessId={business.id}
+            timeZone={business.timeZone}
+            view={view}
+            date={date}
+            masters={masters}
+            master={master}
+          />
         </>
       )}
     </main>

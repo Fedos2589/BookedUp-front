@@ -122,7 +122,7 @@ its column.
 **Check:** `npm test -- toColumns` — both views; Asia/Bangkok booking at 23:30 UTC lands on the
 next local day; group slot label shows free seats. Commit `feat(calendar): bookings into grid columns`.
 
-### - [ ] F3: day and week grid
+### - [x] F3: day and week grid
 
 **Files:** `src/pages/calendar/CalendarPage.tsx`, create `src/pages/calendar/useCalendarData.ts`.
 
