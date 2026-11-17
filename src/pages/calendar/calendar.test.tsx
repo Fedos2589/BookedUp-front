@@ -491,3 +491,122 @@ test.each([
     expect(await within(dialog).findByText(text)).toBeTruthy()
   },
 )
+
+const statusUrl = `PATCH /api/businesses/${businessId}/appointments/${booking.id}/status`
+
+test('a booking is confirmed from its dialog and shows the new status', async () => {
+  beforeFree()
+  let status = 'BOOKED'
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: () => [200, [{ ...booking, status }]],
+    [slotsUrl]: [200, []],
+    [statusUrl]: (body) => {
+      status = (body as { status: string }).status
+      return [200, { ...booking, status }]
+    },
+  })
+  renderApp(`/calendar?date=${day}`)
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Olga/))
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).getByRole('status').textContent).toBe('Booked')
+  // Not started: nothing to mark as done or missed yet.
+  expect(
+    within(dialog).queryByRole('button', { name: 'Mark as done' }),
+  ).toBeNull()
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Confirm' }))
+
+  await waitFor(() =>
+    expect(within(dialog).getByRole('status').textContent).toBe('Confirmed'),
+  )
+  expect(api.calls.find((c) => c.route === statusUrl)?.body).toEqual({
+    status: 'CONFIRMED',
+  })
+})
+
+test('a started booking can be marked done or a no-show, and a no-show reloads the slots', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T03:30:00Z')) // inside its hour
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: [200, [booking]],
+    [slotsUrl]: [200, []],
+    [statusUrl]: [200, { ...booking, status: 'NO_SHOW' }],
+  })
+  renderApp(`/calendar?date=${day}`)
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Olga/))
+  const dialog = await screen.findByRole('dialog')
+  expect(
+    within(dialog).getByRole('button', { name: 'Mark as done' }),
+  ).toBeTruthy()
+  const slotLoads = () => api.calls.filter((c) => c.route === slotsUrl).length
+  const before = slotLoads()
+  fireEvent.click(
+    within(dialog).getByRole('button', { name: 'Mark as no-show' }),
+  )
+
+  await waitFor(() => expect(slotLoads()).toBeGreaterThan(before))
+})
+
+test('a booking is cancelled after asking, also a past one, and leaves the grid', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-20T03:00:00Z')) // days after it
+  let cancelled = false
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: () => [200, cancelled ? [] : [booking]],
+    [slotsUrl]: [200, []],
+    [statusUrl]: () => {
+      cancelled = true
+      return [200, { ...booking, status: 'CANCELLED' }]
+    },
+  })
+  renderApp(`/calendar?date=${day}`)
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Olga/))
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.click(
+    within(dialog).getByRole('button', { name: 'Cancel booking' }),
+  )
+  const sure = await screen.findByRole('alertdialog')
+  expect(cancelled).toBe(false)
+  fireEvent.click(within(sure).getByRole('button', { name: 'Cancel booking' }))
+
+  await waitFor(() => expect(within(grid).queryByText(/Olga/)).toBeNull())
+  expect(screen.queryByRole('alertdialog')).toBeNull()
+  expect(screen.queryByRole('dialog')).toBeNull()
+})
+
+test('a move the back refuses says so and keeps the dialog', async () => {
+  beforeFree()
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: [200, [booking]],
+    [slotsUrl]: [200, []],
+    [statusUrl]: [
+      409,
+      { statusCode: 409, error: 'Conflict', code: 'badTransition' },
+    ],
+  })
+  renderApp(`/calendar?date=${day}`)
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Olga/))
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Confirm' }))
+
+  expect(
+    await within(dialog).findByText(
+      'This booking has changed. Here it is as it is now.',
+    ),
+  ).toBeTruthy()
+})

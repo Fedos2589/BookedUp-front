@@ -12,6 +12,7 @@ import type {
 import { dayLabel } from '@/dates'
 import { useNow } from '@/useNow'
 import { type CalendarView, weekDates } from './calendarSearch'
+import { BookingModal } from './BookingModal'
 import { NewBookingModal } from './NewBookingModal'
 import { joinMode, meetingOf } from './meetingOf'
 import { freeHoursSlots, slotAt } from './newBooking'
@@ -116,6 +117,12 @@ export function CalendarGrid({
 
   // Looked up in the loaded data, so a reload shows its seats as they are now.
   const meeting = openItem && meetingOf(openItem, data.slots, data.appointments)
+  // Or, when the item is a booking of the hours, that booking as loaded now —
+  // a cancelled one is gone from the list, and its dialog with it.
+  const opened =
+    openItem && !meeting
+      ? data.appointments.find((a) => a.id === openItem)
+      : undefined
 
   return (
     <>
@@ -145,6 +152,17 @@ export function CalendarGrid({
           meeting={meeting}
           mode={joinMode(meeting.slot, now, timeZone)}
           ended={new Date(meeting.slot.endsAt) <= now}
+          finalFocus={gridBox}
+          onChanged={data.refetch}
+          onClose={() => setOpenItem(undefined)}
+        />
+      )}
+      {opened && (
+        <BookingModal
+          businessId={businessId}
+          timeZone={timeZone}
+          booking={opened}
+          started={new Date(opened.startsAt) <= now}
           finalFocus={gridBox}
           onChanged={data.refetch}
           onClose={() => setOpenItem(undefined)}

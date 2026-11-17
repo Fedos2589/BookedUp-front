@@ -182,7 +182,7 @@ Click on a group / session item → `SessionModal`: list of its bookings (`group
 **Check:** page test: add a seat → count grows; full → «add» disabled; last week's meeting → no
 «add». Commit `feat(calendar): seats in groups`.
 
-### - [ ] F6: booking details and status
+### - [x] F6: booking details and status
 
 **Files:** create `src/pages/calendar/BookingModal.tsx`, locales.
 

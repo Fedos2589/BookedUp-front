@@ -62,7 +62,11 @@ export type BookingForm = z.infer<typeof bookingSchema>
 
 // "Nov 19, 10:00–11:00" on the business's clock; undefined for a zone this
 // browser does not know (shown without a time rather than as "undefined").
-export function slotRange(slot: Slot, timeZone: string, language: string) {
+export function slotRange(
+  slot: { startsAt: string; endsAt: string },
+  timeZone: string,
+  language: string,
+) {
   const start = dateTimeIn(new Date(slot.startsAt), timeZone, language)
   const end = timeIn(new Date(slot.endsAt), timeZone)
   return start && end ? `${start}–${end}` : undefined
