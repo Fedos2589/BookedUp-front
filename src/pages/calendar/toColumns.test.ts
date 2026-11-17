@@ -56,9 +56,7 @@ const meeting = (
 
 test('the day view: a column per master with the bookings of that master', () => {
   const columns = toColumns({
-    view: 'day',
-    dates: ['2026-11-17'],
-    staff: [vera, petr],
+    range: { view: 'day', date: '2026-11-17', staff: [vera, petr] },
     appointments: [booking({}), booking({ id: 'a2', staffId: 'petr' })],
     slots: [],
     timeZone,
@@ -83,9 +81,7 @@ test('the day view: a column per master with the bookings of that master', () =>
 test('the week view: a column per day of one master', () => {
   const dates = ['2026-11-16', '2026-11-17', '2026-11-18']
   const columns = toColumns({
-    view: 'week',
-    dates,
-    staff: [vera],
+    range: { view: 'week', dates, master: vera },
     appointments: [booking({}), booking({ id: 'x', staffId: 'petr' })],
     slots: [],
     timeZone,
@@ -99,9 +95,7 @@ test('the week view: a column per day of one master', () => {
 
 test('a booking at 23:30 UTC lands on the next local day, by the business clock', () => {
   const [column] = toColumns({
-    view: 'day',
-    dates: ['2026-11-18'],
-    staff: [vera],
+    range: { view: 'day', date: '2026-11-18', staff: [vera] },
     appointments: [
       booking({
         startsAt: '2026-11-17T23:30:00Z',
@@ -117,9 +111,7 @@ test('a booking at 23:30 UTC lands on the next local day, by the business clock'
 
 test('a booking running past midnight ends at 1440 in the column it starts in', () => {
   const [column] = toColumns({
-    view: 'day',
-    dates: ['2026-11-17'],
-    staff: [vera],
+    range: { view: 'day', date: '2026-11-17', staff: [vera] },
     appointments: [
       booking({
         startsAt: '2026-11-17T16:30:00Z', // 23:30
@@ -135,9 +127,7 @@ test('a booking running past midnight ends at 1440 in the column it starts in', 
 
 test('a group meeting shows its free seats; its seats and free hours are not items', () => {
   const [column] = toColumns({
-    view: 'day',
-    dates: ['2026-11-17'],
-    staff: [vera],
+    range: { view: 'day', date: '2026-11-17', staff: [vera] },
     appointments: [booking({ id: 'seat', groupId: 'g1' })],
     slots: [
       meeting({}),
@@ -156,9 +146,7 @@ test('a group meeting shows its free seats; its seats and free hours are not ite
 
 test('a full meeting reads 0 free; an over-booked one never goes negative', () => {
   const [column] = toColumns({
-    view: 'day',
-    dates: ['2026-11-17'],
-    staff: [vera],
+    range: { view: 'day', date: '2026-11-17', staff: [vera] },
     appointments: [],
     slots: [meeting({ booked: 10, full: true })],
     timeZone,
@@ -169,9 +157,7 @@ test('a full meeting reads 0 free; an over-booked one never goes negative', () =
 
 test('status sets the colour', () => {
   const [column] = toColumns({
-    view: 'day',
-    dates: ['2026-11-17'],
-    staff: [vera],
+    range: { view: 'day', date: '2026-11-17', staff: [vera] },
     appointments: [
       booking({ id: 'c', status: 'CONFIRMED' }),
       booking({ id: 'd', status: 'DONE' }),
@@ -186,4 +172,21 @@ test('status sets the colour', () => {
     'grey',
     'red',
   ])
+})
+
+test('a clock change: minutes are the wall clock of the business, not UTC', () => {
+  // Berlin, 2026-03-29: 02:00 CET jumps to 03:00 CEST.
+  const [column] = toColumns({
+    range: { view: 'day', date: '2026-03-29', staff: [vera] },
+    appointments: [
+      booking({
+        startsAt: '2026-03-29T00:30:00Z', // 01:30 CET
+        endsAt: '2026-03-29T01:30:00Z', // 03:30 CEST
+      }),
+    ],
+    slots: [],
+    timeZone: 'Europe/Berlin',
+    labels,
+  })
+  expect(column.items[0]).toMatchObject({ startMinute: 90, endMinute: 210 })
 })

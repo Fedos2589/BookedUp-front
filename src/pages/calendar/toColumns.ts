@@ -10,7 +10,6 @@ import type {
   StaffControllerList200Item,
 } from '@/api/generated.schemas'
 import { localMoment } from '@/dates'
-import type { CalendarView } from './calendarSearch'
 
 export type CalendarLabels = {
   day: (date: string) => string
@@ -41,35 +40,41 @@ function placeOf(startsAt: string, endsAt: string, timeZone: string) {
   }
 }
 
-const itemsOf = (
-  staffId: string,
-  date: string,
+// Every booking and meeting once, filed under the master and the day it starts.
+function itemsByColumn(
   appointments: AppointmentsControllerList200Item[],
   slots: SlotsControllerSlots200Item[],
   timeZone: string,
   labels: CalendarLabels,
-): ScheduleGridItem[] => {
-  const items: ScheduleGridItem[] = []
+) {
+  const byColumn = new Map<string, ScheduleGridItem[]>()
+  const add = (
+    staffId: string,
+    startsAt: string,
+    endsAt: string,
+    item: (p: { startMinute: number; endMinute: number }) => ScheduleGridItem,
+  ) => {
+    const place = placeOf(startsAt, endsAt, timeZone)
+    if (!place) return
+    const key = `${staffId}|${place.date}`
+    byColumn.set(key, [...(byColumn.get(key) ?? []), item(place)])
+  }
   for (const a of appointments) {
     // A seat is shown inside its meeting, not as a booking of its own.
-    if (a.staffId !== staffId || a.groupId || a.oneOffSessionId) continue
-    const place = placeOf(a.startsAt, a.endsAt, timeZone)
-    if (place?.date !== date) continue
-    items.push({
+    if (a.groupId || a.oneOffSessionId) continue
+    add(a.staffId, a.startsAt, a.endsAt, (place) => ({
       id: a.id,
       startMinute: place.startMinute,
       endMinute: place.endMinute,
       children: a.clientName,
       colorScheme: colorOf[a.status],
-    })
+    }))
   }
   for (const s of slots) {
     // Free hours are empty space in the grid; only meetings are items.
     const meetingId = s.groupId ?? s.oneOffSessionId
-    if (s.staffId !== staffId || !meetingId) continue
-    const place = placeOf(s.startsAt, s.endsAt, timeZone)
-    if (place?.date !== date) continue
-    items.push({
+    if (!meetingId) continue
+    add(s.staffId, s.startsAt, s.endsAt, (place) => ({
       id: `${meetingId}@${s.startsAt}`,
       startMinute: place.startMinute,
       endMinute: place.endMinute,
@@ -79,31 +84,33 @@ const itemsOf = (
         s.capacity,
       ),
       colorScheme: s.full ? 'grey' : 'blue',
-    })
+    }))
   }
-  return items
+  return byColumn
 }
 
+// What the grid shows: a day of several masters, or the days of one master.
+export type CalendarRange =
+  | { view: 'day'; date: string; staff: StaffControllerList200Item[] }
+  | { view: 'week'; dates: string[]; master: StaffControllerList200Item }
+
 // Bookings and meetings of a range as the kit grid's columns: the day view has
-// a column per master (of its one date), the week view a column per date (of
-// its one master). Times come from the business's clock, not the browser's.
+// a column per master, the week view a column per date. Times come from the
+// business's clock, not the browser's.
 export function toColumns({
-  view,
-  dates,
-  staff,
+  range,
   appointments,
   slots,
   timeZone,
   labels,
 }: {
-  view: CalendarView
-  dates: string[]
-  staff: StaffControllerList200Item[]
+  range: CalendarRange
   appointments: AppointmentsControllerList200Item[]
   slots: SlotsControllerSlots200Item[]
   timeZone: string
   labels: CalendarLabels
 }): ScheduleGridColumn[] {
+  const items = itemsByColumn(appointments, slots, timeZone, labels)
   const column = (
     id: string,
     label: string,
@@ -112,11 +119,9 @@ export function toColumns({
   ) => ({
     id,
     label,
-    items: itemsOf(staffId, date, appointments, slots, timeZone, labels),
+    items: items.get(`${staffId}|${date}`) ?? [],
   })
-  return view === 'day'
-    ? staff.map((s) => column(s.id, s.name, s.id, dates[0]))
-    : staff.length > 0
-      ? dates.map((d) => column(d, labels.day(d), staff[0].id, d))
-      : []
+  return range.view === 'day'
+    ? range.staff.map((s) => column(s.id, s.name, s.id, range.date))
+    : range.dates.map((d) => column(d, labels.day(d), range.master.id, d))
 }

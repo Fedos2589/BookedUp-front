@@ -174,7 +174,9 @@
       "label": "View",
       "day": "Day",
       "week": "Week"
-    }
+    },
+    "noMasters": "There are no masters to show yet. Add one on the Team page.",
+    "noMastersAskOwner": "You have no calendar yet. Ask the owner or an admin to add you as a master."
   },
   "schedule": {
     "title": "Schedule",

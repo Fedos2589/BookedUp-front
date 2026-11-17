@@ -7,6 +7,7 @@ import { Typography } from 'ted-ui/Typography'
 import { useMeControllerMeSuspense } from '@/api/account/account'
 import { useStaffControllerList } from '@/api/staff/staff'
 import { useCurrentBusiness } from '@/business/currentBusiness'
+import { roleCan } from '@/business/roles'
 import { dateIn } from '@/dates'
 import { useNow } from '@/useNow'
 import { CalendarHeader } from './CalendarHeader'
@@ -31,7 +32,8 @@ export function CalendarPage() {
   const masters = (staff.data ?? []).filter(
     (s) =>
       !s.archived &&
-      (business.role !== 'MASTER' || s.userId === account.user.id),
+      (roleCan(business.role, 'viewAllCalendars') ||
+        s.userId === account.user.id),
   )
   const master =
     masters.find((s) => s.id === search.staffId) ??
@@ -60,7 +62,16 @@ export function CalendarPage() {
           </Button>
         </div>
       )}
-      {staff.data && (
+      {staff.data && !master && (
+        <Typography variant="t3" component="p">
+          {t(
+            roleCan(business.role, 'viewAllCalendars')
+              ? 'calendar.noMasters'
+              : 'calendar.noMastersAskOwner',
+          )}
+        </Typography>
+      )}
+      {staff.data && master && (
         <>
           <CalendarHeader
             view={view}

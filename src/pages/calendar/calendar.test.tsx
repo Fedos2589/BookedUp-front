@@ -9,6 +9,7 @@ import { renderApp } from '@/test/renderApp'
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
+  vi.useRealTimers()
 })
 
 const businessId = account.businesses[0].id
@@ -22,7 +23,23 @@ const staff = [
   },
 ]
 
+test('without a master there is nothing to show, and the page says why', async () => {
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, []],
+  })
+  renderApp('/calendar')
+  expect(
+    await screen.findByText(
+      'There are no masters to show yet. Add one on the Team page.',
+    ),
+  ).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Today' })).toBeNull()
+})
+
 test('the navigation opens the calendar and the arrows move its date', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T12:00:00Z'))
   fakeApi({
     'GET /api/me': [200, account],
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],

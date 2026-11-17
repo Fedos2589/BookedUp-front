@@ -1,4 +1,4 @@
-import { addDays } from '@/dates'
+import { addDays, isoWeekday } from '@/dates'
 
 export type CalendarView = 'day' | 'week'
 
@@ -40,3 +40,9 @@ export const shiftDate = (
   view: CalendarView,
   direction: 1 | -1,
 ): string => addDays(date, direction * (view === 'week' ? 7 : 1))
+
+// The calendar week a day is in, Monday first.
+export const weekDates = (date: string): string[] => {
+  const monday = addDays(date, 1 - isoWeekday(date))
+  return Array.from({ length: 7 }, (_, i) => addDays(monday, i))
+}

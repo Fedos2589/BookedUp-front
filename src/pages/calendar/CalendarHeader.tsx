@@ -9,7 +9,7 @@ import { RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react'
 import type { StaffControllerList200Item } from '@/api/generated.schemas'
 import { dayLabel } from '@/dates'
 import { StaffPicker } from '@/pages/schedule/StaffPicker'
-import { type CalendarView, shiftDate } from './calendarSearch'
+import { type CalendarView, shiftDate, weekDates } from './calendarSearch'
 import styles from './Calendar.module.scss'
 
 const views: CalendarView[] = ['day', 'week']
@@ -31,6 +31,7 @@ export function CalendarHeader({
 }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate({ from: '/calendar' })
+  const week = weekDates(date)
   const go = (patch: {
     view?: CalendarView
     date?: string
@@ -61,7 +62,9 @@ export function CalendarHeader({
           <RiArrowRightSLine />
         </IconButton>
         <Typography variant="h5" component="p">
-          {dayLabel(date, i18n.language)}
+          {view === 'week'
+            ? `${dayLabel(week[0], i18n.language)} – ${dayLabel(week[6], i18n.language)}`
+            : dayLabel(date, i18n.language)}
         </Typography>
       </div>
       <TabsRounded
