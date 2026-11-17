@@ -124,3 +124,21 @@ export function instantOf(
 // ISO weekday (1 = Monday … 7 = Sunday) of a calendar day.
 export const isoWeekday = (date: string): number =>
   ((new Date(`${date}T00:00:00Z`).getUTCDay() + 6) % 7) + 1
+
+// The calendar day and the minute after midnight of a moment on the business's
+// clock; undefined for a zone this browser does not know, as timeIn.
+export function localMoment(
+  moment: string,
+  timeZone: string,
+): { date: string; minute: number } | undefined {
+  try {
+    const local = dayjs(moment).tz(timeZone)
+    return {
+      date: local.format('YYYY-MM-DD'),
+      minute: local.hour() * 60 + local.minute(),
+    }
+  } catch (error) {
+    if (error instanceof RangeError) return undefined
+    throw error
+  }
+}

@@ -83,7 +83,7 @@ No grid yet — a placeholder.
 **Check:** `calendarSearch.test.ts` (parse / defaults / prev-next over a month end); a page test
 that the nav item leads to `/calendar` and the arrows change `date`. Commit `feat(calendar): page shell`.
 
-### - [ ] F2: from bookings and slots to grid columns (pure)
+### - [x] F2: from bookings and slots to grid columns (pure)
 
 **Files:** create `src/pages/calendar/toColumns.ts`, `toColumns.test.ts`.
 
