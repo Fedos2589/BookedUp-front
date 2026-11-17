@@ -158,14 +158,29 @@ walk-in stays for today's meetings.
 **Check:** `toColumns` test: ended meeting faded, one in progress not; page test: last week's meeting
 is on the grid with its bookings, has no «add». Commit `feat(calendar): past meetings`.
 
-### - [ ] F5: seats in group meetings
+### - [ ] F5a: the client form as its own piece
 
-**Files:** create `src/pages/calendar/SessionModal.tsx`, locales.
+**Files:** `src/pages/calendar/NewBookingModal.tsx`, create `src/pages/calendar/ClientFields.tsx`
+(name, phone, note fields) and `src/pages/calendar/useClientForm.ts` (the `useForm` with
+`bookingSchema`, defaults by language, `useUnsavedInput`, `values → {clientName, clientPhone, note}`).
 
-Click on a group / session item → list of its bookings, «free N of M», «add» (same form as F4
-with `groupId`/`oneOffSessionId`); 409 `full` → message.
+A pure extraction: F4's dialog uses them, F5b / F9 reuse them. No behaviour change.
 
-**Check:** page test: add a seat → count grows; full → «add» disabled. Commit `feat(calendar): seats in groups`.
+**Check:** `npm test` — F4's page tests pass untouched. Commit `refactor(calendar): client form shared`.
+
+### - [ ] F5b: seats in group meetings
+
+**Files:** create `src/pages/calendar/SessionModal.tsx`, `src/pages/calendar/meetingOf.ts` (+ test:
+grid item id `${meetingId}@${startsAt}` → the meeting's slot and its bookings), `CalendarGrid.tsx`
+(`onItemClick` on a meeting item), locales.
+
+Click on a group / session item → `SessionModal`: list of its bookings (`groupId` /
+`oneOffSessionId` + same `startsAt`), «free N of M», «add» (`ClientFields` with `groupId` /
+`oneOffSessionId`); 409 `full` → message, `onChanged` refetches. A meeting that has ended
+(F11): bookings shown, **no «add»**, a short note why.
+
+**Check:** page test: add a seat → count grows; full → «add» disabled; last week's meeting → no
+«add». Commit `feat(calendar): seats in groups`.
 
 ### - [ ] F6: booking details and status
 
