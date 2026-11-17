@@ -4,6 +4,8 @@
 > no subagents. Read only the files the task names plus this repo's AGENTS.md (and the skills it
 > points to). If the task turns out bigger than described, stop and say so — it gets split, not
 > pushed through. Tick the task's box when its check passes, commit, don't push.
+>
+> **When the step is merged:** its last task updates the step's row in the common plan (another repo — its own branch from `main` and its own commit; don't push).
 
 **Goal (epic E6):** an admin sees a day / week grid of the masters' bookings and creates, moves,
 cancels bookings in it; a master sees only their own column.
@@ -165,3 +167,13 @@ On 409 `hasBookings` show «N bookings on this date — cancel or move them firs
 
 **Check:** page tests for cancelling a group date and adding time off with a mocked 409. Commit
 `feat(schedule): explain changes refused over bookings`.
+
+### - [ ] F10: close the step in the common plan
+
+**When:** after the `e6/calendar` PR is merged (the PR number and the merge are known only then).
+**Repo:** BookedUp-back — `git switch -c docs/e6-front-done origin/main` there.
+**Files:** `~/work/BookedUp-back/docs/superpowers/plans/2026-11-12-e6-calendar.md` — only the row `F`
+of the «Steps» table: status → `done — F1–F9, PR #N`.
+
+**Check:** `git diff` in BookedUp-back shows that one row and nothing else. Commit there
+`docs(plan): E6 front done`; don't push.
