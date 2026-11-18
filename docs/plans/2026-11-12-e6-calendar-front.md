@@ -249,7 +249,7 @@ chosen» (not another slot) lives there once. A pure extraction, no behaviour ch
 **Check:** `npm test` — the page tests of F4 and F7 pass untouched; a `freeSlotsOf` unit test.
 Commit `refactor(calendar): free hours and slot choice in one place`.
 
-### - [ ] F13: booking dialogs — one dialog with steps, checked at 390 px
+### - [x] F13: booking dialogs — one dialog with steps, checked at 390 px
 
 _From the review of PR #27 (question 9). **Looked at, split into F13a and F13b.** The kit `Modal` is
 controlled (`isVisible`; `title`, `subtitle`, `buttons`, `children`, `role` are plain props), so one
@@ -276,7 +276,7 @@ form={formId}`. Footer buttons are the same as now — F13b changes them.
 the move, press «Back», press «Move» again → the same day and hour are still chosen, and no second
 dialog was mounted (`getAllByRole('dialog')` stays one). Commit `refactor(calendar): booking dialog in steps`.
 
-#### - [ ] F13b: the footer at 390 px holds the main action
+#### - [x] F13b: the footer at 390 px holds the main action
 
 **Needs:** F13a. **Files:** `src/pages/calendar/BookingModal.tsx`, `Calendar.module.scss` (layout
 only), `e2e/calendar.spec.ts` (new; mocked `/api`, like `e2e/mobile.spec.ts`), locales if a label is new.

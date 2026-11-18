@@ -1,5 +1,6 @@
 import { type RefObject, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Button } from 'ted-ui/Button'
 import { Modal } from 'ted-ui/Modal'
 import { Typography } from 'ted-ui/Typography'
 
@@ -10,6 +11,7 @@ import type {
   StaffControllerList200Item,
 } from '@/api/generated.schemas'
 import { ApiError } from '@/apiFetch'
+import styles from './Calendar.module.scss'
 import { slotRange } from './newBooking'
 import { MoveFields } from './MoveFields'
 import { canMove, statusMoves } from './statusMoves'
@@ -137,6 +139,32 @@ export function BookingModal({
     )
   }
 
+  const statusButton = (status: (typeof moves)[number]) =>
+    status === 'CANCELLED'
+      ? {
+          variant: 'ghost' as const,
+          colorScheme: 'red' as const,
+          children: t('calendar.booking.move.CANCELLED'),
+          disabled: change.isPending,
+          onClick: () => setStep('cancel'),
+        }
+      : {
+          variant: 'solid' as const,
+          colorScheme: 'black' as const,
+          loading: change.isPending && change.variables?.data.status === status,
+          disabled: change.isPending,
+          children: t(`calendar.booking.move.${status}`),
+          onClick: () => moveTo(status),
+        }
+  // The footer of a phone holds Close and one main action: «done» once the
+  // booking has started, otherwise «confirm». The other moves sit in the body.
+  const main = moves.includes('DONE')
+    ? 'DONE'
+    : moves.includes('CONFIRMED')
+      ? 'CONFIRMED'
+      : undefined
+  const others = moves.filter((status) => status !== main)
+
   return (
     <Modal
       isVisible
@@ -151,36 +179,7 @@ export function BookingModal({
           children: t('calendar.booking.close'),
           onClick: onClose,
         },
-        ...(canMove(booking.status)
-          ? [
-              {
-                variant: 'ghost' as const,
-                colorScheme: 'black' as const,
-                children: t('calendar.booking.moveAction'),
-                disabled: change.isPending,
-                onClick: () => setStep('move'),
-              },
-            ]
-          : []),
-        ...moves.map((status) =>
-          status === 'CANCELLED'
-            ? {
-                variant: 'ghost' as const,
-                colorScheme: 'red' as const,
-                children: t('calendar.booking.move.CANCELLED'),
-                disabled: change.isPending,
-                onClick: () => setStep('cancel'),
-              }
-            : {
-                variant: 'solid' as const,
-                colorScheme: 'black' as const,
-                loading:
-                  change.isPending && change.variables?.data.status === status,
-                disabled: change.isPending,
-                children: t(`calendar.booking.move.${status}`),
-                onClick: () => moveTo(status),
-              },
-        ),
+        ...(main ? [statusButton(main)] : []),
       ]}
     >
       <Typography variant="t1">{booking.clientName}</Typography>
@@ -195,6 +194,21 @@ export function BookingModal({
       <Typography variant="t2" role="status">
         {t(`calendar.booking.status.${booking.status}`)}
       </Typography>
+      <div className={styles.actions}>
+        {canMove(booking.status) && (
+          <Button
+            variant="ghost"
+            colorScheme="black"
+            disabled={change.isPending}
+            onClick={() => setStep('move')}
+          >
+            {t('calendar.booking.moveAction')}
+          </Button>
+        )}
+        {others.map((status) => (
+          <Button key={status} {...statusButton(status)} />
+        ))}
+      </div>
       {failure}
     </Modal>
   )
