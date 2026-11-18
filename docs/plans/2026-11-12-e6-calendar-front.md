@@ -251,18 +251,44 @@ Commit `refactor(calendar): free hours and slot choice in one place`.
 
 ### - [ ] F13: booking dialogs — one dialog with steps, checked at 390 px
 
-_From the review of PR #27 (question 9). Needs a look first: stop and say so if the kit `Modal` can't
-swap its content and buttons without remounting — then close this as «left as it is»._
-
-**Files:** `src/pages/calendar/BookingModal.tsx`, `MoveBooking.tsx`.
+_From the review of PR #27 (question 9). **Looked at, split into F13a and F13b.** The kit `Modal` is
+controlled (`isVisible`; `title`, `subtitle`, `buttons`, `children`, `role` are plain props), so one
+mounted `Modal` can swap its content and buttons without remounting — F13 is not «left as it is»._
 
 Details, the cancel question and the move are three `Modal`s opened one after another: focus jumps
 to the grid in between, the animation plays twice, «Back» from the move loses the chosen day and
-hour. A started `BOOKED` booking has six buttons in the footer. Try: one `Modal` whose body is the
-current step; at 390×844 the footer holds the main action, the rest go elsewhere (a menu or the body).
+hour. A started `BOOKED` booking has six buttons in the footer.
 
-**Check:** page tests untouched; in a 390×844 touch viewport nothing overflows horizontally, the
-footer fits, «Back» from the move keeps the day and hour. Commit `refactor(calendar): booking dialog in steps`.
+#### - [x] F13a: one `Modal`, three steps, «Back» keeps the move's choice
+
+**Files:** `src/pages/calendar/BookingModal.tsx`, `MoveBooking.tsx` → split into
+`useMoveBooking.ts` (the state: `date`, `chosen`, the slots query, the `move` mutation, `slot`,
+`useUnsavedInput`; the slots query is `enabled` only on the move step) and `MoveFields.tsx` (the
+date picker, `SlotCombobox`, the error — a body, no `Modal`); delete `MoveBooking.tsx`.
+
+`BookingModal` keeps `step: 'details' | 'move' | 'cancel'` and calls `useMoveBooking` itself, so
+leaving the move step does not drop `date` / `chosen`. One `Modal` for all steps: title, subtitle,
+body and `buttons` per step; the cancel step has `role="alertdialog"` and the red confirm button
+(`ConfirmDialog` is no longer used here). The move form's submit button stays `type="submit"
+form={formId}`. Footer buttons are the same as now — F13b changes them.
+
+**Check:** the page tests of F6 and F7 pass **untouched**; one new test: pick another day and hour in
+the move, press «Back», press «Move» again → the same day and hour are still chosen, and no second
+dialog was mounted (`getAllByRole('dialog')` stays one). Commit `refactor(calendar): booking dialog in steps`.
+
+#### - [ ] F13b: the footer at 390 px holds the main action
+
+**Needs:** F13a. **Files:** `src/pages/calendar/BookingModal.tsx`, `Calendar.module.scss` (layout
+only), `e2e/calendar.spec.ts` (new; mocked `/api`, like `e2e/mobile.spec.ts`), locales if a label is new.
+
+On the details step the footer is «Close» and **one** main action (`DONE` for a started booking,
+otherwise `CONFIRMED`; nothing for a final status). The other moves — «Move», «Confirm» on a started
+`BOOKED`, «No-show», «Cancel booking» — go to a row of ghost buttons in the body, under the status.
+Test names of the buttons stay the same, so F6 / F7 tests pass untouched (they look inside the dialog).
+
+**Check:** `npm test`; `npm run test:e2e` — a started `BOOKED` booking at 390×844 touch: nothing
+overflows (`scrollWidth` = 390), the footer's buttons all fit in the viewport. Commit
+`feat(calendar): booking dialog fits a phone`.
 
 ### - [ ] F10: close the step in the common plan
 

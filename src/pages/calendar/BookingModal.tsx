@@ -1,6 +1,5 @@
-import { type RefObject, useState } from 'react'
+import { type RefObject, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ConfirmDialog } from 'ted-ui/ConfirmDialog'
 import { Modal } from 'ted-ui/Modal'
 import { Typography } from 'ted-ui/Typography'
 
@@ -12,11 +11,16 @@ import type {
 } from '@/api/generated.schemas'
 import { ApiError } from '@/apiFetch'
 import { slotRange } from './newBooking'
-import { MoveBooking } from './MoveBooking'
+import { MoveFields } from './MoveFields'
 import { canMove, statusMoves } from './statusMoves'
+import { useMoveBooking } from './useMoveBooking'
+
+type Step = 'details' | 'move' | 'cancel'
 
 // One booking of the hours: who, when, in what status, and the moves the back
-// allows from it. A cancel asks first. `onChanged` reloads the grid under the
+// allows from it. One dialog for all of it — the details, the move and the
+// question of a cancel are its steps, so focus stays put and «Back» from the
+// move keeps the day and the hour. `onChanged` reloads the grid under the
 // dialog, slots too — a no-show or a cancel frees the master's time.
 export function BookingModal({
   businessId,
@@ -38,10 +42,19 @@ export function BookingModal({
   onClose: () => void
 }) {
   const { t, i18n } = useTranslation()
-  const [cancelling, setCancelling] = useState(false)
-  const [moving, setMoving] = useState(false)
+  const formId = useId()
+  const [step, setStep] = useState<Step>('details')
   const change = useAppointmentsControllerChangeStatus({
     mutation: { onSettled: onChanged },
+  })
+  const moving = useMoveBooking({
+    businessId,
+    timeZone,
+    booking,
+    masters,
+    active: step === 'move',
+    onChanged,
+    onMoved: onClose,
   })
   const moveTo = (status: Status, then?: () => void) =>
     change.mutate(
@@ -51,44 +64,76 @@ export function BookingModal({
   const moves = statusMoves(booking.status, started)
   const refused =
     change.error instanceof ApiError && change.error.status === 409
-  // Shown in whichever dialog is open: the question of a cancel fails too.
+  // Shown on the details and on the question of a cancel: both can fail.
   const failure = change.isError && (
     <Typography variant="t4" color="red-300" role="alert">
       {refused ? t('calendar.booking.changed') : t('calendar.booking.failed')}
     </Typography>
   )
 
-  if (moving) {
+  if (step === 'move') {
     return (
-      <MoveBooking
-        businessId={businessId}
-        timeZone={timeZone}
-        booking={booking}
-        masters={masters}
-        finalFocus={finalFocus}
-        onChanged={onChanged}
-        onBack={() => setMoving(false)}
+      <Modal
+        isVisible
+        title={t('calendar.move.title')}
+        subtitle={booking.clientName}
         onClose={onClose}
-      />
+        finalFocus={finalFocus}
+        buttons={[
+          {
+            variant: 'ghost',
+            colorScheme: 'grey',
+            children: t('calendar.move.back'),
+            onClick: () => setStep('details'),
+          },
+          {
+            variant: 'solid',
+            colorScheme: 'black',
+            type: 'submit',
+            form: formId,
+            loading: moving.move.isPending,
+            disabled: !moving.slot,
+            children: t('calendar.move.submit'),
+          },
+        ]}
+      >
+        <MoveFields
+          formId={formId}
+          state={moving}
+          masters={masters}
+          timeZone={timeZone}
+        />
+      </Modal>
     )
   }
 
-  if (cancelling) {
+  if (step === 'cancel') {
     return (
-      <ConfirmDialog
+      <Modal
         isVisible
-        colorScheme="red"
+        role="alertdialog"
         title={t('calendar.booking.cancelTitle')}
-        confirmLabel={t('calendar.booking.cancelConfirm')}
-        cancelLabel={t('calendar.booking.keep')}
-        loading={change.isPending}
+        onClose={() => setStep('details')}
         finalFocus={finalFocus}
-        onClose={() => setCancelling(false)}
-        onConfirm={() => moveTo('CANCELLED', onClose)}
+        buttons={[
+          {
+            variant: 'ghost',
+            colorScheme: 'grey',
+            children: t('calendar.booking.keep'),
+            onClick: () => setStep('details'),
+          },
+          {
+            variant: 'solid',
+            colorScheme: 'red',
+            loading: change.isPending,
+            children: t('calendar.booking.cancelConfirm'),
+            onClick: () => moveTo('CANCELLED', onClose),
+          },
+        ]}
       >
-        {booking.clientName}
+        <Typography variant="t1">{booking.clientName}</Typography>
         {failure}
-      </ConfirmDialog>
+      </Modal>
     )
   }
 
@@ -113,7 +158,7 @@ export function BookingModal({
                 colorScheme: 'black' as const,
                 children: t('calendar.booking.moveAction'),
                 disabled: change.isPending,
-                onClick: () => setMoving(true),
+                onClick: () => setStep('move'),
               },
             ]
           : []),
@@ -124,7 +169,7 @@ export function BookingModal({
                 colorScheme: 'red' as const,
                 children: t('calendar.booking.move.CANCELLED'),
                 disabled: change.isPending,
-                onClick: () => setCancelling(true),
+                onClick: () => setStep('cancel'),
               }
             : {
                 variant: 'solid' as const,
