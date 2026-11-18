@@ -87,7 +87,25 @@
     "noBusiness": {
       "title": "You’re not in a business",
       "text": "This account is no longer a member of any business. To join one, open the invitation link someone on its team sends you."
-    }
+    },
+    "clients": "Clients"
+  },
+  "clients": {
+    "title": "Clients",
+    "add": "Add client",
+    "search": "Search clients",
+    "listLabel": "Clients",
+    "via": "via {{name}}",
+    "noShows_one": "No-shows: {{count}}",
+    "noShows_other": "No-shows: {{count}}",
+    "showMore": "Show more",
+    "loadFailed": "Couldn't load the clients",
+    "empty": {
+      "title": "No clients yet",
+      "text": "Clients appear here when you add them or book them."
+    },
+    "nobodyFound": "Nobody found",
+    "nobodyFoundText": "Try another name or phone number."
   },
   "team": {
     "title": "Team",

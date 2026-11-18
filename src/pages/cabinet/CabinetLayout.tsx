@@ -34,6 +34,11 @@ export function CabinetLayout() {
               </Link>
             </Typography>
             <Typography variant="t3">
+              <Link to="/clients" className={styles.link}>
+                {t('cabinet.clients')}
+              </Link>
+            </Typography>
+            <Typography variant="t3">
               <Link to="/schedule" className={styles.link}>
                 {t('cabinet.schedule')}
               </Link>

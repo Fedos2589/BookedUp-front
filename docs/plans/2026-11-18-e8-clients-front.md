@@ -78,7 +78,7 @@ phone field's error («This number is already a client») for now.
 **Check:** `npm run typecheck && npm test` green; `calendar.test.tsx` books with `newClient`.
 Commit `chore(api): clients from the back, kit v0.7.0`.
 
-### - [ ] F2: client list
+### - [x] F2: client list
 
 **Files:** `src/app/router.tsx` (route `/clients`), `src/pages/cabinet/CabinetLayout.tsx` (nav link
 «Clients» after «Calendar»), create `src/pages/clients/{ClientsPage.tsx,ClientRow.tsx,Clients.module.scss,clients.test.tsx}`,
