@@ -693,6 +693,31 @@ test("a booking's dialog links the client's name to their card", async () => {
   ).toBe(`/clients/${booking.clientId}`)
 })
 
+test('after «number taken» the phone is looked up again and shows whose it is', async () => {
+  beforeFree()
+  let taken = false
+  fakeApi({
+    'GET /api/me': [200, account],
+    ...clientRoutes,
+    [`${clientsUrl}?phone=%2B66812345678`]: () =>
+      taken ? found(vera, veraKid) : found(),
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: [200, []],
+    [slotsUrl]: [200, [free]],
+    [`POST /api/businesses/${businessId}/appointments`]: () => {
+      taken = true
+      return [409, { statusCode: 409, code: 'phoneTaken', clientId: vera.id }]
+    },
+  })
+  renderApp(`/calendar?date=${day}`)
+  const dialog = await fillNewBooking()
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Book' }))
+
+  expect(
+    await within(dialog).findByRole('radio', { name: 'Vera' }),
+  ).toBeTruthy()
+})
+
 const statusUrl = `PATCH /api/businesses/${businessId}/appointments/${booking.id}/status`
 
 test('a booking is confirmed from its dialog and shows the new status', async () => {

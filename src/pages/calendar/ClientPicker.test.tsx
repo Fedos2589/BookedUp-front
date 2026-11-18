@@ -1,6 +1,12 @@
 // @vitest-environment happy-dom
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import '@/i18n'
@@ -37,7 +43,11 @@ const page = (...items: object[]): [number, unknown] => [
 function show() {
   const values: (PickerValue | undefined)[] = []
   render(
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider
+      client={
+        new QueryClient({ defaultOptions: { queries: { retry: false } } })
+      }
+    >
       <CurrentBusiness.Provider value={business}>
         <ClientPicker onChange={(value) => values.push(value)} />
       </CurrentBusiness.Provider>
@@ -104,4 +114,59 @@ test('a phone nobody has makes a new client with that phone', async () => {
   expect(picker.last()).toEqual({
     newClient: { name: 'Olga', phone: '+66812345678' },
   })
+})
+
+test('a number that is not whole is called so once the field is left', async () => {
+  fakeApi({ [`${clients}?limit=20`]: page() })
+  show()
+  fireEvent.click(screen.getByRole('button', { name: 'New client' }))
+  const phone = screen.getByLabelText('Phone')
+  fireEvent.change(phone, { target: { value: '+66 81 23' } })
+  expect(screen.queryByText('Enter a valid phone number')).toBeNull()
+
+  fireEvent.blur(phone)
+  expect(await screen.findByText('Enter a valid phone number')).toBeTruthy()
+})
+
+test('a failed lookup of the phone says so and can be retried', async () => {
+  let down = true
+  const api = fakeApi({
+    [`${clients}?limit=20`]: page(),
+    [`${clients}?phone=%2B79990001122`]: () =>
+      down ? [500] : page(anna, masha),
+  })
+  const picker = show()
+  fireEvent.click(screen.getByRole('button', { name: 'New client' }))
+  typeInto('Phone', '+7 999 000-11-22')
+
+  expect(await screen.findByText("Couldn't check this number")).toBeTruthy()
+  down = false
+  fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
+  expect(await screen.findByRole('radio', { name: 'Anna' })).toBeTruthy()
+  expect(picker.last()).toBeUndefined()
+  expect(api.calls.filter((c) => c.route.includes('phone='))).toHaveLength(2)
+})
+
+test('the search waits for the typing to pause, and asks for at most 100 characters', async () => {
+  const api = fakeApi({
+    [`${clients}?limit=20`]: page(),
+    [`${clients}?q=Ann&limit=20`]: page(anna),
+    [`${clients}?q=${'a'.repeat(100)}&limit=20`]: page(),
+  })
+  show()
+  const field = screen.getByRole('combobox', { name: 'Client' })
+  fireEvent.change(field, { target: { value: 'A' } })
+  fireEvent.change(field, { target: { value: 'An' } })
+  fireEvent.change(field, { target: { value: 'Ann' } })
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route.includes('q=Ann'))).toBe(true),
+  )
+  expect(api.calls.filter((c) => c.route.includes('q='))).toHaveLength(1)
+
+  fireEvent.change(field, { target: { value: 'a'.repeat(150) } })
+  await waitFor(() =>
+    expect(
+      api.calls.some((c) => c.route.includes(`q=${'a'.repeat(100)}&`)),
+    ).toBe(true),
+  )
 })

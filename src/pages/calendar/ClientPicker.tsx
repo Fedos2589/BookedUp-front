@@ -34,7 +34,7 @@ export function ClientPicker({
   const [phone, setPhone] = useState('')
   const [choice, setChoice] = useState<string>()
   const { query, setQuery, found } = useClientSearch()
-  const account = useAccountOf(country, phone)
+  const { account, failed, retrying, retry } = useAccountOf(country, phone)
 
   useUnsavedInput(!!picked || name !== '' || phone !== '')
   const value = pickerValue({
@@ -78,6 +78,9 @@ export function ClientPicker({
           country={country}
           phone={phone}
           account={account}
+          lookupFailed={failed}
+          retrying={retrying}
+          onRetry={retry}
           choice={choice}
           onName={setName}
           onCountry={setCountry}

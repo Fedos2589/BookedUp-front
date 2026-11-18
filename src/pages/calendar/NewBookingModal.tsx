@@ -96,7 +96,7 @@ export function NewBookingModal({
                 ...booking.client,
               },
             },
-            { onSuccess: onClose },
+            { onSuccess: onClose, onError: booking.onRefused },
           )
         }}
       >

@@ -291,7 +291,8 @@
       "new": "New client",
       "find": "Find an existing client",
       "account": "Who is this",
-      "newPerson": "A new person on this number"
+      "newPerson": "A new person on this number",
+      "lookupFailed": "Couldn't check this number"
     }
   },
   "schedule": {

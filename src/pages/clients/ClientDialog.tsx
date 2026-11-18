@@ -30,6 +30,7 @@ import {
 import styles from './Clients.module.scss'
 import { GuardianCombobox } from './GuardianCombobox'
 import { PhoneTakenLink } from './PhoneTakenLink'
+import { reloadClients } from './reloadClients'
 
 type Person = Parameters<typeof clientFormDefaults>[0] & { id: string }
 
@@ -66,14 +67,7 @@ export function ClientDialog({
   const save = client ? update : create
   const takenBy = phoneTakenBy(save.error)
 
-  // The list, every card (a new dependent shows on the guardian's) and the
-  // histories: all of them live under the business's clients.
-  const reload = () =>
-    queryClient.invalidateQueries({
-      predicate: ({ queryKey }) =>
-        typeof queryKey[0] === 'string' &&
-        queryKey[0].startsWith(`/api/businesses/${business.id}/clients`),
-    })
+  const reload = () => reloadClients(queryClient, business.id)
   const failed = (error: unknown) => {
     if (conflictCode(error) === 'phoneTaken')
       form.setError('phone', { message: 'validation.phoneTaken' })

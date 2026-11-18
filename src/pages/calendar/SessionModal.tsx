@@ -141,7 +141,10 @@ export function SessionModal({
                   ? { oneOffSessionId: slot.oneOffSessionId }
                   : {}),
             }
-            const done = { onSuccess: booking.reset }
+            const done = {
+              onSuccess: booking.reset,
+              onError: booking.onRefused,
+            }
             if (mode === 'walkIn') walkIn.mutate({ businessId, data }, done)
             else seat.mutate({ businessId, data }, done)
           }}
