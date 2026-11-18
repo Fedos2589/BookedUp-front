@@ -803,3 +803,38 @@ test('a cancel the back refuses says so in the question', async () => {
     ),
   ).toBeTruthy()
 })
+
+test('Back from the move keeps the chosen hour, in the same single dialog', async () => {
+  beforeFree()
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, petr]],
+    [listUrl]: [200, [booking]],
+    [slotsUrl]: [200, []],
+    [dayFreeUrl]: [200, [free, petrsHour]],
+    [moveUrl]: [200, booking],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const dialog = await openMove()
+  const field = () =>
+    dialog.querySelector('input[aria-haspopup="listbox"]') as HTMLInputElement
+  await waitFor(() => expect(field().value).toContain('Vera'))
+  fireEvent.keyDown(field(), { key: 'ArrowDown' })
+  fireEvent.change(field(), { target: { value: 'Petr' } })
+  fireEvent.click(await screen.findByRole('option', { name: /Petr/ }))
+  await waitFor(() => expect(field().value).toContain('Petr'))
+
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Back' }))
+  expect(screen.getAllByRole('dialog')).toHaveLength(1)
+  fireEvent.click(await screen.findByRole('button', { name: 'Move' }))
+  expect(screen.getAllByRole('dialog')).toHaveLength(1)
+  await waitFor(() =>
+    expect(
+      (
+        document.querySelector(
+          'input[aria-haspopup="listbox"]',
+        ) as HTMLInputElement
+      ).value,
+    ).toContain('Petr'),
+  )
+})

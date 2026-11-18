@@ -41,3 +41,10 @@
 .gridBox:focus {
   outline: none;
 }
+
+// The moves of a booking that don't fit the dialog's footer on a phone.
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-8);
+}
