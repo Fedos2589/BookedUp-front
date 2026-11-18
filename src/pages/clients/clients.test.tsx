@@ -152,7 +152,7 @@ test('«Show more» adds the next page until all are shown', async () => {
   expect(screen.queryByRole('button', { name: 'Show more' })).toBeNull()
 })
 
-test('a business with no clients says so, and the add button waits for the dialog', async () => {
+test('a business with no clients says so, and the add button is there', async () => {
   fakeApi({
     'GET /api/me': me(),
     [clientsUrl('limit=20&offset=0')]: [200, { items: [], total: 0 }],
@@ -163,7 +163,7 @@ test('a business with no clients says so, and the add button waits for the dialo
   expect(
     (screen.getByRole('button', { name: 'Add client' }) as HTMLButtonElement)
       .disabled,
-  ).toBe(true)
+  ).toBe(false)
 })
 
 test('a search with no matches says that, not «no clients yet»', async () => {

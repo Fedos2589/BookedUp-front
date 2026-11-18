@@ -106,7 +106,7 @@ as in F2. «Edit» opens F4's dialog — disabled until F4. 404 → «No such cl
 **Check:** `client.test.tsx` — a holder's card lists dependents; a dependent's card links to the
 guardian; history renders statuses and «Show more»; 404 state. Commit `feat(clients): client card`.
 
-### - [ ] F4: create and edit a client
+### - [x] F4: create and edit a client
 
 **Files:** create `src/pages/clients/{ClientDialog.tsx,clientForm.ts,clientForm.test.ts}`,
 `ClientsPage.tsx`, `ClientPage.tsx` (enable the buttons), locales.

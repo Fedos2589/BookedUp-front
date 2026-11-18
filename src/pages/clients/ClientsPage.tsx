@@ -1,10 +1,11 @@
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Input } from 'ted-ui/Input'
 import { Typography } from 'ted-ui/Typography'
 
+import { ClientDialog } from './ClientDialog'
 import { ClientsList } from './ClientsList'
 import styles from './Clients.module.scss'
 
@@ -22,6 +23,8 @@ export function ClientsPage() {
   const navigate = useNavigate({ from: '/clients' })
   const [text, setText] = useState(q ?? '')
   const [seenQ, setSeenQ] = useState(q)
+  const [creating, setCreating] = useState(false)
+  const addButton = useRef<HTMLButtonElement>(null)
   if (q !== seenQ) {
     // The address changed from outside (the nav link, Back): follow it.
     setSeenQ(q)
@@ -44,8 +47,12 @@ export function ClientsPage() {
         <Typography variant="h3" component="h1">
           {t('clients.title')}
         </Typography>
-        {/* Enabled with the create dialog (E8 F4). */}
-        <Button variant="solid" colorScheme="black" disabled>
+        <Button
+          ref={addButton}
+          variant="solid"
+          colorScheme="black"
+          onClick={() => setCreating(true)}
+        >
           {t('clients.add')}
         </Button>
       </div>
@@ -58,6 +65,9 @@ export function ClientsPage() {
         onChange={(event) => setText(event.target.value)}
       />
       <ClientsList q={q} />
+      {creating && (
+        <ClientDialog opener={addButton} onClose={() => setCreating(false)} />
+      )}
     </main>
   )
 }
