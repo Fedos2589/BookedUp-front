@@ -315,12 +315,12 @@
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow">План ручного тестирования · 16.11.2026</div>
+    <div class="eyebrow">План ручного тестирования · 18.11.2026</div>
     <h1>BookedUp — весь текущий функционал</h1>
     <div class="meta">
-      <span>BookedUp-front <code>main @ 1f6c981</code></span>
-      <span>BookedUp-back <code>main @ 2b3962e</code></span>
-      <span>36 сценариев</span>
+      <span>BookedUp-front <code>main @ ea4aced</code></span>
+      <span>BookedUp-back <code>main @ aa7e98d</code></span>
+      <span>46 сценариев</span>
     </div>
     <p>
       Что сейчас есть в приложении: регистрация владельца вместе с бизнесом,
@@ -328,9 +328,10 @@
       просмотр), страница «Team» (приглашения по ссылке, роли, удаление, мастера
       без аккаунта), страница приглашения, страница «Schedule» в двух режимах
       (индивидуальные часы с отдельными датами или группы с разовыми занятиями)
-      и отгулы, английский и русский интерфейс, PWA. Записи клиентов (E6) на
-      бэке пока только таблица — в интерфейсе их нет, страница
-      <code>/book/…</code> — заглушка.
+      и отгулы, английский и русский интерфейс, PWA. Календарь записей (E6):
+      день и неделя, запись в свободное время, места в группах и «пришедший»,
+      статусы, перенос и отмена, прошедшие занятия, отказ расписания из-за
+      записей. Публичная страница <code>/book/…</code> — по-прежнему заглушка.
     </p>
   </header>
 
@@ -486,6 +487,48 @@
         >
         <span class="chip c-corner">корнер-кейс</span>
       </li>
+      <li>
+        <a href="#t37">Календарь: пункт меню, день, неделя, навигация</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t38">Календарь: запись клиента в свободное время мастера</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t39">Календарь: групповое занятие, места и «пришедший»</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t40">Календарь: прошедшие занятия и занятия других дней</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t41"
+          >Календарь: запись — подтвердить, был, перенести, отменить</a
+        >
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t42">Календарь: мастер видит только себя</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t43">Календарь: время или место заняли в другом окне</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t44">Расписание отказывает изменению из-за записей</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t45">Календарь на телефоне 390px и на русском</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t46">Календарь: бэк недоступен</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
     </ol>
   </section>
 
@@ -519,6 +562,15 @@
           <code>owner2.qa@example.com</code>. Пароль у всех
           <code>qa-pass-1234</code>. Если эти email уже заняты в вашей базе —
           добавьте к имени цифру и записывайте, какие взяли.
+        </dd>
+        <dt>Данные для календаря</dt>
+        <dd>
+          Сценарии 37–46 опираются на данные сценариев 9–16: у Маши рабочие часы
+          на всю неделю с шагом записи 30 минут (сценарий 11), у Петра режим
+          Groups с группами «Футбол дети» (12 мест) и «Йога» (1 место) на каждый
+          день (сценарии 14–16). Нужные по времени занятия («началось 30 минут
+          назад», «через 2 часа») подстройте под текущий час через
+          <span class="ui">Change</span> у группы.
         </dd>
         <dt>Лимиты</dt>
         <dd>
@@ -2803,6 +2855,687 @@
       </ol>
     </article>
 
+    <article class="tc" id="t37">
+      <div class="hd">
+        <h3>37. Календарь: пункт меню, день, неделя, навигация</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О, владелец, любая страница кабинета. У Маши (сценарий 11)
+          рабочие часы на всю неделю, шаг записи 30 минут. Сегодня по часам
+          бизнеса — день, в который у Маши есть часы
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            В меню кабинета нажмите <span class="ui">«Calendar»</span>.
+          </div>
+          <div class="exp">
+            Адрес <code>/calendar</code>, заголовок
+            <span class="ui">Calendar</span>. Сверху: стрелки
+            <span class="ui">Previous day</span> /
+            <span class="ui">Next day</span>, кнопка
+            <span class="ui">Today</span> (неактивна — вы на сегодняшнем дне),
+            дата текстом, вкладки <span class="ui">Day</span> (выбрана) и
+            <span class="ui">Week</span>. Под ними кнопка
+            <span class="ui">«New booking»</span> и сетка
+            <span class="ui">Bookings</span> со столбцом на каждого мастера
+            (Маша, Пётр…); у Маши видны её свободные часы.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите стрелку <span class="ui">Next day</span>.
+          </div>
+          <div class="exp">
+            В адресе <code>date=</code> завтрашнего дня, дата в шапке сменилась,
+            кнопка <span class="ui">Today</span> стала активной.
+            <span class="ui">Previous day</span> дважды — вчера.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">Today</span>.</div>
+          <div class="exp">Вернулись на сегодня, кнопка снова неактивна.</div>
+        </li>
+        <li>
+          <div class="act">Нажмите вкладку <span class="ui">Week</span>.</div>
+          <div class="exp">
+            В адресе <code>view=week</code>. В шапке диапазон «пн – вс» текущей
+            недели; сетка — 7 столбцов-дат одного мастера; справа от вкладок
+            выбор мастера (<span class="ui">Master</span>) с Машей или первым в
+            списке. Стрелки теперь <span class="ui">Previous week</span> /
+            <span class="ui">Next week</span> и сдвигают на неделю.
+          </div>
+        </li>
+        <li>
+          <div class="act">Выберите в списке мастера Петра.</div>
+          <div class="exp">
+            В адресе появился <code>staffId=…</code>; столбцы — те же 7 дат, но
+            с занятиями Петра.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте <code>/calendar?date=2026-02-30</code> (такой даты нет),
+            затем <code>/calendar?view=month</code>.
+          </div>
+          <div class="exp">
+            В обоих случаях страница открывается на сегодняшнем дне в режиме Day
+            — без ошибки.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Обновите страницу в режиме Week с выбранным Петром.
+          </div>
+          <div class="exp">
+            Остались те же неделя и мастер. Назад в браузере возвращает по
+            одному шагу навигации.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t38">
+      <div class="hd">
+        <h3>38. Календарь: запись клиента в свободное время мастера</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О, владелец, <code>/calendar</code>, вкладка Day, сегодня; у Маши
+          свободно время позже текущего момента
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Нажмите <span class="ui">«New booking»</span>.</div>
+          <div class="exp">
+            Модалка <span class="ui">«New booking»</span>: поле
+            <span class="ui">Time</span> (в нём первый свободный слот вида «Маша
+            Мастер · дата, время–время»), <span class="ui">Name</span>,
+            <span class="ui">Phone</span> с выбором страны,
+            <span class="ui">Note</span>; кнопки
+            <span class="ui">«Cancel»</span> и <span class="ui">«Book»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Book»</span> с пустой формой.
+          </div>
+          <div class="exp">
+            Под Name и Phone сообщения валидации, фокус на Name; модалка
+            остаётся.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте список <span class="ui">Time</span>, выберите другой слот
+            Маши. <span class="ui">Name</span> — <code>Клиент Первый</code>,
+            <span class="ui">Phone</span> — <code>9001234567</code> (страна RU),
+            <span class="ui">Note</span> — <code>первый визит</code>.
+            <span class="ui">«Book»</span>.
+          </div>
+          <div class="exp">
+            Модалка закрылась; в столбце Маши на выбранном времени появился блок
+            с текстом <code>Клиент Первый</code>, этот слот больше не свободен.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Кликните мышью по пустому месту сетки в свободном времени Маши.
+          </div>
+          <div class="exp">
+            Открылась та же модалка, но в Time уже выбран слот под кликом.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Кликните по времени, где у Маши уже запись или нерабочий час.
+          </div>
+          <div class="exp">Ничего не открывается.</div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте модалку, введите имя и закройте её крестиком / Escape,
+            затем попробуйте перейти на другую страницу.
+          </div>
+          <div class="exp">
+            Приложение предупреждает о несохранённом вводе (как в других
+            формах); пустую форму закрывает без вопросов.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Перейдите в Week и выберите мастера без рабочих часов на этот период
+            (например, нового мастера без графика).
+          </div>
+          <div class="exp">
+            Свободного времени нет: кнопка <span class="ui">«New booking»</span>
+            неактивна, клик по сетке ничего не открывает.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t39">
+      <div class="hd">
+        <h3>39. Календарь: групповое занятие, места и «пришедший»</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О, <code>/calendar</code>. У Петра в режиме Groups группа «Футбол
+          дети» (12 мест) на каждый день, начало через 2 часа, и группа «Йога»
+          (1 место) на каждый день, начало через 3 часа
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Найдите в столбце Пётра блок «Футбол дети».</div>
+          <div class="exp">
+            Текст
+            <span class="ui">«Футбол дети: 12 of 12 free»</span> («свободно 12
+            из 12»).
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите на этот блок.</div>
+          <div class="exp">
+            Модалка «Футбол дети», подзаголовок — дата и время занятия.
+            <span class="ui">«Free 12 of 12»</span>,
+            <span class="ui">«Nobody has booked yet»</span>, форма (Name, Phone,
+            Note), кнопки <span class="ui">«Close»</span> и
+            <span class="ui">«Add»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Name — <code>Клиент Второй</code>, Phone — <code>9007654321</code>,
+            <span class="ui">«Add»</span>.
+          </div>
+          <div class="exp">
+            Форма очистилась, в списке <span class="ui">Booked</span> — Клиент
+            Второй и его телефон, счёт <span class="ui">«Free 11 of 12»</span>.
+            После закрытия блок в сетке читается «свободно 11 из 12».
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите «Йога» у Петра, добавьте любого клиента.
+          </div>
+          <div class="exp">
+            Счёт <span class="ui">«Free 0 of 1»</span>, форма пропала, вместо
+            неё <span class="ui">«Every place is taken.»</span>, кнопки
+            <span class="ui">«Add»</span> нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Сдвиньте у «Футбол дети» начало на 10 минут назад (сценарий 14,
+            «Change»), вернитесь в календарь, нажмите на занятие.
+          </div>
+          <div class="exp">
+            Занятие уже идёт: вместо <span class="ui">«Add»</span> кнопка
+            <span class="ui">«Add someone who came»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Добавьте клиента <code>Пришедший</code> с этим кнопкой.
+          </div>
+          <div class="exp">
+            Клиент в списке. Если занятие было заполнено — счёт читается
+            <span class="ui">«All 12 taken, +1 over»</span>.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t40">
+      <div class="hd">
+        <h3>40. Календарь: прошедшие занятия и занятия других дней</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О, <code>/calendar</code>, режим Week у Петра; у группы «Футбол
+          дети» занятия каждый день, в понедельник ≥ 1 запись
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Перейдите на неделю назад (Previous week).</div>
+          <div class="exp">
+            У занятий текст с пометкой <span class="ui">(ended)</span> — «Футбол
+            дети: 11 of 12 free (ended)» — и бледный вид; они на месте и
+            кликабельны, со своими записями.
+          </div>
+        </li>
+        <li>
+          <div class="act">Откройте прошедшее занятие.</div>
+          <div class="exp">
+            Список записанных виден; формы и кнопки
+            <span class="ui">«Add»</span> /
+            <span class="ui">«Add someone who came»</span> нет, вместо них
+            <span class="ui">«This meeting is over.»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Вернитесь на текущую неделю; найдите занятие сегодняшнего дня,
+            которое уже закончилось.
+          </div>
+          <div class="exp">
+            Оно с пометкой <span class="ui">(ended)</span>, внутри
+            <span class="ui">«This meeting is over.»</span> — даже для
+            «пришедшего».
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте занятие вчерашнего дня, которое шло (начало в прошлом).
+          </div>
+          <div class="exp">
+            <span class="ui">«This meeting is over.»</span> — walk-in
+            добавляется только в день занятия.
+          </div>
+        </li>
+        <li>
+          <div class="act">Откройте занятие завтрашнего дня.</div>
+          <div class="exp">
+            Доступно <span class="ui">«Add»</span> (место), а не
+            <span class="ui">«Add someone who came»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В сегодняшнем занятии, которое началось, но не закончилось, нажмите
+            <span class="ui">«Add someone who came»</span>.
+          </div>
+          <div class="exp">
+            Добавляется (сценарий 39). Занятие в процессе не бледное.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t41">
+      <div class="hd">
+        <h3>41. Календарь: запись — подтвердить, был, перенести, отменить</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О, <code>/calendar</code>; у Маши запись «Клиент Первый» на
+          будущее время из сценария 38 и вторая запись, начавшаяся 30 минут
+          назад
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Нажмите на блок «Клиент Первый» (будущая запись).
+          </div>
+          <div class="exp">
+            Модалка <span class="ui">«Booking»</span>: подзаголовок — дата и
+            время; имя, телефон ссылкой <code>tel:</code>,
+            <span class="ui">Note: первый визит</span>, статус
+            <span class="ui">Booked</span>. Внизу кнопка
+            <span class="ui">«Confirm»</span> и в теле
+            <span class="ui">«Move»</span>,
+            <span class="ui">«Cancel booking»</span>; кнопок «Mark as done» /
+            «Mark as no-show» нет — запись ещё не началась.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Confirm»</span>.</div>
+          <div class="exp">
+            Статус <span class="ui">Confirmed</span>, кнопка
+            <span class="ui">«Confirm»</span> исчезла.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Move»</span>.</div>
+          <div class="exp">
+            Тот же диалог перешёл на шаг <span class="ui">«Move booking»</span>:
+            <span class="ui">Day</span> (дата, нельзя раньше сегодня),
+            <span class="ui">Time</span> со свободными слотами мастера, кнопки
+            <span class="ui">«Back»</span> и <span class="ui">«Move»</span>. У
+            владельца в Time слоты нескольких мастеров.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Выберите другой день и время, нажмите
+            <span class="ui">«Back»</span>, затем снова
+            <span class="ui">«Move»</span>.
+          </div>
+          <div class="exp">
+            Выбранные день и время сохранились; новая модалка не открывалась —
+            на экране одно окно.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Move»</span> в диалоге.
+          </div>
+          <div class="exp">
+            Окно закрылось; блок «Клиент Первый» стоит на новом месте (или
+            исчез, если день другой).
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте запись, которая началась 30 минут назад. Нажмите
+            <span class="ui">«Cancel booking»</span>.
+          </div>
+          <div class="exp">
+            Шаг-вопрос <span class="ui">«Cancel this booking?»</span> с кнопками
+            <span class="ui">«Keep»</span> и
+            <span class="ui">«Cancel booking»</span>.
+            <span class="ui">«Keep»</span> возвращает к деталям.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Mark as no-show»</span> (из деталей).
+          </div>
+          <div class="exp">
+            Статус <span class="ui">No-show</span>; время Маши снова свободно
+            (слот можно забронировать). У записи со статусом No-show кнопок
+            смены статуса нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Другую начавшуюся запись: <span class="ui">«Mark as done»</span>.
+          </div>
+          <div class="exp">
+            Статус <span class="ui">Done</span>, кнопок смены нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Новая запись: <span class="ui">«Cancel booking»</span> →
+            <span class="ui">«Cancel booking»</span> в вопросе.
+          </div>
+          <div class="exp">
+            Окно закрылось, блока записи в сетке больше нет, слот свободен.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t42">
+      <div class="hd">
+        <h3>42. Календарь: мастер видит только себя</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно М, Маша (роль Master), <code>/calendar</code>; у Маши и Петра
+          есть записи на сегодня
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Откройте календарь.</div>
+          <div class="exp">
+            Один столбец — Маша; записей Петра и его групп нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">Откройте вкладку Week.</div>
+          <div class="exp">
+            Выбора мастера нет (мастер один); 7 дат с её записями.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Подставьте в адрес <code>staffId=</code> Петра (id скопируйте в окне
+            О из адреса недели Петра).
+          </div>
+          <div class="exp">Всё равно показан календарь Маши.</div>
+        </li>
+        <li>
+          <div class="act">Откройте запись Маши.</div>
+          <div class="exp">
+            Все кнопки статуса и переноса доступны; в переносе в списке Time
+            только её слоты.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t43">
+      <div class="hd">
+        <h3>43. Календарь: время или место заняли в другом окне</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О и окно А (админ), оба на <code>/calendar</code>, сегодня; у
+          Маши свободен слот, у «Футбол дети» осталось 1 место
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            В окне О нажмите <span class="ui">«New booking»</span>, выберите
+            слот Маши (запомните его), заполните форму, но пока не отправляйте.
+          </div>
+          <div class="exp">Форма готова.</div>
+        </li>
+        <li>
+          <div class="act">
+            В окне А запишите клиента на этот же слот Маши (<span class="ui"
+              >«Book»</span
+            >).
+          </div>
+          <div class="exp">Запись есть.</div>
+        </li>
+        <li>
+          <div class="act">
+            В окне О нажмите <span class="ui">«Book»</span>.
+          </div>
+          <div class="exp">
+            Под формой
+            <span class="ui">«This time was just taken. Pick another.»</span>,
+            модалка осталась, поле Time пустое, введённые Name/Phone сохранены,
+            сетка обновилась (слот занят).
+          </div>
+        </li>
+        <li>
+          <div class="act">Выберите другой слот и нажмите «Book».</div>
+          <div class="exp">Запись создаётся.</div>
+        </li>
+        <li>
+          <div class="act">
+            Повторите с последним местом группы: в окне О откройте занятие, в
+            окне А займите последнее место, в окне О нажмите «Add».
+          </div>
+          <div class="exp">
+            <span class="ui">«Every place was just taken.»</span>; счёт
+            обновился.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В окне А отмените запись, которую окно О держит открытой, в окне О
+            нажмите в деталях «Confirm».
+          </div>
+          <div class="exp">
+            <span class="ui"
+              >«This booking has changed. Here it is as it is now.»</span
+            >; в деталях актуальный статус.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t44">
+      <div class="hd">
+        <h3>44. Расписание отказывает изменению из-за записей</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О, у Петра в «Футбол дети» есть запись на завтра; у Маши есть
+          запись на послезавтра
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            <code>/schedule</code>, Петр, Groups, «Футбол дети» →
+            <span class="ui">Dates</span> → отмените завтрашнее занятие.
+          </div>
+          <div class="exp">
+            Отказ:
+            <span class="ui"
+              >«1 booking in the way — cancel or move it first»</span
+            >
+            и ссылка <span class="ui">«Open the calendar»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Open the calendar»</span>.
+          </div>
+          <div class="exp">
+            Календарь на Week у Петра с нужной датой; запись видна, её можно
+            отменить или перенести.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Отмените запись; вернитесь к занятию и отмените его снова.
+          </div>
+          <div class="exp">Теперь отмена проходит.</div>
+        </li>
+        <li>
+          <div class="act">
+            У Маши: <span class="ui">Time off</span> на послезавтра → добавить.
+          </div>
+          <div class="exp">
+            Отказ:
+            <span class="ui"
+              >«1 booking in the way — cancel or move it first»</span
+            >
+            (при 2 и более — <span class="ui">«N bookings in the way…»</span>),
+            ссылка ведёт на её неделю.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t45">
+      <div class="hd">
+        <h3>45. Календарь на телефоне 390px и на русском</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О, режим телефона 390×844 (touch), <code>/calendar</code>; у Маши
+          запись, начавшаяся 30 минут назад
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Откройте календарь.</div>
+          <div class="exp">
+            Нет горизонтальной прокрутки страницы; шапка (стрелки, Today,
+            вкладки) умещается; сетка прокручивается внутри своей области.
+          </div>
+        </li>
+        <li>
+          <div class="act">Откройте запись, начавшуюся 30 минут назад.</div>
+          <div class="exp">
+            В нижней панели диалога только <span class="ui">«Close»</span> и
+            одно главное действие (<span class="ui">«Mark as done»</span>).
+            Остальные (<span class="ui">«Mark as no-show»</span>,
+            <span class="ui">«Move»</span>,
+            <span class="ui">«Cancel booking»</span>) — рядом в теле окна; всё
+            помещается на экран без прокрутки страницы.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте «New booking», выберите поле Name — появится экранная
+            клавиатура.
+          </div>
+          <div class="exp">
+            Кнопка <span class="ui">«Book»</span> поднимается над клавиатурой,
+            остаётся видна.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Переключите язык браузера на русский (сценарий 18), обновите.
+          </div>
+          <div class="exp">
+            <span class="ui">«Календарь»</span>,
+            <span class="ui">«Сегодня»</span>,
+            <span class="ui">«День»</span>/<span class="ui">«Неделя»</span>,
+            <span class="ui">«Новая запись»</span>,
+            <span class="ui">«Записать»</span>, статусы
+            <span class="ui">«Записан»</span>,
+            <span class="ui">«Подтверждён»</span>,
+            <span class="ui">«Был»</span>, <span class="ui">«Не пришёл»</span>,
+            <span class="ui">«Отменена»</span>; у группы «свободно 11 из 12».
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t46">
+      <div class="hd">
+        <h3>46. Календарь: бэк недоступен</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно О, <code>/calendar</code> открыт</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Остановите бэк и нажмите стрелку на следующий день.
+          </div>
+          <div class="exp">
+            Вместо сетки <span class="ui">«Couldn’t load the calendar»</span> и
+            кнопка <span class="ui">«Try again»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Запустите бэк, нажмите «Try again».</div>
+          <div class="exp">Сетка загрузилась.</div>
+        </li>
+        <li>
+          <div class="act">
+            Остановите бэк, откройте <span class="ui">«New booking»</span>,
+            заполните, <span class="ui">«Book»</span>.
+          </div>
+          <div class="exp">
+            <span class="ui">«Couldn’t save the booking. Try again.»</span>;
+            введённое осталось.
+          </div>
+        </li>
+      </ol>
+    </article>
+
     <p>
       <b>Вручную не проверить:</b> истечение приглашения через 7 дней (бэк:
       <code>invitations</code> integration-тесты; фронт показывает тот же экран,
@@ -2811,8 +3544,12 @@
       (<code>src/pwa/updatePolicy.ts</code>, unit-тесты и
       <code>npm run test:pwa</code>); блокировки и гонки при одновременной
       записи графика (integration-тесты BookedUp-back <code>schedule</code>);
-      записи клиентов (E6) — в интерфейсе их ещё нет, таблица на бэке покрыта
-      integration-тестами.
+      гонки двух одновременных записей на один слот на бэке (integration-тесты
+      BookedUp-back <code>appointments</code>; в интерфейсе — сценарий 43);
+      экран «You have no calendar yet…» у мастера без собственного графика
+      (page-тест <code>calendar.test.tsx</code>); переход часов в Europe/Berlin
+      и запись, переходящая за полночь, на сетке (unit-тесты
+      <code>toColumns.test.ts</code>).
     </p>
   </section>
 </div>
