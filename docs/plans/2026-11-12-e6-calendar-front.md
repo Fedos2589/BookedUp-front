@@ -290,7 +290,7 @@ Test names of the buttons stay the same, so F6 / F7 tests pass untouched (they l
 overflows (`scrollWidth` = 390), the footer's buttons all fit in the viewport. Commit
 `feat(calendar): booking dialog fits a phone`.
 
-### - [ ] F10: close the step in the common plan
+### - [x] F10: close the step in the common plan
 
 **When:** after the `e6/calendar` PR is merged (the PR number and the merge are known only then).
 **Repo:** BookedUp-back — `git switch -c docs/e6-front-done origin/main` there.
