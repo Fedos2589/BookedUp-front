@@ -8,9 +8,8 @@ import type {
   SlotsControllerSlots200Item,
   StaffControllerList200Item,
 } from '@/api/generated.schemas'
-import { ApiError } from '@/apiFetch'
 import { ClientFields } from './ClientFields'
-import { chosenSlot, slotKey } from './newBooking'
+import { chosenSlot, conflictCode, slotKey } from './newBooking'
 import { SlotCombobox } from './SlotCombobox'
 import { useClientForm } from './useClientForm'
 import styles from './Calendar.module.scss'
@@ -46,7 +45,7 @@ export function NewBookingModal({
   const first = initial ?? slots[0]
   const [chosen, setChosen] = useState(first && slotKey(first))
   const slot = chosenSlot(slots, chosen)
-  const { form, clientOf } = useClientForm()
+  const { form, clientOf, showPhoneTaken } = useClientForm()
   const create = useAppointmentsControllerCreate({
     mutation: { onSettled: onChanged },
   })
@@ -92,7 +91,7 @@ export function NewBookingModal({
                 ...client,
               },
             },
-            { onSuccess: onClose },
+            { onSuccess: onClose, onError: showPhoneTaken },
           )
         })}
       >
@@ -104,9 +103,9 @@ export function NewBookingModal({
           onChange={(next) => setChosen(slotKey(next))}
         />
         <ClientFields form={form} />
-        {create.isError && (
+        {create.isError && conflictCode(create.error) !== 'phoneTaken' && (
           <Typography variant="t4" color="red-300" role="alert">
-            {create.error instanceof ApiError && create.error.status === 409
+            {conflictCode(create.error)
               ? t('calendar.new.notFree')
               : t('calendar.new.saveFailed')}
           </Typography>

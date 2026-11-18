@@ -25,6 +25,7 @@ const seat = (id: string, extra: Partial<Appointment>): Appointment => ({
   startsAt,
   endsAt: judo.endsAt,
   status: 'BOOKED',
+  clientId: '00000000-0000-4000-8000-0000000000c1',
   clientName: id,
   clientPhone: '+66000000',
   note: null,

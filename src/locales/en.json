@@ -45,6 +45,7 @@
     "slug": "Latin letters, digits and single hyphens",
     "emailTaken": "This email is already registered",
     "slugTaken": "This address is taken",
+    "phoneTaken": "This number is already a client",
     "timeZone": "Pick a time zone from the list",
     "dateRange": "Pick the first and the last day",
     "weekdays": "Pick at least one day",
