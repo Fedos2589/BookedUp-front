@@ -5,13 +5,16 @@ import { Typography } from 'ted-ui/Typography'
 import styles from './Schedule.module.scss'
 
 // The answer to a schedule change the back refused over live bookings; the
-// link opens the calendar on `date` (or today) where they can be cancelled or moved.
+// link opens the calendar where they can be cancelled or moved: on `date` (or
+// today), and with a `staffId` on that master's week.
 export function BookingsInTheWay({
   count,
   date,
+  staffId,
 }: {
   count: number
   date?: string
+  staffId?: string
 }) {
   const { t } = useTranslation()
   return (
@@ -19,7 +22,11 @@ export function BookingsInTheWay({
       <Typography variant="t4" color="red-300" role="alert">
         {t('schedule.bookingsInTheWay', { count })}
       </Typography>
-      <Link to="/calendar" search={{ date }} className={styles.link}>
+      <Link
+        to="/calendar"
+        search={staffId ? { view: 'week', staffId, date } : { date }}
+        className={styles.link}
+      >
         {t('schedule.openCalendar')}
       </Link>
     </div>

@@ -623,7 +623,7 @@ test('time off: a refused save keeps the dialog and says so', async () => {
   expect(screen.getByLabelText(/^Days off/)).toBeTruthy()
 })
 
-test('time off: a save over live bookings says how many and links to the calendar on the first day', async () => {
+test("time off: a save over live bookings says how many and links to the master's week of the first day", async () => {
   withTimeOff({
     [`POST ${api(timeOffRoute(vera.id))}`]: [
       409,
@@ -648,7 +648,7 @@ test('time off: a save over live bookings says how many and links to the calenda
     screen
       .getByRole('link', { name: 'Open the calendar' })
       .getAttribute('href'),
-  ).toBe(`/calendar?date=${today}`)
+  ).toBe(`/calendar?view=week&staffId=${vera.id}&date=${today}`)
   expect(screen.queryByText(/Couldn.t save the time off/)).toBeNull()
 })
 

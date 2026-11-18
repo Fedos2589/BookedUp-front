@@ -134,6 +134,7 @@ export function TimeOffDialog({
           (inTheWay !== undefined ? (
             <BookingsInTheWay
               count={inTheWay}
+              staffId={staffId}
               date={form.getValues('range.from')}
             />
           ) : (

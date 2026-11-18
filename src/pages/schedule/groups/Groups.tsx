@@ -101,7 +101,7 @@ export function Groups({ staffId }: { staffId: string }) {
       </Button>
       {remove.isError &&
         (inTheWay !== undefined ? (
-          <BookingsInTheWay count={inTheWay} />
+          <BookingsInTheWay count={inTheWay} staffId={staffId} />
         ) : (
           <Typography variant="t4" color="red-300" role="alert">
             {t('schedule.groups.deleteFailed')}

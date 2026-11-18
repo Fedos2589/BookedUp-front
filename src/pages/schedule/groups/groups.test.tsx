@@ -397,7 +397,7 @@ test('groups: deleting a group over live bookings says how many', async () => {
     screen
       .getByRole('link', { name: 'Open the calendar' })
       .getAttribute('href'),
-  ).toBe('/calendar')
+  ).toBe(`/calendar?view=week&staffId=${vera.id}`)
 })
 
 test('groups: changing a group over live bookings says how many', async () => {
@@ -422,6 +422,11 @@ test('groups: changing a group over live bookings says how many', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText(/4 bookings in the way/)).toBeTruthy()
+  expect(
+    screen
+      .getByRole('link', { name: 'Open the calendar' })
+      .getAttribute('href'),
+  ).toBe(`/calendar?view=week&staffId=${vera.id}`)
   expect(screen.queryByText(/Couldn.t save the group/)).toBeNull()
 })
 

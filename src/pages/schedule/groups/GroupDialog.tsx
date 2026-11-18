@@ -205,7 +205,7 @@ export function GroupDialog({
             {t('schedule.groups.conflict', { title: conflict })}
           </Typography>
         ) : inTheWay !== undefined ? (
-          <BookingsInTheWay count={inTheWay} />
+          <BookingsInTheWay count={inTheWay} staffId={staffId} />
         ) : (
           save.isError && (
             <Typography variant="t4" color="red-300" role="alert">
