@@ -45,6 +45,7 @@
     "slug": "Latin letters, digits and single hyphens",
     "emailTaken": "This email is already registered",
     "slugTaken": "This address is taken",
+    "phoneTaken": "This number is already a client",
     "timeZone": "Pick a time zone from the list",
     "dateRange": "Pick the first and the last day",
     "weekdays": "Pick at least one day",
@@ -86,6 +87,37 @@
     "noBusiness": {
       "title": "You’re not in a business",
       "text": "This account is no longer a member of any business. To join one, open the invitation link someone on its team sends you."
+    },
+    "clients": "Clients"
+  },
+  "clients": {
+    "title": "Clients",
+    "add": "Add client",
+    "search": "Search clients",
+    "listLabel": "Clients",
+    "via": "via {{name}}",
+    "noShows_one": "No-shows: {{count}}",
+    "noShows_other": "No-shows: {{count}}",
+    "showMore": "Show more",
+    "loadFailed": "Couldn't load the clients",
+    "empty": {
+      "title": "No clients yet",
+      "text": "Clients appear here when you add them or book them."
+    },
+    "nobodyFound": "Nobody found",
+    "nobodyFoundText": "Try another name or phone number.",
+    "viaLink": "via <guardian>{{name}}</guardian>",
+    "edit": "Edit",
+    "dependents": "Comes with this client",
+    "visits_one": "Visits: {{count}}",
+    "visits_other": "Visits: {{count}}",
+    "notFound": "No such client",
+    "cardFailed": "Couldn't load the client",
+    "all": "All clients",
+    "history": {
+      "title": "History",
+      "empty": "No bookings yet",
+      "loadFailed": "Couldn't load the history"
     }
   },
   "team": {

@@ -65,7 +65,7 @@ note | null, noShowCount }`. A person has either their own `phone` (an account h
 
 ---
 
-### - [ ] F1: regenerate the API, bump the kit, keep the calendar working
+### - [x] F1: regenerate the API, bump the kit, keep the calendar working
 
 **Files:** `package.json` (ted-ui `#v0.7.0`), `src/api/**` (generated), `src/pages/calendar/useClientForm.ts`,
 `src/pages/calendar/newBooking.ts` (+ its test), whatever `tsc` flags in `src/pages/calendar/`.
@@ -78,7 +78,7 @@ phone field's error («This number is already a client») for now.
 **Check:** `npm run typecheck && npm test` green; `calendar.test.tsx` books with `newClient`.
 Commit `chore(api): clients from the back, kit v0.7.0`.
 
-### - [ ] F2: client list
+### - [x] F2: client list
 
 **Files:** `src/app/router.tsx` (route `/clients`), `src/pages/cabinet/CabinetLayout.tsx` (nav link
 «Clients» after «Calendar»), create `src/pages/clients/{ClientsPage.tsx,ClientRow.tsx,Clients.module.scss,clients.test.tsx}`,
@@ -93,7 +93,7 @@ dialog — leave a disabled button until F4.
 in search refetches with `q`; «Show more» appends; empty business shows the empty state. Commit
 `feat(clients): list with search`.
 
-### - [ ] F3: client card
+### - [x] F3: client card
 
 **Files:** `src/app/router.tsx` (route `/clients/$clientId`), create
 `src/pages/clients/{ClientPage.tsx,ClientHistory.tsx,client.test.tsx}`, locales.

@@ -1373,6 +1373,43 @@ export type SlotsControllerSlots400 = {
   message: string[];
 };
 
+/**
+ * A new person: made in the same step as the booking
+ */
+export type AppointmentsControllerCreateBodyNewClient = {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /**
+     * @maxLength 16
+     * @pattern ^\+[1-9]\d{6,14}$
+     */
+  phone: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  note?: string | null;
+} | {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /**
+     * A holder of this business: a dependent has no phone of their own
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  guardianId: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  note?: string | null;
+};
+
 export type AppointmentsControllerCreateBody = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   staffId: string;
@@ -1381,15 +1418,12 @@ export type AppointmentsControllerCreateBody = {
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
   endsAt: string;
   /**
-     * @minLength 1
-     * @maxLength 100
+     * A person of this business
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
      */
-  clientName: string;
-  /**
-     * @maxLength 16
-     * @pattern ^\+[1-9]\d{6,14}$
-     */
-  clientPhone: string;
+  clientId?: string;
+  /** A new person: made in the same step as the booking */
+  newClient?: AppointmentsControllerCreateBodyNewClient;
   /**
      * @maxLength 2000
      * @nullable
@@ -1423,6 +1457,8 @@ export type AppointmentsControllerCreate201 = {
   id: string;
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   staffId: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  clientId: string;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
   startsAt: string;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
@@ -1474,7 +1510,7 @@ export const AppointmentsControllerCreate409Error = {
 } as const;
 
 /**
- * notFree: no such slot or taken; full: every seat of the meeting is taken
+ * notFree: no such slot or taken; full: every seat of the meeting is taken; phoneTaken / notHolder: the newClient, as when creating a client
  */
 export type AppointmentsControllerCreate409Code = typeof AppointmentsControllerCreate409Code[keyof typeof AppointmentsControllerCreate409Code];
 
@@ -1482,14 +1518,21 @@ export type AppointmentsControllerCreate409Code = typeof AppointmentsControllerC
 export const AppointmentsControllerCreate409Code = {
   notFree: 'notFree',
   full: 'full',
+  phoneTaken: 'phoneTaken',
+  notHolder: 'notHolder',
 } as const;
 
 export type AppointmentsControllerCreate409 = {
   statusCode: AppointmentsControllerCreate409StatusCode;
   error: AppointmentsControllerCreate409Error;
   message: string;
-  /** notFree: no such slot or taken; full: every seat of the meeting is taken */
+  /** notFree: no such slot or taken; full: every seat of the meeting is taken; phoneTaken / notHolder: the newClient, as when creating a client */
   code: AppointmentsControllerCreate409Code;
+  /**
+     * With phoneTaken: the holder of the phone
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  clientId?: string;
 };
 
 export type AppointmentsControllerListParams = {
@@ -1528,6 +1571,8 @@ export type AppointmentsControllerList200Item = {
   id: string;
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   staffId: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  clientId: string;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
   startsAt: string;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
@@ -1564,6 +1609,43 @@ export type AppointmentsControllerList400 = {
   message: string[];
 };
 
+/**
+ * A new person: made in the same step as the booking
+ */
+export type AppointmentsControllerWalkInBodyNewClient = {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /**
+     * @maxLength 16
+     * @pattern ^\+[1-9]\d{6,14}$
+     */
+  phone: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  note?: string | null;
+} | {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /**
+     * A holder of this business: a dependent has no phone of their own
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  guardianId: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  note?: string | null;
+};
+
 export type AppointmentsControllerWalkInBody = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   staffId: string;
@@ -1572,15 +1654,12 @@ export type AppointmentsControllerWalkInBody = {
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
   endsAt: string;
   /**
-     * @minLength 1
-     * @maxLength 100
+     * A person of this business
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
      */
-  clientName: string;
-  /**
-     * @maxLength 16
-     * @pattern ^\+[1-9]\d{6,14}$
-     */
-  clientPhone: string;
+  clientId?: string;
+  /** A new person: made in the same step as the booking */
+  newClient?: AppointmentsControllerWalkInBodyNewClient;
   /**
      * @maxLength 2000
      * @nullable
@@ -1614,6 +1693,8 @@ export type AppointmentsControllerWalkIn201 = {
   id: string;
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   staffId: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  clientId: string;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
   startsAt: string;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
@@ -1665,7 +1746,7 @@ export const AppointmentsControllerWalkIn409Error = {
 } as const;
 
 /**
- * notFree: no such meeting at this time; notStarted: the meeting is ahead — book a seat instead
+ * notFree: no such meeting at this time; notStarted: the meeting is ahead — book a seat instead; phoneTaken / notHolder: the newClient, as when creating a client
  */
 export type AppointmentsControllerWalkIn409Code = typeof AppointmentsControllerWalkIn409Code[keyof typeof AppointmentsControllerWalkIn409Code];
 
@@ -1673,14 +1754,21 @@ export type AppointmentsControllerWalkIn409Code = typeof AppointmentsControllerW
 export const AppointmentsControllerWalkIn409Code = {
   notFree: 'notFree',
   notStarted: 'notStarted',
+  phoneTaken: 'phoneTaken',
+  notHolder: 'notHolder',
 } as const;
 
 export type AppointmentsControllerWalkIn409 = {
   statusCode: AppointmentsControllerWalkIn409StatusCode;
   error: AppointmentsControllerWalkIn409Error;
   message: string;
-  /** notFree: no such meeting at this time; notStarted: the meeting is ahead — book a seat instead */
+  /** notFree: no such meeting at this time; notStarted: the meeting is ahead — book a seat instead; phoneTaken / notHolder: the newClient, as when creating a client */
   code: AppointmentsControllerWalkIn409Code;
+  /**
+     * With phoneTaken: the holder of the phone
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  clientId?: string;
 };
 
 export type AppointmentsControllerChangeStatusBodyStatus = typeof AppointmentsControllerChangeStatusBodyStatus[keyof typeof AppointmentsControllerChangeStatusBodyStatus];
@@ -1714,6 +1802,8 @@ export type AppointmentsControllerChangeStatus200 = {
   id: string;
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   staffId: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  clientId: string;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
   startsAt: string;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
@@ -1821,6 +1911,8 @@ export type AppointmentsControllerMove200 = {
   id: string;
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   staffId: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  clientId: string;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
   startsAt: string;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
@@ -1889,6 +1981,434 @@ export type AppointmentsControllerMove409 = {
   message: string;
   /** notFree / full: as for booking; badTransition: only BOOKED and CONFIRMED bookings move */
   code: AppointmentsControllerMove409Code;
+};
+
+export type ClientsControllerCreateBody = {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /**
+     * @maxLength 16
+     * @pattern ^\+[1-9]\d{6,14}$
+     */
+  phone: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  note?: string | null;
+} | {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /**
+     * A holder of this business: a dependent has no phone of their own
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  guardianId: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  note?: string | null;
+};
+
+/**
+ * @nullable
+ */
+export type ClientsControllerCreate201Guardian = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  phone: string;
+} | null;
+
+export type ClientsControllerCreate201 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  /**
+     * E.164; none for a dependent
+     * @nullable
+     */
+  phone: string | null;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  guardianId: string | null;
+  /** @nullable */
+  guardian: ClientsControllerCreate201Guardian;
+  /** @nullable */
+  note: string | null;
+  /**
+     * NO_SHOW bookings of the client, all masters
+     * @minimum -9007199254740991
+     * @maximum 9007199254740991
+     */
+  noShowCount: number;
+};
+
+export type ClientsControllerCreate400StatusCode = typeof ClientsControllerCreate400StatusCode[keyof typeof ClientsControllerCreate400StatusCode];
+
+
+export const ClientsControllerCreate400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type ClientsControllerCreate400 = {
+  statusCode: ClientsControllerCreate400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type ClientsControllerCreate409StatusCode = typeof ClientsControllerCreate409StatusCode[keyof typeof ClientsControllerCreate409StatusCode];
+
+
+export const ClientsControllerCreate409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type ClientsControllerCreate409Error = typeof ClientsControllerCreate409Error[keyof typeof ClientsControllerCreate409Error];
+
+
+export const ClientsControllerCreate409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type ClientsControllerCreate409Code = typeof ClientsControllerCreate409Code[keyof typeof ClientsControllerCreate409Code];
+
+
+export const ClientsControllerCreate409Code = {
+  phoneTaken: 'phoneTaken',
+  notHolder: 'notHolder',
+} as const;
+
+export type ClientsControllerCreate409 = {
+  statusCode: ClientsControllerCreate409StatusCode;
+  error: ClientsControllerCreate409Error;
+  message: string;
+  code: ClientsControllerCreate409Code;
+  /**
+     * With phoneTaken: the holder of the phone
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  clientId?: string;
+};
+
+export type ClientsControllerListParams = {
+  /**
+   * Part of a name, or of a phone (digits only)
+   * @maxLength 100
+   */
+  q?: string;
+  /**
+   * The holder of this phone and their dependents; q and paging are ignored
+   * @maxLength 16
+   * @pattern ^\+[1-9]\d{6,14}$
+   */
+  phone?: string;
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  limit?: number;
+  /**
+   * @minimum 0
+   * @maximum 9007199254740991
+   */
+  offset?: number;
+};
+
+/**
+ * @nullable
+ */
+export type ClientsControllerList200ItemsItemGuardian = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  phone: string;
+} | null;
+
+export type ClientsControllerList200ItemsItem = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  /**
+     * E.164; none for a dependent
+     * @nullable
+     */
+  phone: string | null;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  guardianId: string | null;
+  /** @nullable */
+  guardian: ClientsControllerList200ItemsItemGuardian;
+  /** @nullable */
+  note: string | null;
+  /**
+     * NO_SHOW bookings of the client, all masters
+     * @minimum -9007199254740991
+     * @maximum 9007199254740991
+     */
+  noShowCount: number;
+};
+
+export type ClientsControllerList200 = {
+  items: ClientsControllerList200ItemsItem[];
+  /**
+     * All matches, not just this page
+     * @minimum -9007199254740991
+     * @maximum 9007199254740991
+     */
+  total: number;
+};
+
+export type ClientsControllerList400StatusCode = typeof ClientsControllerList400StatusCode[keyof typeof ClientsControllerList400StatusCode];
+
+
+export const ClientsControllerList400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type ClientsControllerList400 = {
+  statusCode: ClientsControllerList400StatusCode;
+  error: string;
+  message: string[];
+};
+
+/**
+ * @nullable
+ */
+export type ClientsControllerCard200Guardian = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  phone: string;
+} | null;
+
+export type ClientsControllerCard200DependentsItem = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+};
+
+export type ClientsControllerCard200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  /**
+     * E.164; none for a dependent
+     * @nullable
+     */
+  phone: string | null;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  guardianId: string | null;
+  /** @nullable */
+  guardian: ClientsControllerCard200Guardian;
+  /** @nullable */
+  note: string | null;
+  /**
+     * NO_SHOW bookings of the client, all masters
+     * @minimum -9007199254740991
+     * @maximum 9007199254740991
+     */
+  noShowCount: number;
+  /** By name */
+  dependents: ClientsControllerCard200DependentsItem[];
+  /**
+     * DONE bookings of the client, all masters
+     * @minimum -9007199254740991
+     * @maximum 9007199254740991
+     */
+  visitCount: number;
+};
+
+export type ClientsControllerUpdateBody = {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name?: string;
+  /**
+     * @maxLength 16
+     * @pattern ^\+[1-9]\d{6,14}$
+     */
+  phone?: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  note?: string | null;
+};
+
+/**
+ * @nullable
+ */
+export type ClientsControllerUpdate200Guardian = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  phone: string;
+} | null;
+
+export type ClientsControllerUpdate200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  /**
+     * E.164; none for a dependent
+     * @nullable
+     */
+  phone: string | null;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  guardianId: string | null;
+  /** @nullable */
+  guardian: ClientsControllerUpdate200Guardian;
+  /** @nullable */
+  note: string | null;
+  /**
+     * NO_SHOW bookings of the client, all masters
+     * @minimum -9007199254740991
+     * @maximum 9007199254740991
+     */
+  noShowCount: number;
+};
+
+export type ClientsControllerUpdate400StatusCode = typeof ClientsControllerUpdate400StatusCode[keyof typeof ClientsControllerUpdate400StatusCode];
+
+
+export const ClientsControllerUpdate400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type ClientsControllerUpdate400 = {
+  statusCode: ClientsControllerUpdate400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type ClientsControllerUpdate409StatusCode = typeof ClientsControllerUpdate409StatusCode[keyof typeof ClientsControllerUpdate409StatusCode];
+
+
+export const ClientsControllerUpdate409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type ClientsControllerUpdate409Error = typeof ClientsControllerUpdate409Error[keyof typeof ClientsControllerUpdate409Error];
+
+
+export const ClientsControllerUpdate409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type ClientsControllerUpdate409Code = typeof ClientsControllerUpdate409Code[keyof typeof ClientsControllerUpdate409Code];
+
+
+export const ClientsControllerUpdate409Code = {
+  phoneTaken: 'phoneTaken',
+  notHolder: 'notHolder',
+} as const;
+
+export type ClientsControllerUpdate409 = {
+  statusCode: ClientsControllerUpdate409StatusCode;
+  error: ClientsControllerUpdate409Error;
+  message: string;
+  code: ClientsControllerUpdate409Code;
+  /**
+     * With phoneTaken: the holder of the phone
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  clientId?: string;
+};
+
+export type ClientsControllerAppointmentsParams = {
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  limit?: number;
+  /**
+   * @minimum 0
+   * @maximum 9007199254740991
+   */
+  offset?: number;
+};
+
+export type ClientsControllerAppointments200ItemsItemStatus = typeof ClientsControllerAppointments200ItemsItemStatus[keyof typeof ClientsControllerAppointments200ItemsItemStatus];
+
+
+export const ClientsControllerAppointments200ItemsItemStatus = {
+  BOOKED: 'BOOKED',
+  CONFIRMED: 'CONFIRMED',
+  DONE: 'DONE',
+  NO_SHOW: 'NO_SHOW',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type ClientsControllerAppointments200ItemsItem = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  clientId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  status: ClientsControllerAppointments200ItemsItemStatus;
+  clientName: string;
+  clientPhone: string;
+  /** @nullable */
+  note: string | null;
+  /**
+     * The group whose meeting it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * The one-off session it is a seat in
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type ClientsControllerAppointments200 = {
+  items: ClientsControllerAppointments200ItemsItem[];
+  /**
+     * All bookings of the client you may see, not just this page
+     * @minimum -9007199254740991
+     * @maximum 9007199254740991
+     */
+  total: number;
+};
+
+export type ClientsControllerAppointments400StatusCode = typeof ClientsControllerAppointments400StatusCode[keyof typeof ClientsControllerAppointments400StatusCode];
+
+
+export const ClientsControllerAppointments400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type ClientsControllerAppointments400 = {
+  statusCode: ClientsControllerAppointments400StatusCode;
+  error: string;
+  message: string[];
 };
 
 export type MembersControllerList200ItemRole = typeof MembersControllerList200ItemRole[keyof typeof MembersControllerList200ItemRole];

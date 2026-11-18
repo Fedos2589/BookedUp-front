@@ -11,18 +11,11 @@ import type {
   AppointmentsControllerList200Item as Appointment,
   SlotsControllerSlots200Item as Slot,
 } from '@/api/generated.schemas'
-import { ApiError } from '@/apiFetch'
 import { ClientFields } from './ClientFields'
 import type { joinMode } from './meetingOf'
-import { slotRange } from './newBooking'
+import { conflictCode, slotRange } from './newBooking'
 import styles from './Calendar.module.scss'
 import { useClientForm } from './useClientForm'
-
-// The back's answer to a refused add: its 409 `code`, if it had one.
-const codeOf = (error: unknown) =>
-  error instanceof ApiError && error.status === 409
-    ? (error.body as { code?: string } | undefined)?.code
-    : undefined
 
 // A group meeting or a one-off session: who has a seat in it, and a form to
 // add one more — a seat while it is ahead, a walk-in once it has started. A
@@ -49,7 +42,7 @@ export function SessionModal({
 }) {
   const { t, i18n } = useTranslation()
   const formId = useId()
-  const { form, clientOf } = useClientForm()
+  const { form, clientOf, showPhoneTaken } = useClientForm()
   const seat = useAppointmentsControllerCreate({
     mutation: { onSettled: onChanged },
   })
@@ -147,15 +140,18 @@ export function SessionModal({
                   ? { oneOffSessionId: slot.oneOffSessionId }
                   : {}),
             }
-            const done = { onSuccess: () => form.reset() }
+            const done = {
+              onSuccess: () => form.reset(),
+              onError: showPhoneTaken,
+            }
             if (mode === 'walkIn') walkIn.mutate({ businessId, data }, done)
             else seat.mutate({ businessId, data }, done)
           })}
         >
           <ClientFields form={form} />
-          {add.isError && (
+          {add.isError && conflictCode(add.error) !== 'phoneTaken' && (
             <Typography variant="t4" color="red-300" role="alert">
-              {refusal(codeOf(add.error))}
+              {refusal(conflictCode(add.error))}
             </Typography>
           )}
         </form>

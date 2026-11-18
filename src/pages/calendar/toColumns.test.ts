@@ -33,6 +33,7 @@ const booking = (
   startsAt: '2026-11-17T03:00:00Z', // 10:00 in Bangkok
   endsAt: '2026-11-17T04:00:00Z',
   status: 'BOOKED',
+  clientId: '00000000-0000-4000-8000-0000000000c1',
   clientName: 'Olga',
   clientPhone: '+66000000',
   note: null,

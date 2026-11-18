@@ -228,8 +228,7 @@ test('a free hour is booked from the New booking button and shows on the grid', 
     staffId: staff[0].id,
     startsAt: free.startsAt,
     endsAt: free.endsAt,
-    clientName: 'Olga',
-    clientPhone: '+66812345678',
+    newClient: { name: 'Olga', phone: '+66812345678' },
   })
 })
 
@@ -366,8 +365,7 @@ test('a seat is added to a group meeting and the count grows', async () => {
     staffId: staff[0].id,
     startsAt: judo.startsAt,
     endsAt: judo.endsAt,
-    clientName: 'Olga',
-    clientPhone: '+66812345678',
+    newClient: { name: 'Olga', phone: '+66812345678' },
     groupId: judo.groupId,
   })
 })
@@ -451,8 +449,7 @@ test('a meeting that is on takes a walk-in, even over capacity, not a seat', asy
     staffId: staff[0].id,
     startsAt: judo.startsAt,
     endsAt: judo.endsAt,
-    clientName: 'Olga',
-    clientPhone: '+66812345678',
+    newClient: { name: 'Olga', phone: '+66812345678' },
     groupId: judo.groupId,
   })
 })
@@ -491,6 +488,34 @@ test.each([
     expect(await within(dialog).findByText(text)).toBeTruthy()
   },
 )
+
+test('a phone that already has an account says so on the phone field and keeps the dialog', async () => {
+  beforeFree()
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: [200, []],
+    [slotsUrl]: [200, [free]],
+    [`POST /api/businesses/${businessId}/appointments`]: [
+      409,
+      {
+        statusCode: 409,
+        error: 'Conflict',
+        message: 'phoneTaken',
+        code: 'phoneTaken',
+        clientId: '00000000-0000-4000-8000-000000000099',
+      },
+    ],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const dialog = await fillNewBooking()
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Book' }))
+
+  expect(
+    await within(dialog).findByText('This number is already a client'),
+  ).toBeTruthy()
+  expect(within(dialog).queryByText(/just taken/)).toBeNull()
+})
 
 const statusUrl = `PATCH /api/businesses/${businessId}/appointments/${booking.id}/status`
 

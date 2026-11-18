@@ -2,6 +2,7 @@ import { type CountryCode, parsePhoneNumberFromString } from 'libphonenumber-js'
 import { z } from 'zod'
 
 import type { SlotsControllerSlots200Item } from '@/api/generated.schemas'
+import { ApiError } from '@/apiFetch'
 import { dateTimeIn, localMoment, timeIn } from '@/dates'
 
 type Slot = SlotsControllerSlots200Item
@@ -87,3 +88,9 @@ export function slotRange(
   const end = timeIn(new Date(slot.endsAt), timeZone)
   return start && end ? `${start}–${end}` : undefined
 }
+
+// The back's answer to a refused request: its 409 `code`, if it had one.
+export const conflictCode = (error: unknown) =>
+  error instanceof ApiError && error.status === 409
+    ? (error.body as { code?: string } | undefined)?.code
+    : undefined

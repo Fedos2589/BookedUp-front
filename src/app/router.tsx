@@ -14,6 +14,9 @@ import { CalendarPage } from '@/pages/calendar/CalendarPage'
 import { calendarSearchOf } from '@/pages/calendar/calendarSearch'
 import { BookingPage } from '@/pages/BookingPage'
 import { DashboardError } from '@/pages/DashboardError'
+import { ClientPage } from '@/pages/clients/ClientPage'
+import { ClientsPage } from '@/pages/clients/ClientsPage'
+import { clientsSearchOf } from '@/pages/clients/clientsSearch'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { InvitationGone } from '@/pages/invite/InvitationGone'
 import { InvitePage } from '@/pages/invite/InvitePage'
@@ -76,6 +79,21 @@ const calendarRoute = createRoute({
   component: CalendarPage,
 })
 
+// The business's clients; the search text lives in the address.
+const clientsRoute = createRoute({
+  getParentRoute: () => cabinetRoute,
+  path: '/clients',
+  validateSearch: clientsSearchOf,
+  component: ClientsPage,
+})
+
+// One client's card.
+const clientRoute = createRoute({
+  getParentRoute: () => cabinetRoute,
+  path: '/clients/$clientId',
+  component: ClientPage,
+})
+
 // `?invitation=<token>`: signed in, go back to that invitation, not the cabinet.
 const signInRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -124,6 +142,8 @@ export const routeTree = rootRoute.addChildren([
   cabinetRoute.addChildren([
     dashboardRoute,
     calendarRoute,
+    clientsRoute,
+    clientRoute,
     scheduleRoute,
     settingsRoute,
     teamRoute,
