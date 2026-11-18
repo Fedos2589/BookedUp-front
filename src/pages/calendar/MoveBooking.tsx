@@ -45,9 +45,11 @@ export function MoveBooking({
   const { t, i18n } = useTranslation()
   const formId = useId()
   const now = useNow()
-  const today = dateIn(now, timeZone) ?? ''
+  // As CalendarPage: a zone this browser does not know falls back to UTC.
+  const today = dateIn(now, timeZone) ?? dateIn(now, 'UTC')!
   const own = dateIn(new Date(booking.startsAt), timeZone) ?? today
-  const [date, setDate] = useState(own < today ? today : own)
+  const initial = own < today ? today : own
+  const [date, setDate] = useState(initial)
   const [chosen, setChosen] = useState<string>()
   const loaded = useSlotsControllerSlots(businessId, { from: date, to: date })
   const move = useAppointmentsControllerMove({
@@ -62,11 +64,15 @@ export function MoveBooking({
   const slots = freeHoursSlots(loaded.data ?? [], now).filter((s) =>
     onScreen.has(s.staffId),
   )
-  // Found by key in the current list: an hour taken meanwhile leaves it and
-  // stops being chosen instead of being sent again.
-  const slot = slots.find((s) => slotKey(s) === chosen) ?? slots[0]
+  // Until the person chooses, the booking's own master comes first. Once an
+  // hour is chosen it is found by key in the current list: one taken meanwhile
+  // leaves it and nothing is chosen, rather than another hour sent in its place.
+  const slot =
+    chosen === undefined
+      ? (slots.find((s) => s.staffId === booking.staffId) ?? slots[0])
+      : slots.find((s) => slotKey(s) === chosen)
 
-  useUnsavedInput(date !== own || chosen !== undefined)
+  useUnsavedInput(date !== initial || chosen !== undefined)
 
   const label = (s: Slot) =>
     `${masters.find((m) => m.id === s.staffId)?.name ?? ''} · ${slotRange(s, timeZone, i18n.language) ?? ''}`
@@ -103,6 +109,7 @@ export function MoveBooking({
         onSubmit={(event) => {
           event.preventDefault()
           if (!slot) return
+          setChosen(slotKey(slot))
           move.mutate(
             {
               businessId,
@@ -123,7 +130,7 @@ export function MoveBooking({
           value={date}
           minDate={today}
           onChange={(next) => {
-            setDate(next || own)
+            setDate(next || initial)
             setChosen(undefined)
           }}
         />

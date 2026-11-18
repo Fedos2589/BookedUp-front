@@ -42,13 +42,13 @@ export function CalendarGrid({
   master: StaffControllerList200Item
 }) {
   const { t, i18n } = useTranslation()
-  // The booking dialog, for the slot that was clicked, if any.
   const now = useNow()
   const newButton = useRef<HTMLButtonElement>(null)
   // Where focus returns after a meeting's dialog: the grid items cannot take it.
   const gridBox = useRef<HTMLDivElement>(null)
+  // The new-booking dialog, for the slot that was clicked, if any.
   const [booking, setBooking] = useState<{ slot?: Slot }>()
-  // The meeting whose seats are open, by its grid item id.
+  // The grid item whose dialog is open: a meeting's seats, or one booking.
   const [openItem, setOpenItem] = useState<string>()
   const dates = view === 'week' ? weekDates(date) : [date]
   const data = useCalendarData(businessId, {

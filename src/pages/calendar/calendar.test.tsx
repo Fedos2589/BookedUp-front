@@ -585,7 +585,7 @@ test('a booking is cancelled after asking, also a past one, and leaves the grid'
   expect(screen.queryByRole('dialog')).toBeNull()
 })
 
-test('a move the back refuses says so and keeps the dialog', async () => {
+test('a status change the back refuses says so and keeps the dialog', async () => {
   beforeFree()
   fakeApi({
     'GET /api/me': [200, account],
@@ -708,4 +708,98 @@ test('a finished booking has no Move', async () => {
   fireEvent.click(await within(grid).findByText(/Olga/))
   const dialog = await screen.findByRole('dialog')
   expect(within(dialog).queryByRole('button', { name: 'Move' })).toBeNull()
+})
+
+const petrsHour = {
+  ...free,
+  staffId: petr.id,
+  startsAt: '2026-11-17T02:00:00Z', // 09:00 in Bangkok, earlier than Vera's
+  endsAt: '2026-11-17T03:00:00Z',
+}
+
+test("the move offers the booking's own master first, not whoever comes first", async () => {
+  beforeFree()
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, petr]],
+    [listUrl]: [200, [booking]],
+    [slotsUrl]: [200, []],
+    [dayFreeUrl]: [200, [petrsHour, free]],
+    [moveUrl]: [200, booking],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const dialog = await openMove()
+  await waitFor(() =>
+    expect(
+      (
+        within(dialog).getByRole('button', {
+          name: 'Move',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false),
+  )
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
+
+  await waitFor(() =>
+    expect(api.calls.find((c) => c.route === moveUrl)?.body).toEqual({
+      staffId: staff[0].id,
+      startsAt: free.startsAt,
+      endsAt: free.endsAt,
+    }),
+  )
+})
+
+test('an hour taken meanwhile is not swapped for another: Move waits for a new choice', async () => {
+  beforeFree()
+  let taken = false
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, petr]],
+    [listUrl]: [200, [booking]],
+    [slotsUrl]: [200, []],
+    [dayFreeUrl]: () => [200, taken ? [petrsHour] : [free, petrsHour]],
+    [moveUrl]: () => {
+      taken = true
+      return [409, { statusCode: 409, error: 'Conflict', code: 'notFree' }]
+    },
+  })
+  renderApp(`/calendar?date=${day}`)
+  const dialog = await openMove()
+  const move = () =>
+    within(dialog).getByRole('button', { name: 'Move' }) as HTMLButtonElement
+  await waitFor(() => expect(move().disabled).toBe(false))
+  fireEvent.click(move())
+
+  await within(dialog).findByText('This time was just taken. Pick another.')
+  await waitFor(() => expect(move().disabled).toBe(true))
+  expect(api.calls.filter((c) => c.route === moveUrl)).toHaveLength(1)
+})
+
+test('a cancel the back refuses says so in the question', async () => {
+  beforeFree()
+  fakeApi({
+    'GET /api/me': [200, account],
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: [200, [booking]],
+    [slotsUrl]: [200, []],
+    [statusUrl]: [
+      409,
+      { statusCode: 409, error: 'Conflict', code: 'badTransition' },
+    ],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Olga/))
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.click(
+    within(dialog).getByRole('button', { name: 'Cancel booking' }),
+  )
+  const sure = await screen.findByRole('alertdialog')
+  fireEvent.click(within(sure).getByRole('button', { name: 'Cancel booking' }))
+
+  expect(
+    await within(sure).findByText(
+      'This booking has changed. Here it is as it is now.',
+    ),
+  ).toBeTruthy()
 })

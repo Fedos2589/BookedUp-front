@@ -51,6 +51,12 @@ export function BookingModal({
   const moves = statusMoves(booking.status, started)
   const refused =
     change.error instanceof ApiError && change.error.status === 409
+  // Shown in whichever dialog is open: the question of a cancel fails too.
+  const failure = change.isError && (
+    <Typography variant="t4" color="red-300" role="alert">
+      {refused ? t('calendar.booking.changed') : t('calendar.booking.failed')}
+    </Typography>
+  )
 
   if (moving) {
     return (
@@ -81,6 +87,7 @@ export function BookingModal({
         onConfirm={() => moveTo('CANCELLED', onClose)}
       >
         {booking.clientName}
+        {failure}
       </ConfirmDialog>
     )
   }
@@ -105,6 +112,7 @@ export function BookingModal({
                 variant: 'ghost' as const,
                 colorScheme: 'black' as const,
                 children: t('calendar.booking.moveAction'),
+                disabled: change.isPending,
                 onClick: () => setMoving(true),
               },
             ]
@@ -115,6 +123,7 @@ export function BookingModal({
                 variant: 'ghost' as const,
                 colorScheme: 'red' as const,
                 children: t('calendar.booking.move.CANCELLED'),
+                disabled: change.isPending,
                 onClick: () => setCancelling(true),
               }
             : {
@@ -141,13 +150,7 @@ export function BookingModal({
       <Typography variant="t2" role="status">
         {t(`calendar.booking.status.${booking.status}`)}
       </Typography>
-      {change.isError && (
-        <Typography variant="t4" color="red-300" role="alert">
-          {refused
-            ? t('calendar.booking.changed')
-            : t('calendar.booking.failed')}
-        </Typography>
-      )}
+      {failure}
     </Modal>
   )
 }
