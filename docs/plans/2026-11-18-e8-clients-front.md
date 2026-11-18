@@ -156,7 +156,7 @@ the client's name links to `/clients/$clientId`.
 by an existing client; `npm run test:e2e` green (update the booking e2e to the picker). Commit
 `feat(calendar): book a client from the base`.
 
-### - [ ] F7: close the step
+### - [x] F7: close the step
 
 After the PR is merged: in BookedUp-back `docs/superpowers/plans/2026-11-18-e8-clients.md` set rows F
 and K5 to «done — PR #N / tag», on a branch `docs/e8-front-done` from that repo's `main`. Commit, don't push.
