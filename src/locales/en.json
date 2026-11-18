@@ -105,7 +105,20 @@
       "text": "Clients appear here when you add them or book them."
     },
     "nobodyFound": "Nobody found",
-    "nobodyFoundText": "Try another name or phone number."
+    "nobodyFoundText": "Try another name or phone number.",
+    "viaLink": "via <guardian>{{name}}</guardian>",
+    "edit": "Edit",
+    "dependents": "Comes with this client",
+    "visits_one": "Visits: {{count}}",
+    "visits_other": "Visits: {{count}}",
+    "notFound": "No such client",
+    "cardFailed": "Couldn't load the client",
+    "all": "All clients",
+    "history": {
+      "title": "History",
+      "empty": "No bookings yet",
+      "loadFailed": "Couldn't load the history"
+    }
   },
   "team": {
     "title": "Team",

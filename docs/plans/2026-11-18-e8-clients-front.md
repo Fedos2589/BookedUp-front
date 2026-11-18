@@ -93,7 +93,7 @@ dialog — leave a disabled button until F4.
 in search refetches with `q`; «Show more» appends; empty business shows the empty state. Commit
 `feat(clients): list with search`.
 
-### - [ ] F3: client card
+### - [x] F3: client card
 
 **Files:** `src/app/router.tsx` (route `/clients/$clientId`), create
 `src/pages/clients/{ClientPage.tsx,ClientHistory.tsx,client.test.tsx}`, locales.
