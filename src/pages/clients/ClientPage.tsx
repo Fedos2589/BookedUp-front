@@ -1,4 +1,5 @@
 import { getRouteApi, Link } from '@tanstack/react-router'
+import { useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Spinner } from 'ted-ui/Spinner/Spinner'
@@ -7,6 +8,7 @@ import { Typography } from 'ted-ui/Typography'
 import { useClientsControllerCard } from '@/api/clients/clients'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { ApiError } from '@/apiFetch'
+import { ClientDialog } from './ClientDialog'
 import { ClientHistory } from './ClientHistory'
 import styles from './Clients.module.scss'
 
@@ -19,6 +21,8 @@ export function ClientPage() {
   const business = useCurrentBusiness()
   const { clientId } = route.useParams()
   const card = useClientsControllerCard(business.id, clientId)
+  const [editing, setEditing] = useState(false)
+  const editButton = useRef<HTMLButtonElement>(null)
 
   if (card.isPending)
     return (
@@ -57,8 +61,12 @@ export function ClientPage() {
         <Typography variant="h3" component="h1">
           {client.name}
         </Typography>
-        {/* Enabled with the edit dialog (E8 F4). */}
-        <Button variant="solid" colorScheme="black" disabled>
+        <Button
+          ref={editButton}
+          variant="solid"
+          colorScheme="black"
+          onClick={() => setEditing(true)}
+        >
           {t('clients.edit')}
         </Button>
       </div>
@@ -114,6 +122,13 @@ export function ClientPage() {
         {t('clients.history.title')}
       </Typography>
       <ClientHistory clientId={clientId} />
+      {editing && (
+        <ClientDialog
+          client={client}
+          opener={editButton}
+          onClose={() => setEditing(false)}
+        />
+      )}
     </main>
   )
 }

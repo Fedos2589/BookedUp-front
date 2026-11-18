@@ -47,3 +47,18 @@
   flex-wrap: wrap;
   gap: var(--spacing-4) var(--spacing-16);
 }
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}

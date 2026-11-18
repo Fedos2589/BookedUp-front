@@ -1,5 +1,4 @@
 import { type CountryCode, parsePhoneNumberFromString } from 'libphonenumber-js'
-import { z } from 'zod'
 
 import type { SlotsControllerSlots200Item } from '@/api/generated.schemas'
 import { ApiError } from '@/apiFetch'
@@ -57,26 +56,6 @@ export function clientPhone(country: CountryCode, nationalNumber: string) {
   return phone?.isValid() ? phone.number : undefined
 }
 
-// The back's rules (appointments.schema.ts): a name of 1–100 characters, a
-// note up to 2000. The phone must be a whole number of its country.
-export const bookingSchema = z
-  .object({
-    clientName: z
-      .string()
-      .trim()
-      .min(1, 'validation.required')
-      .max(100, 'validation.tooLong'),
-    country: z.custom<CountryCode>(),
-    phone: z.string(),
-    note: z.string().trim().max(2000, 'validation.tooLong'),
-  })
-  .refine((v) => clientPhone(v.country, v.phone), {
-    path: ['phone'],
-    message: 'validation.phone',
-  })
-
-export type BookingForm = z.infer<typeof bookingSchema>
-
 // "Nov 19, 10:00–11:00" on the business's clock; undefined for a zone this
 // browser does not know (shown without a time rather than as "undefined").
 export function slotRange(
@@ -94,3 +73,13 @@ export const conflictCode = (error: unknown) =>
   error instanceof ApiError && error.status === 409
     ? (error.body as { code?: string } | undefined)?.code
     : undefined
+
+// The text of a refusal that belongs to the client picker (a phone that became
+// someone's, a guardian who is a dependent), as a locale key; undefined for any
+// other.
+export function clientRefusalKey(error: unknown) {
+  const code = conflictCode(error)
+  if (code === 'phoneTaken') return 'validation.phoneTaken' as const
+  if (code === 'notHolder') return 'clients.form.notHolder' as const
+  return undefined
+}

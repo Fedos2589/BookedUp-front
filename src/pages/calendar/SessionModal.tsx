@@ -11,11 +11,11 @@ import type {
   AppointmentsControllerList200Item as Appointment,
   SlotsControllerSlots200Item as Slot,
 } from '@/api/generated.schemas'
-import { ClientFields } from './ClientFields'
+import { BookingClientFields } from './BookingClientFields'
 import type { joinMode } from './meetingOf'
-import { conflictCode, slotRange } from './newBooking'
+import { clientRefusalKey, conflictCode, slotRange } from './newBooking'
 import styles from './Calendar.module.scss'
-import { useClientForm } from './useClientForm'
+import { useBookingClient } from './useBookingClient'
 
 // A group meeting or a one-off session: who has a seat in it, and a form to
 // add one more — a seat while it is ahead, a walk-in once it has started. A
@@ -42,7 +42,7 @@ export function SessionModal({
 }) {
   const { t, i18n } = useTranslation()
   const formId = useId()
-  const { form, clientOf, showPhoneTaken } = useClientForm()
+  const booking = useBookingClient()
   const seat = useAppointmentsControllerCreate({
     mutation: { onSettled: onChanged },
   })
@@ -84,6 +84,7 @@ export function SessionModal({
                 type: 'submit' as const,
                 form: formId,
                 loading: add.isPending,
+                disabled: !booking.client,
                 children: t(
                   mode === 'walkIn'
                     ? 'calendar.session.walkIn'
@@ -126,14 +127,14 @@ export function SessionModal({
           id={formId}
           className={styles.form}
           noValidate
-          onSubmit={form.handleSubmit((values) => {
-            const client = clientOf(values)
-            if (!client) return
+          onSubmit={(event) => {
+            event.preventDefault()
+            if (!booking.client) return
             const data = {
               staffId: slot.staffId,
               startsAt: slot.startsAt,
               endsAt: slot.endsAt,
-              ...client,
+              ...booking.client,
               ...(slot.groupId
                 ? { groupId: slot.groupId }
                 : slot.oneOffSessionId
@@ -141,15 +142,15 @@ export function SessionModal({
                   : {}),
             }
             const done = {
-              onSuccess: () => form.reset(),
-              onError: showPhoneTaken,
+              onSuccess: booking.reset,
+              onError: booking.onRefused,
             }
             if (mode === 'walkIn') walkIn.mutate({ businessId, data }, done)
             else seat.mutate({ businessId, data }, done)
-          })}
+          }}
         >
-          <ClientFields form={form} />
-          {add.isError && conflictCode(add.error) !== 'phoneTaken' && (
+          <BookingClientFields state={booking} refused={add.error} />
+          {add.isError && !clientRefusalKey(add.error) && (
             <Typography variant="t4" color="red-300" role="alert">
               {refusal(conflictCode(add.error))}
             </Typography>

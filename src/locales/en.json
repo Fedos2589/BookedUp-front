@@ -118,6 +118,21 @@
       "title": "History",
       "empty": "No bookings yet",
       "loadFailed": "Couldn't load the history"
+    },
+    "form": {
+      "createTitle": "New client",
+      "editTitle": "Edit client",
+      "name": "Name",
+      "kind": "Who is this",
+      "own": "Has own phone",
+      "with": "Comes with someone",
+      "phone": "Phone",
+      "guardian": "Comes with",
+      "note": "Note",
+      "openTaken": "Open {{name}}",
+      "openTakenNoName": "Open that client",
+      "notHolder": "That client comes with someone else, so can't be a guardian.",
+      "failed": "Couldn't save the client. Try again."
     }
   },
   "team": {
@@ -270,6 +285,14 @@
       "keep": "Keep",
       "changed": "This booking has changed. Here it is as it is now.",
       "failed": "Couldn't change the booking. Try again."
+    },
+    "picker": {
+      "search": "Client",
+      "new": "New client",
+      "find": "Find an existing client",
+      "account": "Who is this",
+      "newPerson": "A new person on this number",
+      "lookupFailed": "Couldn't check this number"
     }
   },
   "schedule": {

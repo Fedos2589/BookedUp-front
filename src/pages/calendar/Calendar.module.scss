@@ -48,3 +48,16 @@
   flex-wrap: wrap;
   gap: var(--spacing-8);
 }
+
+.pickerGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.clientLink {
+  color: var(--color-bw-black);
+}

@@ -8,10 +8,15 @@ import type {
   SlotsControllerSlots200Item,
   StaffControllerList200Item,
 } from '@/api/generated.schemas'
-import { ClientFields } from './ClientFields'
-import { chosenSlot, conflictCode, slotKey } from './newBooking'
+import { BookingClientFields } from './BookingClientFields'
+import {
+  chosenSlot,
+  clientRefusalKey,
+  conflictCode,
+  slotKey,
+} from './newBooking'
 import { SlotCombobox } from './SlotCombobox'
-import { useClientForm } from './useClientForm'
+import { useBookingClient } from './useBookingClient'
 import styles from './Calendar.module.scss'
 
 type Slot = SlotsControllerSlots200Item
@@ -45,7 +50,7 @@ export function NewBookingModal({
   const first = initial ?? slots[0]
   const [chosen, setChosen] = useState(first && slotKey(first))
   const slot = chosenSlot(slots, chosen)
-  const { form, clientOf, showPhoneTaken } = useClientForm()
+  const booking = useBookingClient()
   const create = useAppointmentsControllerCreate({
     mutation: { onSettled: onChanged },
   })
@@ -69,7 +74,7 @@ export function NewBookingModal({
           type: 'submit',
           form: formId,
           loading: create.isPending,
-          disabled: !slot,
+          disabled: !slot || !booking.client,
           children: t('calendar.new.submit'),
         },
       ]}
@@ -78,9 +83,9 @@ export function NewBookingModal({
         id={formId}
         className={styles.form}
         noValidate
-        onSubmit={form.handleSubmit((values) => {
-          const client = clientOf(values)
-          if (!slot || !client) return
+        onSubmit={(event) => {
+          event.preventDefault()
+          if (!slot || !booking.client) return
           create.mutate(
             {
               businessId,
@@ -88,12 +93,12 @@ export function NewBookingModal({
                 staffId: slot.staffId,
                 startsAt: slot.startsAt,
                 endsAt: slot.endsAt,
-                ...client,
+                ...booking.client,
               },
             },
-            { onSuccess: onClose, onError: showPhoneTaken },
+            { onSuccess: onClose, onError: booking.onRefused },
           )
-        })}
+        }}
       >
         <SlotCombobox
           slots={slots}
@@ -102,8 +107,8 @@ export function NewBookingModal({
           timeZone={timeZone}
           onChange={(next) => setChosen(slotKey(next))}
         />
-        <ClientFields form={form} />
-        {create.isError && conflictCode(create.error) !== 'phoneTaken' && (
+        <BookingClientFields state={booking} refused={create.error} />
+        {create.isError && !clientRefusalKey(create.error) && (
           <Typography variant="t4" color="red-300" role="alert">
             {conflictCode(create.error) === 'notFree'
               ? t('calendar.new.notFree')

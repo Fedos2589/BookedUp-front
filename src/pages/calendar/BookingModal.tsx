@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { type RefObject, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
@@ -185,7 +186,15 @@ export function BookingModal({
         ...(main ? [statusButton(main)] : []),
       ]}
     >
-      <Typography variant="t1">{booking.clientName}</Typography>
+      <Typography variant="t1">
+        <Link
+          to="/clients/$clientId"
+          params={{ clientId: booking.clientId }}
+          className={styles.clientLink}
+        >
+          {booking.clientName}
+        </Link>
+      </Typography>
       <Typography variant="t2">
         <a href={`tel:${booking.clientPhone}`}>{booking.clientPhone}</a>
       </Typography>
