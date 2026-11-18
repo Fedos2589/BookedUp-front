@@ -285,6 +285,13 @@
       "keep": "Keep",
       "changed": "This booking has changed. Here it is as it is now.",
       "failed": "Couldn't change the booking. Try again."
+    },
+    "picker": {
+      "search": "Client",
+      "new": "New client",
+      "find": "Find an existing client",
+      "account": "Who is this",
+      "newPerson": "A new person on this number"
     }
   },
   "schedule": {

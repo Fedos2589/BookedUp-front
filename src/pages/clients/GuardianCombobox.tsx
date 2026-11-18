@@ -1,9 +1,7 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Combobox } from 'ted-ui/Combobox'
 
-import { useClientsControllerList } from '@/api/clients/clients'
-import { useCurrentBusiness } from '@/business/currentBusiness'
+import { useClientSearch } from './useClientSearch'
 
 type Guardian = { id: string; name: string }
 
@@ -22,13 +20,8 @@ export function GuardianCombobox({
   onChange: (guardian: Guardian | null) => void
 }) {
   const { t } = useTranslation()
-  const business = useCurrentBusiness()
-  const [query, setQuery] = useState('')
-  const found = useClientsControllerList(business.id, {
-    q: query.trim() || undefined,
-    limit: 20,
-  })
-  const holders = (found.data?.items ?? [])
+  const { query, setQuery, found } = useClientSearch()
+  const holders = found
     .filter((client) => client.phone)
     .map(({ id, name }) => ({ id, name }))
 

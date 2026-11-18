@@ -121,9 +121,9 @@ After success invalidate the list and the card queries; navigate to the new card
 a dependent through the combobox, `phoneTaken` shows the link, edit sends only changed fields.
 Commit `feat(clients): create and edit`.
 
-### - [ ] F5: client picker component
+### - [x] F5: client picker component
 
-**Files:** create `src/pages/calendar/{ClientPicker.tsx,clientPicker.ts,clientPicker.test.ts,ClientPicker.test.tsx}`, locales.
+**Files:** create `src/pages/calendar/{ClientPicker.tsx,pickerValue.ts,pickerValue.test.ts,ClientPicker.test.tsx}`, locales.
 
 A controlled component whose value is `{ clientId } | { newClient }` (the booking body's part), or
 `undefined` while incomplete:
@@ -134,7 +134,7 @@ A controlled component whose value is `{ clientId } | { newClient }` (the bookin
    (holder, dependents) plus «A new person on this number» (name field → `newClient` with
    `guardianId` = the holder). Otherwise `newClient` with the phone.
 
-Pure logic (what value the current inputs make) lives in `clientPicker.ts` with unit tests.
+Pure logic (what value the current inputs make) lives in `pickerValue.ts` (not `clientPicker.ts`: on macOS that is the same path as `ClientPicker.tsx`) with unit tests.
 
 **Check:** unit tests for every branch of the value; component test with MSW: pick by search; a
 known phone shows Anna, Masha, «a new person»; a new person sends `guardianId`. Commit
