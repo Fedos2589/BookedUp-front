@@ -12,7 +12,7 @@ import {
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { BookingsInTheWay } from '@/pages/schedule/BookingsInTheWay'
-import { bookingsInTheWay } from '@/pages/schedule/bookingsBlock'
+import { bookingsInTheWay } from '@/pages/schedule/hasBookings'
 import { focusFirstInvalid } from '@/pages/schedule/hours/focusFirstInvalid'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 import { cancelProblem } from './groupDays'

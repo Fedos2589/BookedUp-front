@@ -400,6 +400,31 @@ test('groups: deleting a group over live bookings says how many', async () => {
   ).toBe('/calendar')
 })
 
+test('groups: changing a group over live bookings says how many', async () => {
+  withGroups({
+    [`PUT ${api(`${groupsRoute}/${football.id}`)}`]: [
+      409,
+      {
+        statusCode: 409,
+        code: 'hasBookings',
+        appointmentIds: ['a', 'b', 'c', 'd'],
+      },
+    ],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Change Football, kids 7–10' }),
+  )
+  fireEvent.change(await screen.findByLabelText('Name'), {
+    target: { value: 'Football' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText(/4 bookings in the way/)).toBeTruthy()
+  expect(screen.queryByText(/Couldn.t save the group/)).toBeNull()
+})
+
 test('group dates: a day the group does not meet, or has cancelled, is refused before the request', async () => {
   today()
   const { calls } = withGroups({
@@ -544,6 +569,11 @@ test('one-off sessions: deleting one over live bookings says how many', async ()
   fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
   expect(await screen.findByText(/2 bookings in the way/)).toBeTruthy()
+  expect(
+    screen
+      .getByRole('link', { name: 'Open the calendar' })
+      .getAttribute('href'),
+  ).toBe('/calendar?date=2026-11-19')
 })
 
 async function fillSession() {

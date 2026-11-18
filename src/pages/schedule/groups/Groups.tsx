@@ -13,7 +13,7 @@ import {
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { BookingsInTheWay } from '@/pages/schedule/BookingsInTheWay'
-import { bookingsInTheWay } from '@/pages/schedule/bookingsBlock'
+import { bookingsInTheWay } from '@/pages/schedule/hasBookings'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { GroupCard } from './GroupCard'
 import { GroupDates } from './GroupDates'
