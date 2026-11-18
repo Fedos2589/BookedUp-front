@@ -65,7 +65,7 @@ note | null, noShowCount }`. A person has either their own `phone` (an account h
 
 ---
 
-### - [ ] F1: regenerate the API, bump the kit, keep the calendar working
+### - [x] F1: regenerate the API, bump the kit, keep the calendar working
 
 **Files:** `package.json` (ted-ui `#v0.7.0`), `src/api/**` (generated), `src/pages/calendar/useClientForm.ts`,
 `src/pages/calendar/newBooking.ts` (+ its test), whatever `tsc` flags in `src/pages/calendar/`.
