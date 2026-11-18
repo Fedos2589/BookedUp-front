@@ -85,17 +85,19 @@ test('a started booking’s dialog fits a phone: one main action in the footer',
   expect(box.x + box.width).toBeLessThanOrEqual(390)
   expect(box.y + box.height).toBeLessThanOrEqual(844)
 
-  // The footer: Close and the one main action; the rest sits in the body.
-  const footer = dialog.locator('[class*="footer"]')
-  await expect(footer.getByRole('button')).toHaveCount(2)
-  await expect(
-    footer.getByRole('button', { name: 'Mark as done' }),
-  ).toBeVisible()
+  // The footer (below everything else): Close and the one main action; the
+  // other moves sit in the body, above it.
+  const done = dialog.getByRole('button', { name: 'Mark as done' })
+  const close = dialog
+    .getByRole('button', { name: 'Close', exact: true })
+    .last()
+  await expect(done).toBeVisible()
+  const footerTop = (await done.boundingBox())!.y
+  expect((await close.boundingBox())!.y).toBeGreaterThanOrEqual(footerTop - 1)
   for (const name of ['Move', 'Confirm', 'Mark as no-show', 'Cancel booking']) {
     const button = dialog.getByRole('button', { name, exact: true })
     await expect(button).toBeVisible()
-    await expect(footer.getByRole('button', { name, exact: true })).toHaveCount(
-      0,
-    )
+    const box = (await button.boundingBox())!
+    expect(box.y + box.height).toBeLessThanOrEqual(footerTop)
   }
 })

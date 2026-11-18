@@ -21,7 +21,7 @@ type Step = 'details' | 'move' | 'cancel'
 
 // One booking of the hours: who, when, in what status, and the moves the back
 // allows from it. One dialog for all of it — the details, the move and the
-// question of a cancel are its steps, so focus stays put and «Back» from the
+// question of a cancel are its steps, so no dialog is opened over another and «Back» from the
 // move keeps the day and the hour. `onChanged` reloads the grid under the
 // dialog, slots too — a no-show or a cancel frees the master's time.
 export function BookingModal({
@@ -63,6 +63,8 @@ export function BookingModal({
       { businessId, appointmentId: booking.id, data: { status } },
       { onSuccess: then },
     )
+  // A status change and a move on the same booking never run side by side.
+  const busy = change.isPending || moving.move.isPending
   const moves = statusMoves(booking.status, started)
   const refused =
     change.error instanceof ApiError && change.error.status === 409
@@ -86,6 +88,7 @@ export function BookingModal({
             variant: 'ghost',
             colorScheme: 'grey',
             children: t('calendar.move.back'),
+            disabled: moving.move.isPending,
             onClick: () => setStep('details'),
           },
           {
@@ -115,6 +118,7 @@ export function BookingModal({
         isVisible
         role="alertdialog"
         title={t('calendar.booking.cancelTitle')}
+        subtitle={booking.clientName}
         onClose={() => setStep('details')}
         finalFocus={finalFocus}
         buttons={[
@@ -133,7 +137,6 @@ export function BookingModal({
           },
         ]}
       >
-        <Typography variant="t1">{booking.clientName}</Typography>
         {failure}
       </Modal>
     )
@@ -145,14 +148,14 @@ export function BookingModal({
           variant: 'ghost' as const,
           colorScheme: 'red' as const,
           children: t('calendar.booking.move.CANCELLED'),
-          disabled: change.isPending,
+          disabled: busy,
           onClick: () => setStep('cancel'),
         }
       : {
           variant: 'solid' as const,
           colorScheme: 'black' as const,
           loading: change.isPending && change.variables?.data.status === status,
-          disabled: change.isPending,
+          disabled: busy,
           children: t(`calendar.booking.move.${status}`),
           onClick: () => moveTo(status),
         }
@@ -199,14 +202,14 @@ export function BookingModal({
           <Button
             variant="ghost"
             colorScheme="black"
-            disabled={change.isPending}
+            disabled={busy}
             onClick={() => setStep('move')}
           >
             {t('calendar.booking.moveAction')}
           </Button>
         )}
         {others.map((status) => (
-          <Button key={status} {...statusButton(status)} />
+          <Button key={status} {...statusButton(status)} variant="ghost" />
         ))}
       </div>
       {failure}
