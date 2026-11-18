@@ -224,7 +224,7 @@ Only `BOOKED` / `CONFIRMED` move. 409 → message, slots refetched.
 **Check:** page test: move to another slot → item changes place; 409 → message. Commit
 `feat(calendar): move a booking`.
 
-### - [ ] F8: schedule screens answer 409 `hasBookings`
+### - [x] F8: schedule screens answer 409 `hasBookings`
 
 **Files:** `src/pages/schedule/groups/*`, `src/pages/schedule/timeOff/*` (only where the call is made), locales.
 

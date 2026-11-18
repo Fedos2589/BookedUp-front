@@ -623,6 +623,35 @@ test('time off: a refused save keeps the dialog and says so', async () => {
   expect(screen.getByLabelText(/^Days off/)).toBeTruthy()
 })
 
+test('time off: a save over live bookings says how many and links to the calendar on the first day', async () => {
+  withTimeOff({
+    [`POST ${api(timeOffRoute(vera.id))}`]: [
+      409,
+      { statusCode: 409, code: 'hasBookings', appointmentIds: ['a', 'b'] },
+    ],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(await screen.findByRole('button', { name: '+ Time off' }))
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+  }).format(new Date())
+  fireEvent.keyDown(await screen.findByLabelText(/^Days off/), {
+    key: 'Enter',
+  })
+  await pickDay(today)
+  await pickDay(today)
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText(/2 bookings in the way/)).toBeTruthy()
+  expect(
+    screen
+      .getByRole('link', { name: 'Open the calendar' })
+      .getAttribute('href'),
+  ).toBe(`/calendar?date=${today}`)
+  expect(screen.queryByText(/Couldn.t save the time off/)).toBeNull()
+})
+
 test('time off: a refused delete says so and keeps the record', async () => {
   withTimeOff({
     [`DELETE ${api(`${timeOffRoute(vera.id)}/${vacation.id}`)}`]: [500],

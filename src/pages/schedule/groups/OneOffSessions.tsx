@@ -12,6 +12,8 @@ import {
   useGroupsControllerSessions,
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
+import { BookingsInTheWay } from '@/pages/schedule/BookingsInTheWay'
+import { bookingsInTheWay } from '@/pages/schedule/bookingsBlock'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { useNow } from '@/useNow'
 import { sessionWhenText } from './groupText'
@@ -34,6 +36,7 @@ export function OneOffSessions({ staffId }: { staffId: string }) {
         }),
     },
   })
+  const inTheWay = bookingsInTheWay(remove.error)
   const coming = list.data?.filter((s) => Date.parse(s.endsAt) > now.getTime())
 
   return (
@@ -100,11 +103,14 @@ export function OneOffSessions({ staffId }: { staffId: string }) {
       >
         {t('schedule.sessions.add')}
       </Button>
-      {remove.isError && (
-        <Typography variant="t4" color="red-300" role="alert">
-          {t('schedule.sessions.deleteFailed')}
-        </Typography>
-      )}
+      {remove.isError &&
+        (inTheWay !== undefined ? (
+          <BookingsInTheWay count={inTheWay} />
+        ) : (
+          <Typography variant="t4" color="red-300" role="alert">
+            {t('schedule.sessions.deleteFailed')}
+          </Typography>
+        ))}
       {adding && (
         <OneOffSessionDialog
           staffId={staffId}
