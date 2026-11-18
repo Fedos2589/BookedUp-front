@@ -10,6 +10,8 @@ import styles from './Clients.module.scss'
 
 const route = getRouteApi('/cabinet/clients')
 const SEARCH_DELAY_MS = 300
+// The back refuses a longer `q` (400).
+const SEARCH_MAX_LENGTH = 100
 
 // The business's clients: a search and the list. The text is typed into the
 // field at once and reaches the address (and the back) 300 ms after the last
@@ -19,6 +21,12 @@ export function ClientsPage() {
   const { q } = route.useSearch()
   const navigate = useNavigate({ from: '/clients' })
   const [text, setText] = useState(q ?? '')
+  const [seenQ, setSeenQ] = useState(q)
+  if (q !== seenQ) {
+    // The address changed from outside (the nav link, Back): follow it.
+    setSeenQ(q)
+    if ((text.trim() || undefined) !== q) setText(q ?? '')
+  }
 
   useEffect(() => {
     const wanted = text.trim() || undefined
@@ -37,12 +45,15 @@ export function ClientsPage() {
           {t('clients.title')}
         </Typography>
         {/* Enabled with the create dialog (E8 F4). */}
-        <Button disabled>{t('clients.add')}</Button>
+        <Button variant="solid" colorScheme="black" disabled>
+          {t('clients.add')}
+        </Button>
       </div>
       <Input
         label={t('clients.search')}
         type="search"
         fullWidth
+        maxLength={SEARCH_MAX_LENGTH}
         value={text}
         onChange={(event) => setText(event.target.value)}
       />

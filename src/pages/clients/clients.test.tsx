@@ -190,3 +190,27 @@ test('when the list fails to load, it offers to try again', async () => {
 
   await screen.findByText('Anna Petrova')
 })
+
+test('the «Clients» link in the navigation clears the search', async () => {
+  fakeApi({
+    'GET /api/me': me(),
+    [clientsUrl('q=mas&limit=20&offset=0')]: [
+      200,
+      { items: [masha], total: 1 },
+    ],
+    [clientsUrl('limit=20&offset=0')]: [
+      200,
+      { items: [anna, masha], total: 2 },
+    ],
+    'GET /api/businesses/00000000-0000-4000-8000-000000000002/staff': [200, []],
+  })
+  const { router } = renderApp('/clients?q=mas')
+  await screen.findByText('Masha')
+
+  fireEvent.click(screen.getByRole('link', { name: 'Clients' }))
+
+  await screen.findByText('Anna Petrova')
+  await new Promise((resolve) => setTimeout(resolve, 600))
+  expect(router.state.location.search).toEqual({})
+  expect((screen.getByRole('searchbox') as HTMLInputElement).value).toBe('')
+})

@@ -105,7 +105,7 @@ export function NewBookingModal({
         <ClientFields form={form} />
         {create.isError && conflictCode(create.error) !== 'phoneTaken' && (
           <Typography variant="t4" color="red-300" role="alert">
-            {conflictCode(create.error)
+            {conflictCode(create.error) === 'notFree'
               ? t('calendar.new.notFree')
               : t('calendar.new.saveFailed')}
           </Typography>

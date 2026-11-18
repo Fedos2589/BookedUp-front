@@ -8,6 +8,7 @@ import { RiUserLine } from '@remixicon/react'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { ClientRow } from './ClientRow'
 import styles from './Clients.module.scss'
+import { rowsOf } from './paging'
 import { useClientsList } from './useClientsList'
 
 // The clients matching `q` as rows, «Show more» while there are more; the
@@ -36,7 +37,7 @@ export function ClientsList({ q }: { q: string | undefined }) {
       </div>
     )
 
-  const items = clients.data.pages.flatMap((page) => page.items)
+  const items = rowsOf(clients.data.pages)
   if (items.length === 0)
     return (
       <EmptyState

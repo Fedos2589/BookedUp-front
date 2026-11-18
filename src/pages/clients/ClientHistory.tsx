@@ -7,6 +7,7 @@ import { useStaffControllerList } from '@/api/staff/staff'
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { dateTimeIn } from '@/dates'
 import styles from './Clients.module.scss'
+import { rowsOf } from './paging'
 import { useClientHistory } from './useClientHistory'
 
 // The client's bookings, newest first, with when (in the business's time
@@ -16,7 +17,8 @@ export function ClientHistory({ clientId }: { clientId: string }) {
   const business = useCurrentBusiness()
   const history = useClientHistory(business.id, clientId)
   const staff = useStaffControllerList(business.id)
-  const masterName = (id: string) => staff.data?.find((s) => s.id === id)?.name
+  const masterName = (id: string) =>
+    staff.data?.find((s) => s.id === id)?.name ?? '—'
 
   if (history.isPending)
     return <Spinner size="medium" aria-label={t('common.loading')} />
@@ -37,7 +39,7 @@ export function ClientHistory({ clientId }: { clientId: string }) {
       </div>
     )
 
-  const items = history.data.pages.flatMap((page) => page.items)
+  const items = rowsOf(history.data.pages)
   if (items.length === 0)
     return (
       <Typography variant="t3" color="grey-400">

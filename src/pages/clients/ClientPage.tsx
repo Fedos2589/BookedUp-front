@@ -58,7 +58,9 @@ export function ClientPage() {
           {client.name}
         </Typography>
         {/* Enabled with the edit dialog (E8 F4). */}
-        <Button disabled>{t('clients.edit')}</Button>
+        <Button variant="solid" colorScheme="black" disabled>
+          {t('clients.edit')}
+        </Button>
       </div>
       <Typography variant="t2">
         {client.guardian ? (
