@@ -1,6 +1,5 @@
 import { type RefObject, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Combobox } from 'ted-ui/Combobox'
 import { DatePicker } from 'ted-ui/DatePicker'
 import { Modal } from 'ted-ui/Modal'
 import { Typography } from 'ted-ui/Typography'
@@ -8,7 +7,6 @@ import { Typography } from 'ted-ui/Typography'
 import { useAppointmentsControllerMove } from '@/api/appointments/appointments'
 import type {
   AppointmentsControllerList200Item as Appointment,
-  SlotsControllerSlots200Item as Slot,
   StaffControllerList200Item,
 } from '@/api/generated.schemas'
 import { useSlotsControllerSlots } from '@/api/schedule/schedule'
@@ -16,7 +14,8 @@ import { ApiError } from '@/apiFetch'
 import { dateIn } from '@/dates'
 import { useNow } from '@/useNow'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
-import { freeHoursSlots, slotKey, slotRange } from './newBooking'
+import { chosenSlot, freeSlotsOf, slotKey } from './newBooking'
+import { SlotCombobox } from './SlotCombobox'
 import styles from './Calendar.module.scss'
 
 // Moves a booking to another free hour: a day, then one of the free hours of
@@ -42,7 +41,7 @@ export function MoveBooking({
   onBack: () => void
   onClose: () => void
 }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const formId = useId()
   const now = useNow()
   // As CalendarPage: a zone this browser does not know falls back to UTC.
@@ -60,22 +59,16 @@ export function MoveBooking({
       },
     },
   })
-  const onScreen = new Set(masters.map((m) => m.id))
-  const slots = freeHoursSlots(loaded.data ?? [], now).filter((s) =>
-    onScreen.has(s.staffId),
-  )
+  const slots = freeSlotsOf(loaded.data ?? [], masters, now)
   // Until the person chooses, the booking's own master comes first. Once an
   // hour is chosen it is found by key in the current list: one taken meanwhile
   // leaves it and nothing is chosen, rather than another hour sent in its place.
   const slot =
     chosen === undefined
       ? (slots.find((s) => s.staffId === booking.staffId) ?? slots[0])
-      : slots.find((s) => slotKey(s) === chosen)
+      : chosenSlot(slots, chosen)
 
   useUnsavedInput(date !== initial || chosen !== undefined)
-
-  const label = (s: Slot) =>
-    `${masters.find((m) => m.id === s.staffId)?.name ?? ''} · ${slotRange(s, timeZone, i18n.language) ?? ''}`
 
   return (
     <Modal
@@ -134,23 +127,14 @@ export function MoveBooking({
             setChosen(undefined)
           }}
         />
-        <Combobox
-          label={t('calendar.new.slot')}
-          options={slots}
-          value={slot ?? null}
-          onValueChange={(next) => next && setChosen(slotKey(next))}
-          itemToStringLabel={label}
-          isItemEqualToValue={(a, b) =>
-            a.startsAt === b.startsAt && a.staffId === b.staffId
-          }
-          getItemKey={slotKey}
-          openOnFocus
+        <SlotCombobox
+          slots={slots}
+          value={slot}
+          masters={masters}
+          timeZone={timeZone}
+          pending={!loaded.data}
+          onChange={(next) => setChosen(slotKey(next))}
         />
-        {loaded.data && slots.length === 0 && (
-          <Typography variant="t4" color="grey-500" role="status">
-            {t('calendar.new.noFree')}
-          </Typography>
-        )}
         {move.isError && (
           <Typography variant="t4" color="red-300" role="alert">
             {move.error instanceof ApiError && move.error.status === 409

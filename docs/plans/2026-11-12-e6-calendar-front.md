@@ -234,7 +234,7 @@ On 409 `hasBookings` show «N bookings on this date — cancel or move them firs
 **Check:** page tests for cancelling a group date and adding time off with a mocked 409. Commit
 `feat(schedule): explain changes refused over bookings`.
 
-### - [ ] F12: one place for «free hours» and the slot choice
+### - [x] F12: one place for «free hours» and the slot choice
 
 _From the review of PR #27 (finding 1 came from these copies drifting apart)._
 

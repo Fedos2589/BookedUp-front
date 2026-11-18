@@ -15,6 +15,22 @@ export const freeHoursSlots = (slots: Slot[], now: Date) =>
     (s) => !s.groupId && !s.oneOffSessionId && new Date(s.startsAt) >= now,
   )
 
+// What can be booked now: free hours ahead of now, of a master that has a
+// column on screen.
+export function freeSlotsOf(
+  slots: Slot[],
+  masters: { id: string }[],
+  now: Date,
+) {
+  const onScreen = new Set(masters.map((m) => m.id))
+  return freeHoursSlots(slots, now).filter((s) => onScreen.has(s.staffId))
+}
+
+// The slot a person chose, found by key in the current list: one taken
+// meanwhile has left it, so nothing is chosen — not another slot in its place.
+export const chosenSlot = (slots: Slot[], key: string | undefined) =>
+  slots.find((s) => slotKey(s) === key)
+
 // The free hours under a click on empty space: the master's column and the
 // minute on the business's clock, the end not included.
 export function slotAt(
