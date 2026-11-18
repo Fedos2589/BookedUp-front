@@ -207,6 +207,37 @@
       "walkIn": "Add someone who came",
       "notStarted": "This meeting hasn't started yet. Book a seat instead.",
       "changed": "This meeting has changed. Check the calendar and try again."
+    },
+    "move": {
+      "title": "Move booking",
+      "date": "Day",
+      "back": "Back",
+      "submit": "Move",
+      "failed": "Couldn't move the booking. Try again."
+    },
+    "booking": {
+      "title": "Booking",
+      "note": "Note",
+      "status": {
+        "BOOKED": "Booked",
+        "CONFIRMED": "Confirmed",
+        "DONE": "Done",
+        "NO_SHOW": "No-show",
+        "CANCELLED": "Cancelled"
+      },
+      "move": {
+        "CONFIRMED": "Confirm",
+        "DONE": "Mark as done",
+        "NO_SHOW": "Mark as no-show",
+        "CANCELLED": "Cancel booking"
+      },
+      "close": "Close",
+      "moveAction": "Move",
+      "cancelTitle": "Cancel this booking?",
+      "cancelConfirm": "Cancel booking",
+      "keep": "Keep",
+      "changed": "This booking has changed. Here it is as it is now.",
+      "failed": "Couldn't change the booking. Try again."
     }
   },
   "schedule": {
