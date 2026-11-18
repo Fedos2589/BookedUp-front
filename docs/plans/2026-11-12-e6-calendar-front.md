@@ -68,6 +68,13 @@ All under `/businesses/:businessId/appointments`:
 - **Schedule changes over live bookings** (cancel a group's date, archive a group / one-off session,
   add time off) → 409 `{ code: 'hasBookings', appointmentIds }`.
 
+## Open question for the user
+
+**Move keeps the slot's length, not the booking's** (review of #27, question 8): `MoveBooking` sends
+the chosen slot's `endsAt`, because the back takes only an exact slot. Between windows with a different
+`slotMinutes` the booking's length changes silently. Recorded in the common plan; until the user
+decides, nothing changes here.
+
 ## Global constraints
 
 - AGENTS.md rules; texts in `src/locales/{en,ru}.json`; API only via the Orval client (`src/api/*`);
@@ -226,6 +233,36 @@ On 409 `hasBookings` show «N bookings on this date — cancel or move them firs
 
 **Check:** page tests for cancelling a group date and adding time off with a mocked 409. Commit
 `feat(schedule): explain changes refused over bookings`.
+
+### - [ ] F12: one place for «free hours» and the slot choice
+
+_From the review of PR #27 (finding 1 came from these copies drifting apart)._
+
+**Files:** create `src/pages/calendar/SlotCombobox.tsx`; `src/pages/calendar/newBooking.ts` (a
+`freeSlotsOf(slots, masters, now)`: free hours of a master on screen, ahead of now);
+`CalendarGrid.tsx`, `NewBookingModal.tsx`, `MoveBooking.tsx` use them.
+
+Today «free and the master is on screen», the slot label and the Combobox with «no free time» are
+written three times. Take them to one place; the rule «a slot taken meanwhile leaves nothing
+chosen» (not another slot) lives there once. A pure extraction, no behaviour change.
+
+**Check:** `npm test` — the page tests of F4 and F7 pass untouched; a `freeSlotsOf` unit test.
+Commit `refactor(calendar): free hours and slot choice in one place`.
+
+### - [ ] F13: booking dialogs — one dialog with steps, checked at 390 px
+
+_From the review of PR #27 (question 9). Needs a look first: stop and say so if the kit `Modal` can't
+swap its content and buttons without remounting — then close this as «left as it is»._
+
+**Files:** `src/pages/calendar/BookingModal.tsx`, `MoveBooking.tsx`.
+
+Details, the cancel question and the move are three `Modal`s opened one after another: focus jumps
+to the grid in between, the animation plays twice, «Back» from the move loses the chosen day and
+hour. A started `BOOKED` booking has six buttons in the footer. Try: one `Modal` whose body is the
+current step; at 390×844 the footer holds the main action, the rest go elsewhere (a menu or the body).
+
+**Check:** page tests untouched; in a 390×844 touch viewport nothing overflows horizontally, the
+footer fits, «Back» from the move keeps the day and hour. Commit `refactor(calendar): booking dialog in steps`.
 
 ### - [ ] F10: close the step in the common plan
 
