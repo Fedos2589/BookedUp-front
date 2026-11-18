@@ -1,6 +1,5 @@
 import { type RefObject, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Combobox } from 'ted-ui/Combobox'
 import { Modal } from 'ted-ui/Modal'
 import { Typography } from 'ted-ui/Typography'
 
@@ -11,7 +10,8 @@ import type {
 } from '@/api/generated.schemas'
 import { ApiError } from '@/apiFetch'
 import { ClientFields } from './ClientFields'
-import { slotKey, slotRange } from './newBooking'
+import { chosenSlot, slotKey } from './newBooking'
+import { SlotCombobox } from './SlotCombobox'
 import { useClientForm } from './useClientForm'
 import styles from './Calendar.module.scss'
 
@@ -39,20 +39,17 @@ export function NewBookingModal({
   onChanged: () => void
   onClose: () => void
 }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const formId = useId()
   // Chosen by key, found in the current list: a slot taken meanwhile leaves the
   // list and is no longer chosen, instead of being sent again.
   const first = initial ?? slots[0]
   const [chosen, setChosen] = useState(first && slotKey(first))
-  const slot = slots.find((s) => slotKey(s) === chosen)
+  const slot = chosenSlot(slots, chosen)
   const { form, clientOf } = useClientForm()
   const create = useAppointmentsControllerCreate({
     mutation: { onSettled: onChanged },
   })
-
-  const label = (s: Slot) =>
-    `${masters.find((m) => m.id === s.staffId)?.name ?? ''} · ${slotRange(s, timeZone, i18n.language) ?? ''}`
 
   return (
     <Modal
@@ -99,23 +96,13 @@ export function NewBookingModal({
           )
         })}
       >
-        <Combobox
-          label={t('calendar.new.slot')}
-          options={slots}
-          value={slot ?? null}
-          onValueChange={(next) => next && setChosen(slotKey(next))}
-          itemToStringLabel={label}
-          isItemEqualToValue={(a, b) =>
-            a.startsAt === b.startsAt && a.staffId === b.staffId
-          }
-          getItemKey={slotKey}
-          openOnFocus
+        <SlotCombobox
+          slots={slots}
+          value={slot}
+          masters={masters}
+          timeZone={timeZone}
+          onChange={(next) => setChosen(slotKey(next))}
         />
-        {slots.length === 0 && (
-          <Typography variant="t4" color="grey-500" role="status">
-            {t('calendar.new.noFree')}
-          </Typography>
-        )}
         <ClientFields form={form} />
         {create.isError && (
           <Typography variant="t4" color="red-300" role="alert">

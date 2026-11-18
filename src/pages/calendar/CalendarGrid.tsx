@@ -15,7 +15,7 @@ import { type CalendarView, weekDates } from './calendarSearch'
 import { BookingModal } from './BookingModal'
 import { NewBookingModal } from './NewBookingModal'
 import { joinMode, meetingOf } from './meetingOf'
-import { freeHoursSlots, slotAt } from './newBooking'
+import { freeSlotsOf, slotAt } from './newBooking'
 import { SessionModal } from './SessionModal'
 import styles from './Calendar.module.scss'
 import { toColumns } from './toColumns'
@@ -99,10 +99,7 @@ export function CalendarGrid({
   )
 
   // What can be booked: ahead of now, and of a master with a column on screen.
-  const onScreen = new Set(masters.map((m) => m.id))
-  const free = freeHoursSlots(data.slots, now).filter((s) =>
-    onScreen.has(s.staffId),
-  )
+  const free = freeSlotsOf(data.slots, masters, now)
   // A column is a master (day view) or a date (week view).
   const bookAt = (columnId: string, minute: number) => {
     const slot = slotAt(

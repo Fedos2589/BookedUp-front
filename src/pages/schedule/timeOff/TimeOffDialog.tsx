@@ -15,6 +15,8 @@ import {
 import { useCurrentBusiness } from '@/business/currentBusiness'
 import { dateIn } from '@/dates'
 import { fieldErrorText } from '@/forms/fieldError'
+import { BookingsInTheWay } from '@/pages/schedule/BookingsInTheWay'
+import { bookingsInTheWay } from '@/pages/schedule/hasBookings'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { focusFirstInvalid } from '@/pages/schedule/hours/focusFirstInvalid'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
@@ -68,6 +70,7 @@ export function TimeOffDialog({
     )
   }
 
+  const inTheWay = bookingsInTheWay(add.error)
   const onInvalid = () => focusFirstInvalid(formRef.current)
 
   return (
@@ -127,11 +130,18 @@ export function TimeOffDialog({
             {t('schedule.timeOff.zoneUnknown')}
           </Typography>
         ) : (
-          add.isError && (
+          add.isError &&
+          (inTheWay !== undefined ? (
+            <BookingsInTheWay
+              count={inTheWay}
+              staffId={staffId}
+              date={form.getValues('range.from')}
+            />
+          ) : (
             <Typography variant="t4" color="red-300" role="alert">
               {t('schedule.timeOff.saveFailed')}
             </Typography>
-          )
+          ))
         )}
       </form>
     </Modal>

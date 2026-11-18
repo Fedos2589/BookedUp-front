@@ -356,6 +356,80 @@ test('group dates: any day the group meets can be cancelled, and the chosen one 
   )
 })
 
+test('group dates: cancelling a day over live bookings says how many and links to that day', async () => {
+  today()
+  withGroups({
+    [`PUT ${cancellationRoute('2026-11-19')}`]: [
+      409,
+      { statusCode: 409, code: 'hasBookings', appointmentIds: ['a'] },
+    ],
+  })
+  renderApp('/schedule')
+
+  await openDates()
+  await cancelDay('2026-11-19')
+
+  expect(await screen.findByText(/1 booking in the way/)).toBeTruthy()
+  expect(
+    screen
+      .getByRole('link', { name: 'Open the calendar' })
+      .getAttribute('href'),
+  ).toBe('/calendar?date=2026-11-19')
+  expect(screen.queryByText(/Couldn.t cancel the session/)).toBeNull()
+})
+
+test('groups: deleting a group over live bookings says how many', async () => {
+  withGroups({
+    [`DELETE ${api(`${groupsRoute}/${football.id}`)}`]: [
+      409,
+      { statusCode: 409, code: 'hasBookings', appointmentIds: ['a', 'b', 'c'] },
+    ],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Delete Football, kids 7–10' }),
+  )
+  fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
+
+  expect(await screen.findByText(/3 bookings in the way/)).toBeTruthy()
+  expect(
+    screen
+      .getByRole('link', { name: 'Open the calendar' })
+      .getAttribute('href'),
+  ).toBe(`/calendar?view=week&staffId=${vera.id}`)
+})
+
+test('groups: changing a group over live bookings says how many', async () => {
+  withGroups({
+    [`PUT ${api(`${groupsRoute}/${football.id}`)}`]: [
+      409,
+      {
+        statusCode: 409,
+        code: 'hasBookings',
+        appointmentIds: ['a', 'b', 'c', 'd'],
+      },
+    ],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Change Football, kids 7–10' }),
+  )
+  fireEvent.change(await screen.findByLabelText('Name'), {
+    target: { value: 'Football' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText(/4 bookings in the way/)).toBeTruthy()
+  expect(
+    screen
+      .getByRole('link', { name: 'Open the calendar' })
+      .getAttribute('href'),
+  ).toBe(`/calendar?view=week&staffId=${vera.id}`)
+  expect(screen.queryByText(/Couldn.t save the group/)).toBeNull()
+})
+
 test('group dates: a day the group does not meet, or has cancelled, is refused before the request', async () => {
   today()
   const { calls } = withGroups({
@@ -481,6 +555,30 @@ test('one-off sessions: delete asks first, then removes it', async () => {
 
   await waitFor(() => expect(screen.queryByText('Open day')).toBeNull())
   expect(calls.some((c) => c.route.startsWith('DELETE'))).toBe(true)
+})
+
+test('one-off sessions: deleting one over live bookings says how many', async () => {
+  today()
+  withGroups({
+    [`GET ${api(sessionsRoute)}`]: [200, [openDay]],
+    [`DELETE ${api(`${sessionsRoute}/${openDay.id}`)}`]: [
+      409,
+      { statusCode: 409, code: 'hasBookings', appointmentIds: ['a', 'b'] },
+    ],
+  })
+  renderApp('/schedule')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Delete Open day' }),
+  )
+  fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
+
+  expect(await screen.findByText(/2 bookings in the way/)).toBeTruthy()
+  expect(
+    screen
+      .getByRole('link', { name: 'Open the calendar' })
+      .getAttribute('href'),
+  ).toBe('/calendar?date=2026-11-19')
 })
 
 async function fillSession() {

@@ -12,6 +12,8 @@ import {
   useGroupsControllerRemove,
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
+import { BookingsInTheWay } from '@/pages/schedule/BookingsInTheWay'
+import { bookingsInTheWay } from '@/pages/schedule/hasBookings'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { GroupCard } from './GroupCard'
 import { GroupDates } from './GroupDates'
@@ -38,6 +40,8 @@ export function Groups({ staffId }: { staffId: string }) {
         }),
     },
   })
+
+  const inTheWay = bookingsInTheWay(remove.error)
 
   return (
     <section className={styles.hours}>
@@ -95,11 +99,14 @@ export function Groups({ staffId }: { staffId: string }) {
       >
         {t('schedule.groups.add')}
       </Button>
-      {remove.isError && (
-        <Typography variant="t4" color="red-300" role="alert">
-          {t('schedule.groups.deleteFailed')}
-        </Typography>
-      )}
+      {remove.isError &&
+        (inTheWay !== undefined ? (
+          <BookingsInTheWay count={inTheWay} staffId={staffId} />
+        ) : (
+          <Typography variant="t4" color="red-300" role="alert">
+            {t('schedule.groups.deleteFailed')}
+          </Typography>
+        ))}
       {editing && (
         <GroupDialog
           staffId={staffId}

@@ -12,6 +12,9 @@ import {
   useGroupsControllerSessions,
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
+import { dateIn } from '@/dates'
+import { BookingsInTheWay } from '@/pages/schedule/BookingsInTheWay'
+import { bookingsInTheWay } from '@/pages/schedule/hasBookings'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { useNow } from '@/useNow'
 import { sessionWhenText } from './groupText'
@@ -34,6 +37,10 @@ export function OneOffSessions({ staffId }: { staffId: string }) {
         }),
     },
   })
+  const inTheWay = bookingsInTheWay(remove.error)
+  // The day of the session whose delete was refused: where its bookings are.
+  const refused = list.data?.find((s) => s.id === remove.variables?.id)
+  const removedDay = refused && dateIn(new Date(refused.startsAt), timeZone)
   const coming = list.data?.filter((s) => Date.parse(s.endsAt) > now.getTime())
 
   return (
@@ -100,11 +107,14 @@ export function OneOffSessions({ staffId }: { staffId: string }) {
       >
         {t('schedule.sessions.add')}
       </Button>
-      {remove.isError && (
-        <Typography variant="t4" color="red-300" role="alert">
-          {t('schedule.sessions.deleteFailed')}
-        </Typography>
-      )}
+      {remove.isError &&
+        (inTheWay !== undefined ? (
+          <BookingsInTheWay count={inTheWay} date={removedDay} />
+        ) : (
+          <Typography variant="t4" color="red-300" role="alert">
+            {t('schedule.sessions.deleteFailed')}
+          </Typography>
+        ))}
       {adding && (
         <OneOffSessionDialog
           staffId={staffId}

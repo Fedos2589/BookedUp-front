@@ -11,6 +11,8 @@ import {
   useGroupsControllerCancel,
 } from '@/api/schedule/schedule'
 import { useCurrentBusiness } from '@/business/currentBusiness'
+import { BookingsInTheWay } from '@/pages/schedule/BookingsInTheWay'
+import { bookingsInTheWay } from '@/pages/schedule/hasBookings'
 import { focusFirstInvalid } from '@/pages/schedule/hours/focusFirstInvalid'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 import { cancelProblem } from './groupDays'
@@ -45,6 +47,7 @@ export function CancelDateDialog({
   })
 
   useUnsavedInput(date !== '')
+  const inTheWay = bookingsInTheWay(cancel.error)
 
   return (
     <Modal
@@ -99,11 +102,14 @@ export function CancelDateDialog({
             setProblem(undefined)
           }}
         />
-        {cancel.isError && (
-          <Typography variant="t4" color="red-300" role="alert">
-            {t('schedule.groups.cancelFailed')}
-          </Typography>
-        )}
+        {cancel.isError &&
+          (inTheWay !== undefined ? (
+            <BookingsInTheWay count={inTheWay} date={date} />
+          ) : (
+            <Typography variant="t4" color="red-300" role="alert">
+              {t('schedule.groups.cancelFailed')}
+            </Typography>
+          ))}
       </form>
     </Modal>
   )

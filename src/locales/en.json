@@ -242,6 +242,9 @@
   },
   "schedule": {
     "title": "Schedule",
+    "bookingsInTheWay_one": "{{count}} booking in the way — cancel or move it first",
+    "bookingsInTheWay_other": "{{count}} bookings in the way — cancel or move them first",
+    "openCalendar": "Open the calendar",
     "loadFailed": "Couldn't load the schedule",
     "noSchedule": "There is no schedule to edit yet. Add one on the Team page.",
     "noScheduleAskOwner": "You have no schedule yet. Ask the owner or an admin to add one.",

@@ -21,6 +21,8 @@ import { fieldErrorText } from '@/forms/fieldError'
 import styles from '@/pages/schedule/Schedule.module.scss'
 import { focusFirstInvalid } from '@/pages/schedule/hours/focusFirstInvalid'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
+import { BookingsInTheWay } from '@/pages/schedule/BookingsInTheWay'
+import { bookingsInTheWay } from '@/pages/schedule/hasBookings'
 import { conflictTitle } from './conflictTitle'
 import {
   DESCRIPTION_MAX,
@@ -88,6 +90,7 @@ export function GroupDialog({
       : focusFirstInvalid(formRef.current)
 
   const conflict = conflictTitle(save.error)
+  const inTheWay = bookingsInTheWay(save.error)
 
   return (
     <Modal
@@ -201,6 +204,8 @@ export function GroupDialog({
           <Typography variant="t4" color="red-300" role="alert">
             {t('schedule.groups.conflict', { title: conflict })}
           </Typography>
+        ) : inTheWay !== undefined ? (
+          <BookingsInTheWay count={inTheWay} staffId={staffId} />
         ) : (
           save.isError && (
             <Typography variant="t4" color="red-300" role="alert">
