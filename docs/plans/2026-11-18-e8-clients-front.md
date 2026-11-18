@@ -142,7 +142,7 @@ known phone shows Anna, Masha, «a new person»; a new person sends `guardianId`
 
 > If the component doesn't fit one session, split into «search» and «new client with phone lookup».
 
-### - [ ] F6: the booking dialog and walk-ins use the picker
+### - [x] F6: the booking dialog and walk-ins use the picker
 
 **Files:** `src/pages/calendar/{NewBookingModal.tsx,SessionModal.tsx,useClientForm.ts,newBooking.ts}`,
 delete `ClientFields.tsx` if unused, `calendar.test.tsx`, locales.

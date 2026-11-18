@@ -3,8 +3,10 @@ import { useEffect, useEffectEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Combobox } from 'ted-ui/Combobox'
+import { Typography } from 'ted-ui/Typography'
 
 import type { ClientsControllerList200ItemsItem as Client } from '@/api/generated.schemas'
+import { useUnsavedInput } from '@/pwa/unsavedInput'
 import { useClientSearch } from '@/pages/clients/useClientSearch'
 import { type PickerValue, pickerValue } from './pickerValue'
 import { NewClientFields } from './NewClientFields'
@@ -15,8 +17,11 @@ import { useAccountOf } from './useAccountOf'
 // account's people). `onChange` gets what the booking takes, or undefined
 // while the inputs are incomplete.
 export function ClientPicker({
+  error,
   onChange,
 }: {
+  // The back's refusal of the chosen person, worded.
+  error?: string
   onChange: (value: PickerValue | undefined) => void
 }) {
   const { t, i18n } = useTranslation()
@@ -31,6 +36,7 @@ export function ClientPicker({
   const { query, setQuery, found } = useClientSearch()
   const account = useAccountOf(country, phone)
 
+  useUnsavedInput(!!picked || name !== '' || phone !== '')
   const value = pickerValue({
     mode,
     picked,
@@ -78,6 +84,11 @@ export function ClientPicker({
           onPhone={setPhone}
           onChoice={setChoice}
         />
+      )}
+      {error && (
+        <Typography variant="t4" color="red-300" role="alert">
+          {error}
+        </Typography>
       )}
       <Button
         variant="ghost"

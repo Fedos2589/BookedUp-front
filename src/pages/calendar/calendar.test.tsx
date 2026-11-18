@@ -32,6 +32,7 @@ const staff = [
 test('without a master there is nothing to show, and the page says why', async () => {
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, []],
   })
   renderApp('/calendar')
@@ -48,6 +49,7 @@ test('the navigation opens the calendar and the arrows move its date', async () 
   vi.setSystemTime(new Date('2026-11-17T12:00:00Z'))
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
   })
   const { router } = renderApp('/')
@@ -74,6 +76,7 @@ const query = (from: string, to: string, staffId?: string) =>
 const booking = {
   id: '00000000-0000-4000-8000-000000000031',
   staffId: staff[0].id,
+  clientId: '00000000-0000-4000-8000-000000000041',
   startsAt: '2026-11-17T03:00:00Z', // 10:00 in Bangkok
   endsAt: '2026-11-17T04:00:00Z',
   status: 'BOOKED',
@@ -92,6 +95,7 @@ const petr = {
 test('the day view has a column per master and the bookings of the day, past meetings asked for', async () => {
   const api = fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, petr]],
     [`GET /api/businesses/${businessId}/appointments?${query(day, day)}`]: [
       200,
@@ -113,6 +117,7 @@ test('the day view has a column per master and the bookings of the day, past mee
 test('the week view has a column per day of one master', async () => {
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [`GET /api/businesses/${businessId}/appointments?${query('2026-11-16', '2026-11-22', staff[0].id)}`]:
       [200, [booking]],
@@ -143,6 +148,7 @@ test("last week's meeting stays on the grid and says it is over", async () => {
   }
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [`GET /api/businesses/${businessId}/appointments?${query('2026-11-16', '2026-11-22', staff[0].id)}`]:
       [200, []],
@@ -160,6 +166,7 @@ test("last week's meeting stays on the grid and says it is over", async () => {
 test('a failed load says so and offers to try again', async () => {
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [`GET /api/businesses/${businessId}/appointments?${query(day, day)}`]: [
       500,
@@ -192,15 +199,34 @@ const beforeFree = () => {
   vi.setSystemTime(new Date('2026-11-17T01:00:00Z'))
 }
 
-async function fillNewBooking() {
-  fireEvent.click(await screen.findByRole('button', { name: 'New booking' }))
-  const dialog = await screen.findByRole('dialog')
-  fireEvent.change(within(dialog).getByLabelText('Name'), {
-    target: { value: 'Olga' },
-  })
+// The picker's way to a person not in the base: the phone first, then a name.
+async function fillNewClient(dialog: HTMLElement) {
+  fireEvent.click(within(dialog).getByRole('button', { name: 'New client' }))
   fireEvent.change(within(dialog).getByLabelText('Phone'), {
     target: { value: '+66 81 234 5678' },
   })
+  fireEvent.change(await within(dialog).findByLabelText('Name'), {
+    target: { value: 'Olga' },
+  })
+}
+
+// What the picker asks of the back while the client is typed: the search list
+// and the lookup of the phone — nobody yet.
+const clientRoutes: Record<string, [number, unknown]> = {
+  [`GET /api/businesses/${businessId}/clients?limit=20`]: [
+    200,
+    { items: [], total: 0 },
+  ],
+  [`GET /api/businesses/${businessId}/clients?phone=%2B66812345678`]: [
+    200,
+    { items: [], total: 0 },
+  ],
+}
+
+async function fillNewBooking() {
+  fireEvent.click(await screen.findByRole('button', { name: 'New booking' }))
+  const dialog = await screen.findByRole('dialog')
+  await fillNewClient(dialog)
   return dialog
 }
 
@@ -209,6 +235,7 @@ test('a free hour is booked from the New booking button and shows on the grid', 
   let created = false
   const api = fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: () => [200, created ? [booking] : []],
     [slotsUrl]: [200, [free]],
@@ -237,6 +264,7 @@ test('a slot taken meanwhile says so, keeps the dialog, reloads the grid and dro
   let taken = false
   const api = fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: [200, []],
     [slotsUrl]: () => [200, taken ? [] : [free]],
@@ -279,6 +307,7 @@ test('hours that have passed, or are the masters of nobody on screen, are not of
   }
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, archived]],
     [listUrl]: [200, []],
     [slotsUrl]: [
@@ -331,6 +360,7 @@ test('a seat is added to a group meeting and the count grows', async () => {
   let added = false
   const api = fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [meetingUrls.list]: () => [
       200,
@@ -351,12 +381,7 @@ test('a seat is added to a group meeting and the count grows', async () => {
   const dialog = await screen.findByRole('dialog')
   expect(within(dialog).getByText('Free 2 of 3')).toBeTruthy()
   expect(within(dialog).getByText('Anna')).toBeTruthy()
-  fireEvent.change(within(dialog).getByLabelText('Name'), {
-    target: { value: 'Olga' },
-  })
-  fireEvent.change(within(dialog).getByLabelText('Phone'), {
-    target: { value: '+66 81 234 5678' },
-  })
+  await fillNewClient(dialog)
   fireEvent.click(within(dialog).getByRole('button', { name: 'Add' }))
 
   expect(await within(dialog).findByText('Free 1 of 3')).toBeTruthy()
@@ -375,6 +400,7 @@ test('a full meeting, and one that is over, show their seats and cannot take ano
   vi.setSystemTime(new Date('2026-11-17T01:00:00Z'))
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [meetingUrls.list]: [200, [seatOf('a1', 'Anna')]],
     [meetingUrls.slots]: [
@@ -397,6 +423,7 @@ test("last week's meeting shows its bookings and no way to add one", async () =>
   vi.setSystemTime(new Date('2026-11-25T12:00:00Z'))
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [meetingUrls.list]: [200, [seatOf('a1', 'Anna')]],
     [meetingUrls.slots]: [200, [judo]],
@@ -417,6 +444,7 @@ test('a meeting that is on takes a walk-in, even over capacity, not a seat', asy
   let added = false
   const api = fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [meetingUrls.list]: [200, [seatOf('a1', 'Anna')]],
     [meetingUrls.slots]: () => [
@@ -434,12 +462,7 @@ test('a meeting that is on takes a walk-in, even over capacity, not a seat', asy
 
   const dialog = await screen.findByRole('dialog')
   expect(within(dialog).queryByRole('button', { name: 'Add' })).toBeNull()
-  fireEvent.change(within(dialog).getByLabelText('Name'), {
-    target: { value: 'Olga' },
-  })
-  fireEvent.change(within(dialog).getByLabelText('Phone'), {
-    target: { value: '+66 81 234 5678' },
-  })
+  await fillNewClient(dialog)
   fireEvent.click(
     within(dialog).getByRole('button', { name: 'Add someone who came' }),
   )
@@ -464,6 +487,7 @@ test.each([
     vi.setSystemTime(new Date('2026-11-17T01:00:00Z'))
     fakeApi({
       'GET /api/me': [200, account],
+      ...clientRoutes,
       [`GET /api/businesses/${businessId}/staff`]: [200, staff],
       [meetingUrls.list]: [200, [seatOf('a1', 'Anna')]],
       [meetingUrls.slots]: [200, [judo]],
@@ -477,12 +501,7 @@ test.each([
     fireEvent.click(await within(grid).findByText(/Judo: 2 of 3 free/))
 
     const dialog = await screen.findByRole('dialog')
-    fireEvent.change(within(dialog).getByLabelText('Name'), {
-      target: { value: 'Olga' },
-    })
-    fireEvent.change(within(dialog).getByLabelText('Phone'), {
-      target: { value: '+66 81 234 5678' },
-    })
+    await fillNewClient(dialog)
     fireEvent.click(within(dialog).getByRole('button', { name: 'Add' }))
 
     expect(await within(dialog).findByText(text)).toBeTruthy()
@@ -493,6 +512,7 @@ test('a phone that already has an account says so on the phone field and keeps t
   beforeFree()
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: [200, []],
     [slotsUrl]: [200, [free]],
@@ -517,6 +537,162 @@ test('a phone that already has an account says so on the phone field and keeps t
   expect(within(dialog).queryByText(/just taken/)).toBeNull()
 })
 
+const clientsUrl = `GET /api/businesses/${businessId}/clients`
+const vera = {
+  id: '00000000-0000-4000-8000-000000000051',
+  name: 'Vera',
+  phone: '+66811111111',
+  guardianId: null,
+  guardian: null,
+  note: null,
+  noShowCount: 0,
+}
+const veraKid = {
+  ...vera,
+  id: '00000000-0000-4000-8000-000000000052',
+  name: 'Vova',
+  phone: null,
+  guardianId: vera.id,
+  guardian: { id: vera.id, name: 'Vera', phone: vera.phone },
+}
+const found = (...items: object[]): [number, unknown] => [
+  200,
+  { items, total: items.length },
+]
+
+async function pickFromBase(dialog: HTMLElement, name: RegExp) {
+  fireEvent.keyDown(within(dialog).getByRole('combobox', { name: 'Client' }), {
+    key: 'ArrowDown',
+  })
+  fireEvent.click(await screen.findByRole('option', { name }))
+}
+
+test('a client from the base is booked by id', async () => {
+  beforeFree()
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    ...clientRoutes,
+    [`${clientsUrl}?limit=20`]: found(vera, veraKid),
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: [200, []],
+    [slotsUrl]: [200, [free]],
+    [`POST /api/businesses/${businessId}/appointments`]: [201, booking],
+  })
+  renderApp(`/calendar?date=${day}`)
+  fireEvent.click(await screen.findByRole('button', { name: 'New booking' }))
+  const dialog = await screen.findByRole('dialog')
+  const book = () =>
+    within(dialog).getByRole('button', { name: 'Book' }) as HTMLButtonElement
+  expect(book().disabled).toBe(true)
+
+  await pickFromBase(dialog, /Vova/)
+  fireEvent.change(within(dialog).getByLabelText('Note'), {
+    target: { value: ' Second visit ' },
+  })
+  expect(book().disabled).toBe(false)
+  fireEvent.click(book())
+
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  expect(api.calls.find((c) => c.route.startsWith('POST'))?.body).toEqual({
+    staffId: staff[0].id,
+    startsAt: free.startsAt,
+    endsAt: free.endsAt,
+    clientId: veraKid.id,
+    note: 'Second visit',
+  })
+})
+
+test('a new person on a known phone is booked with the holder as guardian', async () => {
+  beforeFree()
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    ...clientRoutes,
+    [`${clientsUrl}?phone=%2B66812345678`]: found(vera, veraKid),
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: [200, []],
+    [slotsUrl]: [200, [free]],
+    [`POST /api/businesses/${businessId}/appointments`]: [201, booking],
+  })
+  renderApp(`/calendar?date=${day}`)
+  fireEvent.click(await screen.findByRole('button', { name: 'New booking' }))
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.click(within(dialog).getByRole('button', { name: 'New client' }))
+  fireEvent.change(within(dialog).getByLabelText('Phone'), {
+    target: { value: '+66 81 234 5678' },
+  })
+  fireEvent.click(
+    await within(dialog).findByRole('radio', {
+      name: 'A new person on this number',
+    }),
+  )
+  fireEvent.change(within(dialog).getByLabelText('Name'), {
+    target: { value: 'Olga' },
+  })
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Book' }))
+
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  expect(api.calls.find((c) => c.route.startsWith('POST'))?.body).toEqual({
+    staffId: staff[0].id,
+    startsAt: free.startsAt,
+    endsAt: free.endsAt,
+    newClient: { name: 'Olga', guardianId: vera.id },
+  })
+})
+
+test('a walk-in by a client from the base is sent by id, and the picker empties after', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T11:20:00Z'))
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    ...clientRoutes,
+    [`${clientsUrl}?limit=20`]: found(vera),
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [meetingUrls.list]: [200, [seatOf('a1', 'Anna')]],
+    [meetingUrls.slots]: [
+      200,
+      [{ ...judo, capacity: 1, booked: 1, full: true }],
+    ],
+    [`POST /api/businesses/${businessId}/appointments/walk-ins`]: [
+      201,
+      { ...seatOf('a2', 'Vera'), status: 'DONE' },
+    ],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Judo: 0 of 1 free/))
+  const dialog = await screen.findByRole('dialog')
+  await pickFromBase(dialog, /Vera/)
+  const add = () =>
+    within(dialog).getByRole('button', {
+      name: 'Add someone who came',
+    }) as HTMLButtonElement
+  fireEvent.click(add())
+
+  await waitFor(() => expect(add().disabled).toBe(true))
+  expect(
+    api.calls.find((c) => c.route.includes('walk-ins'))?.body,
+  ).toMatchObject({ clientId: vera.id, groupId: judo.groupId })
+})
+
+test("a booking's dialog links the client's name to their card", async () => {
+  beforeFree()
+  fakeApi({
+    'GET /api/me': [200, account],
+    ...clientRoutes,
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [listUrl]: [200, [booking]],
+    [slotsUrl]: [200, []],
+  })
+  renderApp(`/calendar?date=${day}`)
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  fireEvent.click(await within(grid).findByText(/Olga/))
+  const dialog = await screen.findByRole('dialog')
+
+  expect(
+    within(dialog).getByRole('link', { name: 'Olga' }).getAttribute('href'),
+  ).toBe(`/clients/${booking.clientId}`)
+})
+
 const statusUrl = `PATCH /api/businesses/${businessId}/appointments/${booking.id}/status`
 
 test('a booking is confirmed from its dialog and shows the new status', async () => {
@@ -524,6 +700,7 @@ test('a booking is confirmed from its dialog and shows the new status', async ()
   let status = 'BOOKED'
   const api = fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: () => [200, [{ ...booking, status }]],
     [slotsUrl]: [200, []],
@@ -557,6 +734,7 @@ test('a started booking can be marked done or a no-show, and a no-show reloads t
   vi.setSystemTime(new Date('2026-11-17T03:30:00Z')) // inside its hour
   const api = fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: [200, [booking]],
     [slotsUrl]: [200, []],
@@ -585,6 +763,7 @@ test('a booking is cancelled after asking, also a past one, and leaves the grid'
   let cancelled = false
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: () => [200, cancelled ? [] : [booking]],
     [slotsUrl]: [200, []],
@@ -614,6 +793,7 @@ test('a status change the back refuses says so and keeps the dialog', async () =
   beforeFree()
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: [200, [booking]],
     [slotsUrl]: [200, []],
@@ -652,6 +832,7 @@ test('a booking is moved to a free hour of the day and the grid reloads', async 
   let moved = false
   const api = fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: () => [
       200,
@@ -693,6 +874,7 @@ test('a time taken meanwhile says so, keeps the dialog and reloads the free hour
   beforeFree()
   const api = fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: [200, [booking]],
     [slotsUrl]: [200, []],
@@ -724,6 +906,7 @@ test('a finished booking has no Move', async () => {
   beforeFree()
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: [200, [{ ...booking, status: 'DONE' }]],
     [slotsUrl]: [200, []],
@@ -746,6 +929,7 @@ test("the move offers the booking's own master first, not whoever comes first", 
   beforeFree()
   const api = fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, petr]],
     [listUrl]: [200, [booking]],
     [slotsUrl]: [200, []],
@@ -779,6 +963,7 @@ test('an hour taken meanwhile is not swapped for another: Move waits for a new c
   let taken = false
   const api = fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, petr]],
     [listUrl]: [200, [booking]],
     [slotsUrl]: [200, []],
@@ -804,6 +989,7 @@ test('a cancel the back refuses says so in the question', async () => {
   beforeFree()
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, staff],
     [listUrl]: [200, [booking]],
     [slotsUrl]: [200, []],
@@ -833,6 +1019,7 @@ test('Back from the move keeps the chosen hour, in the same single dialog', asyn
   beforeFree()
   fakeApi({
     'GET /api/me': [200, account],
+    ...clientRoutes,
     [`GET /api/businesses/${businessId}/staff`]: [200, [...staff, petr]],
     [listUrl]: [200, [booking]],
     [slotsUrl]: [200, []],
