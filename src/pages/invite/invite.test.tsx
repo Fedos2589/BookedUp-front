@@ -1,8 +1,9 @@
 // @vitest-environment happy-dom
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { focusManager } from '@tanstack/react-query'
+import { act, cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
-import { account, fakeApi } from '@/test/fakeApi'
+import { account, deferredAnswer, fakeApi } from '@/test/fakeApi'
 import { renderApp } from '@/test/renderApp'
 
 afterEach(() => {
@@ -42,6 +43,31 @@ test('a guest sees who invites them, where and as whom', async () => {
     await screen.findByRole('heading', { name: 'Join Judo Kids' }),
   ).toBeTruthy()
   expect(screen.getByText('Anna invites you as a master')).toBeTruthy()
+})
+
+test('a guest keeps what they typed when the window comes back into focus', async () => {
+  // A second GET /me, if the page makes one, never answers: the query is pending.
+  const again = deferredAnswer()
+  let meCalls = 0
+  fakeApi({
+    'GET /api/me': () => (meCalls++ ? again.answer() : [401]),
+    [PREVIEW]: [200, preview],
+  })
+  renderApp(`/invite/${TOKEN}`)
+  await screen.findByRole('heading', { name: 'Join Judo Kids' })
+  fill('Your name', 'Anna Smith')
+
+  // Coming back to the window must not take the form away.
+  act(() => {
+    focusManager.setFocused(false)
+    focusManager.setFocused(true)
+  })
+  await new Promise((r) => setTimeout(r, 50))
+
+  expect(
+    (screen.getByLabelText('Your name', { exact: true }) as HTMLInputElement)
+      .value,
+  ).toBe('Anna Smith')
 })
 
 test('without an inviter the page still says the role', async () => {
