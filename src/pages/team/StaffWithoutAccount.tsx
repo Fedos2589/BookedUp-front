@@ -103,6 +103,7 @@ export function StaffWithoutAccount({
         />
         <Button
           type="submit"
+          className={styles.addButton}
           variant="solid"
           colorScheme="black"
           loading={add.isPending}

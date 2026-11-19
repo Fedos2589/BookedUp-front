@@ -12,12 +12,11 @@ export function DashboardError() {
   const router = useRouter()
 
   return (
-    <main className={styles.shell}>
+    <main className={styles.error}>
       <Typography variant="h3" component="h1">
         {t('dashboard.loadFailed')}
       </Typography>
       <Button
-        className={styles.retry}
         variant="solid"
         colorScheme="black"
         onClick={() => void router.invalidate()}

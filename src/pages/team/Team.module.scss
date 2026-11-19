@@ -77,12 +77,18 @@
 }
 
 // A name field and its button on one line, level with the field's box (the
-// label sits above it). An error under the field lifts the button: fine.
+// label sits above it). Aligned from the top so an error under the field
+// does not lift the button.
 .addForm {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: var(--spacing-8);
+}
+
+// Label height (t3 line, 20px) + the gap under it (4px) in the kit's Input.
+.addButton {
+  margin-top: 24px;
 }
 
 .addName {
