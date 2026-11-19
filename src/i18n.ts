@@ -2,7 +2,7 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { registerUIKitTranslations } from 'ted-ui/i18n/resources'
 
-import { detectLanguage, LANGUAGES } from './language'
+import { initialLanguage, LANGUAGES } from './language'
 import en from '@/locales/en.json'
 import ru from '@/locales/ru.json'
 
@@ -11,10 +11,10 @@ export const resources = {
   ru: { translation: ru },
 } as const
 
-// The browser's preferred language when the app speaks it, English otherwise.
-// No switcher yet; it will override this.
+// The language the person saved; without one, the browser's preferred language
+// when the app speaks it, English otherwise.
 void i18n.use(initReactI18next).init({
-  lng: detectLanguage(navigator.languages ?? [navigator.language]),
+  lng: initialLanguage(navigator.languages ?? [navigator.language]),
   fallbackLng: 'en',
   supportedLngs: LANGUAGES,
   resources,
