@@ -61,6 +61,10 @@
     "dateTaken": "This date is already in the list. Change it there.",
     "phone": "Enter a valid phone number"
   },
+  "header": {
+    "home": "Home",
+    "language": "Language"
+  },
   "common": {
     "loading": "Loading",
     "tryAgain": "Try again",
