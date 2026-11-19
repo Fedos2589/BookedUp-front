@@ -1,6 +1,12 @@
 // @vitest-environment happy-dom
-import { focusManager } from '@tanstack/react-query'
-import { act, cleanup, fireEvent, screen } from '@testing-library/react'
+import { focusManager, onlineManager } from '@tanstack/react-query'
+import {
+  act,
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+} from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { account, deferredAnswer, fakeApi } from '@/test/fakeApi'
@@ -9,6 +15,8 @@ import { renderApp } from '@/test/renderApp'
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
+  focusManager.setFocused(undefined)
+  onlineManager.setOnline(true)
 })
 
 const TOKEN = 'tok_EN-abc123'
@@ -45,29 +53,55 @@ test('a guest sees who invites them, where and as whom', async () => {
   expect(screen.getByText('Anna invites you as a master')).toBeTruthy()
 })
 
-test('a guest keeps what they typed when the window comes back into focus', async () => {
-  // A second GET /me, if the page makes one, never answers: the query is pending.
-  const again = deferredAnswer()
-  let meCalls = 0
-  fakeApi({
-    'GET /api/me': () => (meCalls++ ? again.answer() : [401]),
-    [PREVIEW]: [200, preview],
-  })
+// Both ways the app asks GET /me again on its own: the window comes back, the
+// network comes back. A guest has no answer yet, so the query goes pending.
+const comingBack = {
+  'the window comes back into focus': () => {
+    focusManager.setFocused(false)
+    focusManager.setFocused(true)
+  },
+  'the network comes back': () => {
+    onlineManager.setOnline(false)
+    onlineManager.setOnline(true)
+  },
+}
+
+test.each(Object.entries(comingBack))(
+  'a guest keeps what they typed when %s',
+  async (_, comeBack) => {
+    // The second GET /me answers only when the test says so: the query is pending.
+    const again = deferredAnswer()
+    let meCalls = 0
+    fakeApi({
+      'GET /api/me': () => (meCalls++ ? again.answer() : [401]),
+      [PREVIEW]: [200, preview],
+    })
+    renderApp(`/invite/${TOKEN}`)
+    await screen.findByRole('heading', { name: 'Join Judo Kids' })
+    fill('Your name', 'Anna Smith')
+
+    act(comeBack)
+
+    await waitFor(() => expect(meCalls).toBe(2))
+    expect(
+      (screen.getByLabelText('Your name', { exact: true }) as HTMLInputElement)
+        .value,
+    ).toBe('Anna Smith')
+  },
+)
+
+test('a guest who signed in elsewhere is offered to join when they come back', async () => {
+  const api = fakeApi({ 'GET /api/me': [401], [PREVIEW]: [200, preview] })
   renderApp(`/invite/${TOKEN}`)
   await screen.findByRole('heading', { name: 'Join Judo Kids' })
-  fill('Your name', 'Anna Smith')
 
-  // Coming back to the window must not take the form away.
+  api.set('GET /api/me', [200, boris])
   act(() => {
     focusManager.setFocused(false)
     focusManager.setFocused(true)
   })
-  await new Promise((r) => setTimeout(r, 50))
 
-  expect(
-    (screen.getByLabelText('Your name', { exact: true }) as HTMLInputElement)
-      .value,
-  ).toBe('Anna Smith')
+  expect(await screen.findByRole('button', { name: 'Join' })).toBeTruthy()
 })
 
 test('without an inviter the page still says the role', async () => {

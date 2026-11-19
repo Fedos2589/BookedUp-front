@@ -25,14 +25,13 @@ export function InvitePage({ token }: { token: string }) {
   // Any failure to learn the session reads as a guest: the form is still the
   // right thing to show, and a registered email is told to sign in.
   // The same check as the routes': an answer sign in has just cached is trusted.
-  // A guest has no answer to keep: a refetch on focus would put the query back
-  // to pending and unmount the form with what they typed.
-  const me = useQuery({
-    ...sessionCheckOptions(),
-    refetchOnWindowFocus: (query) => query.state.data !== undefined,
-  })
+  const me = useQuery(sessionCheckOptions())
 
-  if (preview.isPending || me.isPending) return <PagePending />
+  // Loading only until the first answer. A guest's GET /me never has data, so
+  // each refetch (the window or the network coming back) sets isPending again:
+  // the form would unmount with what they typed.
+  if (preview.isPending || (me.isPending && !me.isFetched))
+    return <PagePending />
   if (preview.isError)
     return isGone(preview.error) ? (
       <InvitationGone />
