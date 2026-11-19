@@ -27,7 +27,11 @@ export function InvitePage({ token }: { token: string }) {
   // The same check as the routes': an answer sign in has just cached is trusted.
   const me = useQuery(sessionCheckOptions())
 
-  if (preview.isPending || me.isPending) return <PagePending />
+  // Loading only until the first answer. A guest's GET /me never has data, so
+  // each refetch (the window or the network coming back) sets isPending again:
+  // the form would unmount with what they typed.
+  if (preview.isPending || (me.isPending && !me.isFetched))
+    return <PagePending />
   if (preview.isError)
     return isGone(preview.error) ? (
       <InvitationGone />
