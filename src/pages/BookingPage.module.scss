@@ -1,4 +1,5 @@
-// Page padding: clear of the installed iOS app's 8px top strip (AGENTS.md).
+// Under the app's header (AppHeader), which clears the installed iOS app's 8px
+// top strip (AGENTS.md).
 .page {
-  padding: var(--spacing-24) var(--spacing-16);
+  padding: var(--spacing-16) var(--spacing-16) var(--spacing-24);
 }

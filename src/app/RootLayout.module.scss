@@ -1,0 +1,6 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  // The screen's height comes from #root (global.scss), once.
+  flex: 1;
+}

@@ -4,7 +4,6 @@ import {
   createRoute,
   createRouter,
   type RouterHistory,
-  Outlet,
 } from '@tanstack/react-router'
 
 import { redirectIfSignedIn, requireAccount } from '@/auth/session'
@@ -26,11 +25,12 @@ import { SchedulePage } from '@/pages/schedule/SchedulePage'
 import { SettingsPage } from '@/pages/settings/SettingsPage'
 import { SignUpPage } from '@/pages/signUp/SignUpPage'
 import { TeamPage } from '@/pages/team/TeamPage'
+import { RootLayout } from './RootLayout'
 
 type RouterContext = { queryClient: QueryClient }
 
 const rootRoute = createRootRouteWithContext<RouterContext>()({
-  component: Outlet,
+  component: RootLayout,
 })
 
 // The business cabinet (owner, admin, master): signed-in only, checked once

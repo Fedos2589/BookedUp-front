@@ -1,5 +1,9 @@
 .page {
   display: flex;
   justify-content: center;
+  // Takes the screen below the header (RootLayout): short content sits in the
+  // middle of it; taller content grows the page, so it scrolls from the top.
+  align-items: center;
+  flex: 1;
   padding: var(--spacing-32) var(--spacing-16);
 }
