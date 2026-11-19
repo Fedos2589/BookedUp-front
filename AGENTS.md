@@ -23,7 +23,7 @@ SPA на React + TypeScript + Vite. Бэк — репозиторий BookedUp-b
 - `src/apiFetch.ts` — fetch, через который ходит весь сгенерированный клиент (`mutator` в `orval.config.ts`): ответ не 2xx бросает `ApiError` со `status` и телом, хуки отдают само тело.
 - `src/auth/session.ts` — сессия: `requireAccount` (beforeLoad кабинета: 401 на `GET /me` → `/sign-in`) и `redirectIfSignedIn` (страницы входа и регистрации). Ответ `/me` моложе 30 с берётся из кэша, старше — запрашивается снова.
 - `src/app/createApp.ts` — кэш запросов и роутер вместе. 401 на любой запрос при известном аккаунте = сессия кончилась: кэш очищается, переход на `/sign-in`. Отдельно обрабатывать 401 в экранах не нужно.
-- `src/app/RootLayout.tsx` — обёртка всех маршрутов: `AppHeader` (логотип и выбор языка) над страницей. Язык хранится в localStorage (`src/language.ts`).
+- `src/app/RootLayout.tsx` — обёртка всех маршрутов: `AppHeader` (логотип и выбор языка) над страницей; на публичной странице записи логотип без ссылки (она вела бы клиента во вход кабинета). Язык хранится в localStorage (`src/language.ts`).
 - `src/i18n.ts` — i18next, строки в `src/locales/{en,ru}.json`; `src/monitoring.ts` — Sentry и PostHog, включаются только по env.
 - Кабинет, текущий бизнес, роли, «Команда» — скилл `front-cabinet`.
 - `src/dates.ts` — dayjs с utc/timezone; всё время на экране — через него и в часовом поясе бизнеса (`timeIn(момент, business.timeZone)`).

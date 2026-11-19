@@ -20,12 +20,12 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { InvitationGone } from '@/pages/invite/InvitationGone'
 import { InvitePage } from '@/pages/invite/InvitePage'
 import { invitationTokenOf } from '@/pages/invite/invitationToken'
-import { RootLayout } from '@/app/RootLayout'
 import { PagePending } from '@/pages/PagePending'
 import { SchedulePage } from '@/pages/schedule/SchedulePage'
 import { SettingsPage } from '@/pages/settings/SettingsPage'
 import { SignUpPage } from '@/pages/signUp/SignUpPage'
 import { TeamPage } from '@/pages/team/TeamPage'
+import { RootLayout } from './RootLayout'
 
 type RouterContext = { queryClient: QueryClient }
 

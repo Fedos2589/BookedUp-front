@@ -20,7 +20,7 @@ export function CabinetLayout() {
 
   return (
     <div className={styles.shell}>
-      <header className={styles.header}>
+      <div className={styles.header}>
         {business && (
           <nav className={styles.nav} aria-label={t('cabinet.navigation')}>
             <Typography variant="t3">
@@ -60,7 +60,7 @@ export function CabinetLayout() {
           </nav>
         )}
         <SignOut />
-      </header>
+      </div>
       {business ? (
         <CurrentBusiness value={business}>
           <Outlet />

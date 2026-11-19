@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { detectLanguage, initialLanguage, saveLanguage } from './language'
 
@@ -16,6 +16,7 @@ test.each([
 
 describe('chosen language', () => {
   beforeEach(() => localStorage.clear())
+  afterEach(() => vi.restoreAllMocks())
 
   test('a saved choice wins over the browser language', () => {
     saveLanguage('en')
@@ -40,6 +41,5 @@ describe('chosen language', () => {
     })
     expect(initialLanguage(['ru-RU'])).toBe('ru')
     expect(() => saveLanguage('en')).not.toThrow()
-    vi.restoreAllMocks()
   })
 })

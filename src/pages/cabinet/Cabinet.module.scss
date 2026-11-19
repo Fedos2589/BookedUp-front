@@ -1,11 +1,11 @@
 // The cabinet's frame: every signed-in page sits in it (CabinetLayout), and its
-// error screen uses the same padding. Page padding keeps the first line clear
-// of the installed iOS app's 8px top strip (AGENTS.md).
+// error screen uses the same padding. It sits under the app's header
+// (AppHeader), which clears the installed iOS app's 8px top strip (AGENTS.md).
 .shell {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-24);
-  padding: var(--spacing-24) var(--spacing-16);
+  padding: var(--spacing-16) var(--spacing-16) var(--spacing-24);
 }
 
 .header {

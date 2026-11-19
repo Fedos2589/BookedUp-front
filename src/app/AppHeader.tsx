@@ -1,24 +1,32 @@
 import { Link } from '@tanstack/react-router'
-import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
 import styles from './AppHeader.module.scss'
 import { LanguageSelect } from './LanguageSelect'
 
-// The top of every page: the logo (home) and the language. The cabinet's own
-// navigation sits below it.
-export function AppHeader() {
-  const { t } = useTranslation()
+// The top of every page: the logo and the language. The logo leads to the
+// business's home, so a page that isn't the business's (the public booking
+// page) shows it without the link.
+export function AppHeader({ linkedLogo }: { linkedLogo: boolean }) {
+  const logo = (
+    <>
+      <img src="/favicon.svg" alt="" width="28" height="28" />
+      <Typography variant="h5" component="span">
+        BookedUp
+      </Typography>
+    </>
+  )
 
   return (
-    <header className={styles.header}>
-      <Link to="/" className={styles.logo} aria-label={t('header.home')}>
-        <img src="/favicon.svg" alt="" width="28" height="28" />
-        <Typography variant="h5" component="span">
-          BookedUp
-        </Typography>
-      </Link>
+    <div className={styles.header}>
+      {linkedLogo ? (
+        <Link to="/" className={styles.logo}>
+          {logo}
+        </Link>
+      ) : (
+        <div className={styles.logo}>{logo}</div>
+      )}
       <LanguageSelect />
-    </header>
+    </div>
   )
 }

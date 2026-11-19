@@ -14,7 +14,7 @@ export function detectLanguage(preferred: readonly string[]): Language {
 
 const STORAGE_KEY = 'language'
 
-const isLanguage = (value: string | null): value is Language =>
+export const isLanguage = (value: string | null): value is Language =>
   LANGUAGES.some((language) => language === value)
 
 // The language the person picked, kept in this browser. Storage can be
