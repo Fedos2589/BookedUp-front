@@ -8,6 +8,15 @@
   padding: var(--spacing-16) var(--spacing-16) var(--spacing-24);
 }
 
+// Every page's column (the <main> of each) is centred in the frame: equal
+// space left and right (its own max-width only caps it). A new page gets this
+// without styling it (see the front-cabinet skill). Pages stay at the top: only
+// whole-screen states (.error) are centred vertically.
+.shell > main {
+  width: 100%;
+  margin-inline: auto;
+}
+
 .header {
   display: flex;
   flex-wrap: wrap;
@@ -50,7 +59,15 @@
   gap: var(--spacing-8);
 }
 
-// The error screen's retry button: its own width, not the column's.
-.retry {
-  align-self: flex-start;
+// The cabinet's error screen: a whole-screen state under the header, so it
+// sits in the middle (shorter than the screen) or scrolls from the top.
+.error {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-16);
+  padding: var(--spacing-32) var(--spacing-16);
+  text-align: center;
 }
