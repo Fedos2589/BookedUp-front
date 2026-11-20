@@ -128,9 +128,9 @@ test('the business settings render for a signed-in owner', async ({ page }) => {
   expect(await page.evaluate('document.documentElement.scrollWidth')).toBe(390)
 })
 
-// An account removed from its last business: no navigation, and sign out
-// stays where it is on every other cabinet screen — at the right (review of #6).
-test('the «no business» screen keeps sign out at the right', async ({
+// An account removed from its last business: no navigation, but sign out
+// is still there — on a phone in the burger's sheet; the header stays one row.
+test('the «no business» screen keeps sign out in the burger', async ({
   page,
 }) => {
   await page.route('**/api/me', (route) =>
@@ -156,9 +156,23 @@ test('the «no business» screen keeps sign out at the right', async ({
   })
   await expect(heading).toBeVisible()
   await expectClearOfTopEdge(heading)
-  const signOut = await page
-    .getByRole('button', { name: 'Sign out' })
-    .boundingBox()
-  // The cabinet's side padding is 16px.
-  expect(Math.round(signOut!.x + signOut!.width)).toBe(390 - 16)
+  const header = page.getByRole('banner')
+  expect((await header.boundingBox())!.height).toBeLessThan(80)
+  expect(await page.evaluate('document.documentElement.scrollWidth')).toBe(390)
+  await header.getByRole('button', { name: 'Menu' }).click()
+  await expect(
+    page.getByRole('dialog').getByRole('button', { name: 'Sign out' }),
+  ).toBeVisible()
+  // The language dropdown opens over the sheet and can be used.
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /Language/ })
+    .click()
+  await page.getByRole('button', { name: 'Русский' }).click()
+  await expect(
+    page.getByRole('dialog').getByRole('button', { name: 'Выйти' }),
+  ).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog', { name: 'Меню' })).toBeHidden()
+  await expect(header.getByRole('button', { name: 'Меню' })).toBeFocused()
 })

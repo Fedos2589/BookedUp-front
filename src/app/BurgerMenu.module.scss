@@ -1,0 +1,22 @@
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.link {
+  color: var(--color-blue-300);
+
+  &[aria-current='page'] {
+    color: var(--color-bw-black);
+    text-decoration: none;
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-16);
+  margin-top: var(--spacing-16);
+}

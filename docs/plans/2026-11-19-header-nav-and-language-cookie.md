@@ -54,12 +54,13 @@ this order, one session each, one branch `feature/header-nav`:
       keeps the frame and the page only. **Check:** tests find the navigation in the header; at 1440 px one
       row; `npm run test:e2e` passes.
       _Done: `SignOut` moved to `src/app/`; the store's empty list = the cabinet without a business (sign out, no links); the header is a `<header>` (banner)._
-- [ ] **T1c — the burger on a phone.** Files: `AppHeader.tsx` (+ a `BurgerMenu.tsx` beside it),
+- [x] **T1c — the burger on a phone.** Files: `AppHeader.tsx` (+ a `BurgerMenu.tsx` beside it),
       styles, tests. Under the `mobile` mixin: the logo and an `IconButton` (`aria-label`); it opens a
       `Modal` (`finalFocus` = the button) with the links, the language and «Sign out». A link closes it,
       Escape closes it, focus returns to the button. If `Modal` cannot be a side sheet / a menu, stop:
       that is a kit task (TedUI PR, tag, bump here), not a local override. **Check:** the test from the
       Check below; 390×844 one row, no horizontal overflow; `npm run test:e2e`.
+      _Done: `BurgerMenu` = `IconButton` + the kit's `Modal` (a bottom sheet on a phone — no kit change needed); `AppHeader` picks it with `useBreakpoints` in the cabinet only (one copy of the links in the DOM). The language dropdown opens over the sheet._
 
 ## T2. The language moves to the back and comes in a cookie
 
