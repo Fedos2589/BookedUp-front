@@ -94,69 +94,71 @@ export function SessionModal({
             ]),
       ]}
     >
-      <Typography variant="t2">
-        {over > 0
-          ? t('calendar.session.over', { capacity: slot.capacity, over })
-          : t('calendar.session.free', {
-              free: slot.capacity - slot.booked,
-              capacity: slot.capacity,
-            })}
-      </Typography>
-      {bookings.length === 0 ? (
-        <Typography variant="t4" color="grey-500">
-          {t('calendar.session.none')}
+      <div className={styles.session}>
+        <Typography variant="t2">
+          {over > 0
+            ? t('calendar.session.over', { capacity: slot.capacity, over })
+            : t('calendar.session.free', {
+                free: slot.capacity - slot.booked,
+                capacity: slot.capacity,
+              })}
         </Typography>
-      ) : (
-        <ul className={styles.seats} aria-label={t('calendar.session.list')}>
-          {bookings.map((b) => (
-            <li key={b.id}>
-              <Typography variant="t2">{b.clientName}</Typography>{' '}
-              <Typography variant="t4" color="grey-500">
-                {b.clientPhone}
+        {bookings.length === 0 ? (
+          <Typography variant="t4" color="grey-500">
+            {t('calendar.session.none')}
+          </Typography>
+        ) : (
+          <ul className={styles.seats} aria-label={t('calendar.session.list')}>
+            {bookings.map((b) => (
+              <li key={b.id}>
+                <Typography variant="t2">{b.clientName}</Typography>{' '}
+                <Typography variant="t4" color="grey-500">
+                  {b.clientPhone}
+                </Typography>
+              </li>
+            ))}
+          </ul>
+        )}
+        {mode === 'closed' ? (
+          <Typography variant="t4" color="grey-500" role="status">
+            {t(ended ? 'calendar.session.ended' : 'calendar.session.full')}
+          </Typography>
+        ) : (
+          <form
+            id={formId}
+            className={styles.form}
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault()
+              if (!booking.client) return
+              const data = {
+                staffId: slot.staffId,
+                startsAt: slot.startsAt,
+                endsAt: slot.endsAt,
+                ...booking.client,
+                ...(slot.groupId
+                  ? { groupId: slot.groupId }
+                  : slot.oneOffSessionId
+                    ? { oneOffSessionId: slot.oneOffSessionId }
+                    : {}),
+              }
+              const done = {
+                onSuccess: booking.reset,
+                onError: booking.onRefused,
+              }
+              if (mode === 'walkIn') walkIn.mutate({ businessId, data }, done)
+              else seat.mutate({ businessId, data }, done)
+            }}
+          >
+            <BookingClientFields state={booking} refused={add.error} />
+            {add.isError && !clientRefusalKey(add.error) && (
+              <Typography variant="t4" color="red-300" role="alert">
+                {refusal(conflictCode(add.error))}
               </Typography>
-            </li>
-          ))}
-        </ul>
-      )}
-      {mode === 'closed' ? (
-        <Typography variant="t4" color="grey-500" role="status">
-          {t(ended ? 'calendar.session.ended' : 'calendar.session.full')}
-        </Typography>
-      ) : (
-        <form
-          id={formId}
-          className={styles.form}
-          noValidate
-          onSubmit={(event) => {
-            event.preventDefault()
-            if (!booking.client) return
-            const data = {
-              staffId: slot.staffId,
-              startsAt: slot.startsAt,
-              endsAt: slot.endsAt,
-              ...booking.client,
-              ...(slot.groupId
-                ? { groupId: slot.groupId }
-                : slot.oneOffSessionId
-                  ? { oneOffSessionId: slot.oneOffSessionId }
-                  : {}),
-            }
-            const done = {
-              onSuccess: booking.reset,
-              onError: booking.onRefused,
-            }
-            if (mode === 'walkIn') walkIn.mutate({ businessId, data }, done)
-            else seat.mutate({ businessId, data }, done)
-          }}
-        >
-          <BookingClientFields state={booking} refused={add.error} />
-          {add.isError && !clientRefusalKey(add.error) && (
-            <Typography variant="t4" color="red-300" role="alert">
-              {refusal(conflictCode(add.error))}
-            </Typography>
-          )}
-        </form>
-      )}
+            )}
+          </form>
+        )}
+      </div>
     </Modal>
   )
 }
