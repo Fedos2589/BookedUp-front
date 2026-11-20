@@ -4,15 +4,6 @@
   gap: var(--spacing-16);
 }
 
-.link {
-  color: var(--color-blue-300);
-
-  &[aria-current='page'] {
-    color: var(--color-bw-black);
-    text-decoration: none;
-  }
-}
-
 .actions {
   display: flex;
   align-items: flex-start;

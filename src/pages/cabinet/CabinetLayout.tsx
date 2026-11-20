@@ -1,11 +1,8 @@
-import { useEffect } from 'react'
 import { Outlet } from '@tanstack/react-router'
 
 import { useMeControllerMeSuspense } from '@/api/account/account'
 import { CurrentBusiness, currentBusinessOf } from '@/business/currentBusiness'
 import { useFillsScreen } from '@/app/useFillsScreen'
-import { cabinetLinksFor } from '@/business/cabinetLinks'
-import { useCabinetMenu } from '@/app/cabinetMenu'
 import styles from './Cabinet.module.scss'
 import { NoBusiness } from './NoBusiness'
 
@@ -18,13 +15,6 @@ export function CabinetLayout() {
   const { data: account } = useMeControllerMeSuspense()
   const business = currentBusinessOf(account)
   const fillsScreen = useFillsScreen()
-  const setMenu = useCabinetMenu((state) => state.set)
-  const role = business?.role
-  useEffect(() => {
-    // An empty list is the cabinet without a business: no links, still sign out.
-    setMenu(role ? cabinetLinksFor(role) : [])
-    return () => setMenu(null)
-  }, [role, setMenu])
 
   return (
     <div className={fillsScreen ? styles.screenShell : styles.shell}>

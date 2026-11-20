@@ -159,7 +159,11 @@ test('the «no business» screen keeps sign out in the burger', async ({
   const header = page.getByRole('banner')
   expect((await header.boundingBox())!.height).toBeLessThan(80)
   expect(await page.evaluate('document.documentElement.scrollWidth')).toBe(390)
-  await header.getByRole('button', { name: 'Menu' }).click()
+  // The burger at the right edge, past the cabinet's 16px side padding.
+  const burger = header.getByRole('button', { name: 'Menu' })
+  const box = (await burger.boundingBox())!
+  expect(Math.round(box.x + box.width)).toBe(390 - 16)
+  await burger.click()
   await expect(
     page.getByRole('dialog').getByRole('button', { name: 'Sign out' }),
   ).toBeVisible()

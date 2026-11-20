@@ -22,19 +22,13 @@
   gap: var(--spacing-8) var(--spacing-16);
 }
 
-.link {
-  color: var(--color-blue-300);
-
-  // The router marks the page you are on (aria-current="page").
-  &[aria-current='page'] {
-    color: var(--color-bw-black);
-    text-decoration: none;
-  }
+// What stands at the right: the language and «Sign out», or the burger.
+.end {
+  margin-left: auto;
 }
 
-// The language and «Sign out» at the right, with or without the navigation.
 .actions {
-  margin-left: auto;
+  composes: end;
   display: flex;
   align-items: center;
   gap: var(--spacing-16);

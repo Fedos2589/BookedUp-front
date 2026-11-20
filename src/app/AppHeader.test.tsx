@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import {
+  act,
   cleanup,
   fireEvent,
   screen,
@@ -63,6 +64,39 @@ test('on a phone the cabinet header is the logo and a burger that opens the menu
     fireEvent.click(within(menu).getByRole('link', { name: 'Calendar' }))
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     expect(document.activeElement).toBe(burger)
+  } finally {
+    setViewport({ width: 1024, height: 768 })
+  }
+})
+
+test('on a phone the menu closes when the page changes without it (the Back button)', async () => {
+  setViewport({ width: 390, height: 844 })
+  try {
+    fakeApi({ 'GET /api/me': [200, account] })
+    const { router } = renderApp('/')
+    const header = await screen.findByRole('banner')
+    fireEvent.click(within(header).getByRole('button', { name: 'Menu' }))
+    await screen.findByRole('dialog')
+
+    await act(() => router.navigate({ to: '/calendar' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  } finally {
+    setViewport({ width: 1024, height: 768 })
+  }
+})
+
+test('on a phone the menu of an account without a business has sign out and no navigation', async () => {
+  setViewport({ width: 390, height: 844 })
+  try {
+    fakeApi({ 'GET /api/me': [200, { ...account, businesses: [] }] })
+    renderApp('/')
+    const header = await screen.findByRole('banner')
+    fireEvent.click(await within(header).findByRole('button', { name: 'Menu' }))
+    const menu = await screen.findByRole('dialog')
+
+    expect(within(menu).getByRole('button', { name: 'Sign out' })).toBeTruthy()
+    expect(within(menu).queryByRole('navigation')).toBeNull()
   } finally {
     setViewport({ width: 1024, height: 768 })
   }
