@@ -4,6 +4,7 @@ import { Typography } from 'ted-ui/Typography'
 
 import { useMeControllerMeSuspense } from '@/api/account/account'
 import { CurrentBusiness, currentBusinessOf } from '@/business/currentBusiness'
+import { useFillsScreen } from '@/app/useFillsScreen'
 import { roleCan } from '@/business/roles'
 import styles from './Cabinet.module.scss'
 import { NoBusiness } from './NoBusiness'
@@ -17,9 +18,10 @@ export function CabinetLayout() {
   // The cabinet route's beforeLoad has loaded it, so this never suspends.
   const { data: account } = useMeControllerMeSuspense()
   const business = currentBusinessOf(account)
+  const fillsScreen = useFillsScreen()
 
   return (
-    <div className={styles.shell}>
+    <div className={fillsScreen ? styles.screenShell : styles.shell}>
       <div className={styles.header}>
         {business && (
           <nav className={styles.nav} aria-label={t('cabinet.navigation')}>

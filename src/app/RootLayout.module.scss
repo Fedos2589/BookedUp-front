@@ -4,3 +4,10 @@
   // The screen's height comes from #root (global.scss), once.
   flex: 1;
 }
+
+// One screen high, for a page that scrolls inside itself (the calendar): the
+// frame is held to the height, and the page's own box takes what is left.
+.screen {
+  composes: layout;
+  height: 100dvh;
+}

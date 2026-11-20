@@ -39,6 +39,13 @@
   gap: var(--spacing-8);
 }
 
+.gridBox {
+  // The day grid is the page's scroll: it takes what is left of the screen.
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .gridBox:focus {
   outline: none;
 }
