@@ -48,11 +48,12 @@ this order, one session each, one branch `feature/header-nav`:
       `CabinetLayout`. **Check:** `roles.test.tsx` and the navigation tests pass unchanged;
       `npm run typecheck` and `npm run lint`.
       _Done: `AppHeader` does not read the store yet (an unused read fails lint) — T1b does, when it renders the links._
-- [ ] **T1b — one header on desktop.** Files: `AppHeader.tsx`, `AppHeader.module.scss`,
+- [x] **T1b — one header on desktop.** Files: `AppHeader.tsx`, `AppHeader.module.scss`,
       `CabinetLayout.tsx`, `SignOut.tsx`, `Cabinet.module.scss`, the cabinet tests. The navigation and
       «Sign out» move into the header (logo, links, language, sign out in one row); `CabinetLayout`
       keeps the frame and the page only. **Check:** tests find the navigation in the header; at 1440 px one
       row; `npm run test:e2e` passes.
+      _Done: `SignOut` moved to `src/app/`; the store's empty list = the cabinet without a business (sign out, no links); the header is a `<header>` (banner)._
 - [ ] **T1c — the burger on a phone.** Files: `AppHeader.tsx` (+ a `BurgerMenu.tsx` beside it),
       styles, tests. Under the `mobile` mixin: the logo and an `IconButton` (`aria-label`); it opens a
       `Modal` (`finalFocus` = the button) with the links, the language and «Sign out». A link closes it,

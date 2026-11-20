@@ -5,9 +5,9 @@ import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
 import { useSessionControllerSignOut } from '@/api/auth/auth'
-import styles from './Cabinet.module.scss'
+import styles from './SignOut.module.scss'
 
-// The cabinet header's «Sign out»: ends the session and goes to sign in.
+// The header's «Sign out» (the cabinet only): ends the session and goes to sign in.
 export function SignOut() {
   const { t } = useTranslation()
   const navigate = useNavigate()
