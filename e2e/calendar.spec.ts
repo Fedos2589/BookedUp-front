@@ -17,20 +17,31 @@ const json = (body: unknown) => ({
   body: JSON.stringify(body),
 })
 
-async function withStartedBooking(page: Page) {
-  // Midnight of today in Bangkok (UTC+7) has always started.
-  const today = new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10)
-  const booking = {
-    id: '00000000-0000-4000-8000-000000000031',
-    staffId,
-    startsAt: `${today}T00:00:00+07:00`,
-    endsAt: `${today}T00:45:00+07:00`,
-    status: 'BOOKED',
-    clientName: 'Olga',
-    clientPhone: '+66000000',
-    note: null,
-    groupId: null,
-    oneOffSessionId: null,
+// Today in Bangkok (UTC+7), where the business is.
+const bangkokDay = () =>
+  new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10)
+
+// The cabinet of one business with one master, and one booking on a day at
+// the hour `hourOn(day)` gives (Bangkok time). Opens the calendar on `day`.
+async function openCalendar(
+  page: Page,
+  day: string,
+  hourOn: (day: string) => number,
+) {
+  const bookingOn = (date: string) => {
+    const hour = String(hourOn(date)).padStart(2, '0')
+    return {
+      id: '00000000-0000-4000-8000-000000000031',
+      staffId,
+      startsAt: `${date}T${hour}:00:00+07:00`,
+      endsAt: `${date}T${hour}:45:00+07:00`,
+      status: 'BOOKED',
+      clientName: 'Olga',
+      clientPhone: '+66000000',
+      note: null,
+      groupId: null,
+      oneOffSessionId: null,
+    }
   }
   await page.route('**/api/me', (route) =>
     route.fulfill(
@@ -61,13 +72,20 @@ async function withStartedBooking(page: Page) {
       ]),
     ),
   )
-  await page.route('**/api/businesses/*/appointments?*', (route) =>
-    route.fulfill(json([booking])),
-  )
+  await page.route('**/api/businesses/*/appointments?*', (route) => {
+    const from = new URL(route.request().url()).searchParams.get('from')!
+    return route.fulfill(json([bookingOn(from)]))
+  })
   await page.route('**/api/businesses/*/slots?*', (route) =>
     route.fulfill(json([])),
   )
-  await page.goto(`/calendar?date=${today}`)
+  await page.goto(`/calendar?date=${day}`)
+  await page.getByText('Olga').waitFor()
+}
+
+// Midnight of today in Bangkok has always started.
+async function withStartedBooking(page: Page) {
+  await openCalendar(page, bangkokDay(), () => 0)
   await page.getByText('Olga').click()
 }
 
@@ -116,4 +134,37 @@ test('the page is one screen high and only the day grid scrolls', async ({
   expect(scrolls).toBe(true)
   // The booking is at 00:00: the grid opens at the top of the day.
   expect(await grid.evaluate((el) => el.scrollTop)).toBe(0)
+})
+
+// The grid opens on the first booking's hour, and a day opened again from the
+// cache opens on its own bookings, not where the last day was scrolled to.
+test('the day grid opens on the bookings of the day it shows', async ({
+  page,
+}) => {
+  const today = bangkokDay()
+  await openCalendar(page, today, (day) => (day === today ? 0 : 15))
+  const grid = page.locator('[class*="gridBox"]')
+  const hourAtTop = async (label: string) => {
+    const box = (await grid.boundingBox())!
+    const hour = (await grid.getByText(label, { exact: true }).boundingBox())!
+    return hour.y >= box.y && hour.y < box.y + box.height / 3
+  }
+
+  await page.getByRole('button', { name: 'Next day' }).click()
+  await grid.getByText('Olga').waitFor()
+  expect(await hourAtTop('15:00')).toBe(true)
+
+  await page.getByRole('button', { name: 'Previous day' }).click()
+  await grid.getByText('Olga').waitFor()
+  expect(await grid.evaluate((el) => el.scrollTop)).toBe(0)
+})
+
+// A short screen (a phone on its side) still shows a usable piece of the day:
+// the page scrolls instead of squeezing the grid away.
+test('on a short screen the day grid keeps its height', async ({ page }) => {
+  await page.setViewportSize({ width: 844, height: 390 })
+  await openCalendar(page, bangkokDay(), () => 0)
+
+  const grid = page.locator('[class*="gridBox"]')
+  expect((await grid.boundingBox())!.height).toBeGreaterThanOrEqual(240)
 })

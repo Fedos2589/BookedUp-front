@@ -16,13 +16,12 @@ import { BookingModal } from './BookingModal'
 import { NewBookingModal } from './NewBookingModal'
 import { joinMode, meetingOf } from './meetingOf'
 import { freeSlotsOf, slotAt } from './newBooking'
+import { GridBox } from './GridBox'
 import { SessionModal } from './SessionModal'
 import styles from './Calendar.module.scss'
 import { toColumns } from './toColumns'
-import { scrollToMinute } from './scrollToMinute'
 import { useCalendarData } from './useCalendarData'
 
-// With nothing on the day the grid shows the working day, not 24 hours.
 // Where the grid opens when the day has nothing on it: the working day, more or
 // less. The grid itself is always the whole day.
 const emptyDay = { startMinute: 8 * 60, endMinute: 20 * 60 }
@@ -48,8 +47,6 @@ export function CalendarGrid({
   const { t, i18n } = useTranslation()
   const now = useNow()
   const newButton = useRef<HTMLButtonElement>(null)
-  // The day, week and master the grid was last scrolled to the bookings for.
-  const openedAt = useRef('')
   // Where focus returns after a meeting's dialog: the grid items cannot take it.
   const gridBox = useRef<HTMLDivElement>(null)
   // The new-booking dialog, for the slot that was clicked, if any.
@@ -138,18 +135,10 @@ export function CalendarGrid({
       >
         {t('calendar.new.button')}
       </Button>
-      <div
-        ref={(box) => {
-          gridBox.current = box
-          // The page opens on the bookings, once for each day, week or master.
-          const opened = `${view}|${date}|${master.id}`
-          if (box && openedAt.current !== opened) {
-            openedAt.current = opened
-            scrollToMinute(box, firstLook.startMinute)
-          }
-        }}
-        tabIndex={-1}
-        className={styles.gridBox}
+      <GridBox
+        key={view === 'week' ? `week|${dates[0]}|${master.id}` : `day|${date}`}
+        ref={gridBox}
+        openAt={firstLook.startMinute}
       >
         <ScheduleGrid
           aria-label={t('calendar.grid')}
@@ -159,7 +148,7 @@ export function CalendarGrid({
           onEmptyClick={bookAt}
           onItemClick={(_, itemId) => setOpenItem(itemId)}
         />
-      </div>
+      </GridBox>
       {meeting && (
         <SessionModal
           businessId={businessId}
