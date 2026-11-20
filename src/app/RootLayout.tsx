@@ -1,6 +1,7 @@
 import { Outlet, useMatches } from '@tanstack/react-router'
 
 import { AppHeader } from './AppHeader'
+import { useFillsScreen } from './useFillsScreen'
 import styles from './RootLayout.module.scss'
 
 // The header, then the page (the router's Outlet). The page takes the rest of
@@ -12,8 +13,10 @@ export function RootLayout() {
     (match) => match.routeId !== '/book/$businessSlug',
   )
 
+  const fillsScreen = useFillsScreen()
+
   return (
-    <div className={styles.layout}>
+    <div className={fillsScreen ? styles.screen : styles.layout}>
       <AppHeader linkedLogo={linkedLogo} />
       <Outlet />
     </div>

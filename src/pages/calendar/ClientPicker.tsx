@@ -11,6 +11,7 @@ import { useClientSearch } from '@/pages/clients/useClientSearch'
 import { type PickerValue, pickerValue } from './pickerValue'
 import { NewClientFields } from './NewClientFields'
 import { useAccountOf } from './useAccountOf'
+import styles from './Calendar.module.scss'
 
 // The booking's client: found in the base by name or phone, or a new person
 // typed in (and, when their phone is already a client's, a choice among that
@@ -94,8 +95,9 @@ export function ClientPicker({
         </Typography>
       )}
       <Button
-        variant="ghost"
-        colorScheme="black"
+        variant="solid"
+        colorScheme="outline"
+        className={styles.pickerSwitch}
         onClick={() => setMode(mode === 'search' ? 'new' : 'search')}
       >
         {t(mode === 'search' ? 'calendar.picker.new' : 'calendar.picker.find')}

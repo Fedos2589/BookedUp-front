@@ -43,6 +43,13 @@
   gap: var(--spacing-8);
 }
 
+// Level with the middle of the time field's box, not the whole column: the
+// label (20px) and its gap (4px) sit above the 40px box, and an error under
+// it must not move the button. (40px box - 20px button) / 2 = 10px.
+.removeInterval {
+  margin-top: 34px;
+}
+
 .overrides {
   display: flex;
   flex-direction: column;
@@ -72,6 +79,12 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: var(--spacing-8);
+}
+
+.groupActions {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--spacing-8);
 }
 

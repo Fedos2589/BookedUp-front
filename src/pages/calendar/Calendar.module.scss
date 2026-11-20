@@ -24,6 +24,7 @@
   gap: var(--spacing-8);
 }
 
+.stack,
 .form {
   display: flex;
   flex-direction: column;
@@ -36,6 +37,15 @@
   list-style: none;
   display: grid;
   gap: var(--spacing-8);
+}
+
+.gridBox {
+  // The day grid is the page's scroll: it takes what is left of the screen,
+  // but no less than a few hours of the day. A screen too short for that (a
+  // phone on its side) scrolls the page instead of squeezing the grid away.
+  flex: 1;
+  min-height: 15rem;
+  overflow-y: auto;
 }
 
 .gridBox:focus {
@@ -56,6 +66,10 @@
   margin: 0;
   padding: 0;
   border: 0;
+}
+
+.pickerSwitch {
+  align-self: center;
 }
 
 .clientLink {

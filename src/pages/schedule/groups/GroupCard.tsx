@@ -68,36 +68,38 @@ export function GroupCard({
           )}
         </>
       )}
-      <Button
-        type="button"
-        variant="ghost"
-        colorScheme="black"
-        size="small"
-        aria-label={t('schedule.groups.edit', { title: group.title })}
-        onClick={onEdit}
-      >
-        {t('schedule.groups.editShort')}
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        colorScheme="black"
-        size="small"
-        aria-label={t('schedule.groups.dates', { title: group.title })}
-        onClick={onDates}
-      >
-        {t('schedule.groups.datesShort')}
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        colorScheme="black"
-        size="small"
-        aria-label={t('schedule.groups.delete', { title: group.title })}
-        onClick={onDelete}
-      >
-        {t('schedule.groups.deleteShort')}
-      </Button>
+      <div className={styles.groupActions}>
+        <Button
+          type="button"
+          variant="ghost"
+          colorScheme="blue"
+          size="small"
+          aria-label={t('schedule.groups.edit', { title: group.title })}
+          onClick={onEdit}
+        >
+          {t('schedule.groups.editShort')}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          colorScheme="black"
+          size="small"
+          aria-label={t('schedule.groups.dates', { title: group.title })}
+          onClick={onDates}
+        >
+          {t('schedule.groups.datesShort')}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          colorScheme="red"
+          size="small"
+          aria-label={t('schedule.groups.delete', { title: group.title })}
+          onClick={onDelete}
+        >
+          {t('schedule.groups.deleteShort')}
+        </Button>
+      </div>
     </li>
   )
 }

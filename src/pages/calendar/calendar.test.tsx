@@ -114,6 +114,25 @@ test('the day view has a column per master and the bookings of the day, past mee
   )
 })
 
+test('the grid is the whole day, whatever the bookings, so the morning can be scrolled to', async () => {
+  fakeApi({
+    'GET /api/me': [200, account],
+    ...clientRoutes,
+    [`GET /api/businesses/${businessId}/staff`]: [200, staff],
+    [`GET /api/businesses/${businessId}/appointments?${query(day, day)}`]: [
+      200,
+      [booking],
+    ],
+    [`GET /api/businesses/${businessId}/slots?${query(day, day)}`]: [200, []],
+  })
+  renderApp(`/calendar?date=${day}`)
+
+  const grid = await screen.findByRole('group', { name: 'Bookings' })
+  await within(grid).findByText(/Olga/)
+  expect(within(grid).getByText('00:00')).toBeTruthy()
+  expect(within(grid).getByText('23:00')).toBeTruthy()
+})
+
 test('the week view has a column per day of one master', async () => {
   fakeApi({
     'GET /api/me': [200, account],

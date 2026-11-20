@@ -70,6 +70,7 @@ export function IntervalRow({
       />
       <IconButton
         size="small"
+        className={styles.removeInterval}
         colorScheme="transparent"
         aria-label={t('schedule.hours.removeInterval', { day: dayName })}
         onClick={onRemove}

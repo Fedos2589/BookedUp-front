@@ -16,13 +16,16 @@ import { BookingModal } from './BookingModal'
 import { NewBookingModal } from './NewBookingModal'
 import { joinMode, meetingOf } from './meetingOf'
 import { freeSlotsOf, slotAt } from './newBooking'
+import { GridBox } from './GridBox'
 import { SessionModal } from './SessionModal'
 import styles from './Calendar.module.scss'
 import { toColumns } from './toColumns'
 import { useCalendarData } from './useCalendarData'
 
-// With nothing on the day the grid shows the working day, not 24 hours.
+// Where the grid opens when the day has nothing on it: the working day, more or
+// less. The grid itself is always the whole day.
 const emptyDay = { startMinute: 8 * 60, endMinute: 20 * 60 }
+const wholeDay = { startMinute: 0, endMinute: 24 * 60 }
 
 // The grid of a day (a column per master) or of a week (the master's days),
 // loaded with the past meetings. Loading and a failed load are its own states.
@@ -93,7 +96,7 @@ export function CalendarGrid({
         }),
     },
   })
-  const range = visibleRange(
+  const firstLook = visibleRange(
     columns.flatMap((c) => c.items),
     emptyDay,
   )
@@ -132,16 +135,20 @@ export function CalendarGrid({
       >
         {t('calendar.new.button')}
       </Button>
-      <div ref={gridBox} tabIndex={-1} className={styles.gridBox}>
+      <GridBox
+        key={view === 'week' ? `week|${dates[0]}|${master.id}` : `day|${date}`}
+        ref={gridBox}
+        openAt={firstLook.startMinute}
+      >
         <ScheduleGrid
           aria-label={t('calendar.grid')}
           columns={columns}
-          startMinute={range.startMinute}
-          endMinute={range.endMinute}
+          startMinute={wholeDay.startMinute}
+          endMinute={wholeDay.endMinute}
           onEmptyClick={bookAt}
           onItemClick={(_, itemId) => setOpenItem(itemId)}
         />
-      </div>
+      </GridBox>
       {meeting && (
         <SessionModal
           businessId={businessId}

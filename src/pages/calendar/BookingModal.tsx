@@ -186,42 +186,44 @@ export function BookingModal({
         ...(main ? [statusButton(main)] : []),
       ]}
     >
-      <Typography variant="t1">
-        <Link
-          to="/clients/$clientId"
-          params={{ clientId: booking.clientId }}
-          className={styles.clientLink}
-        >
-          {booking.clientName}
-        </Link>
-      </Typography>
-      <Typography variant="t2">
-        <a href={`tel:${booking.clientPhone}`}>{booking.clientPhone}</a>
-      </Typography>
-      {booking.note && (
-        <Typography variant="t3" color="grey-500">
-          {t('calendar.booking.note')}: {booking.note}
-        </Typography>
-      )}
-      <Typography variant="t2" role="status">
-        {t(`calendar.booking.status.${booking.status}`)}
-      </Typography>
-      <div className={styles.actions}>
-        {canMove(booking.status) && (
-          <Button
-            variant="ghost"
-            colorScheme="black"
-            disabled={busy}
-            onClick={() => setStep('move')}
+      <div className={styles.stack}>
+        <Typography variant="t1">
+          <Link
+            to="/clients/$clientId"
+            params={{ clientId: booking.clientId }}
+            className={styles.clientLink}
           >
-            {t('calendar.booking.moveAction')}
-          </Button>
+            {booking.clientName}
+          </Link>
+        </Typography>
+        <Typography variant="t2">
+          <a href={`tel:${booking.clientPhone}`}>{booking.clientPhone}</a>
+        </Typography>
+        {booking.note && (
+          <Typography variant="t3" color="grey-500">
+            {t('calendar.booking.note')}: {booking.note}
+          </Typography>
         )}
-        {others.map((status) => (
-          <Button key={status} {...statusButton(status)} variant="ghost" />
-        ))}
+        <Typography variant="t2" role="status">
+          {t(`calendar.booking.status.${booking.status}`)}
+        </Typography>
+        <div className={styles.actions}>
+          {canMove(booking.status) && (
+            <Button
+              variant="ghost"
+              colorScheme="black"
+              disabled={busy}
+              onClick={() => setStep('move')}
+            >
+              {t('calendar.booking.moveAction')}
+            </Button>
+          )}
+          {others.map((status) => (
+            <Button key={status} {...statusButton(status)} variant="ghost" />
+          ))}
+        </div>
+        {failure}
       </div>
-      {failure}
     </Modal>
   )
 }

@@ -17,6 +17,19 @@
   margin-inline: auto;
 }
 
+// The shell of a page one screen high: it takes the rest under the header, and
+// so does the page, whose own box then scrolls.
+.screenShell {
+  composes: shell;
+  flex: 1;
+  min-height: 0;
+}
+
+.screenShell > main {
+  flex: 1;
+  min-height: 0;
+}
+
 .header {
   display: flex;
   flex-wrap: wrap;
