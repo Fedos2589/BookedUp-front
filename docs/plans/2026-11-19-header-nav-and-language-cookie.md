@@ -33,6 +33,35 @@ open from it. The public booking page and the sign-in screens keep the logo and 
 links a role is allowed, language, sign out), a link closes it and goes there, focus returns to the
 burger, Escape closes. At desktop width no burger. No horizontal overflow. `npm run test:e2e` passes.
 
+### Split of T1 into session-sized tasks (2026-11-20)
+
+T1 is too big for one session: the header is at the root, the navigation depends on the account and
+role (`GET /me`, loaded by the cabinet route), and the kit has no ready side menu (`NavMobileHeader`
+is a header with a «back» arrow; a burger is most likely `IconButton` + `Modal`). Three tasks, in
+this order, one session each, one branch `feature/header-nav`:
+
+- [x] **T1a — the header gets the cabinet's menu.** Files: `src/app/AppHeader.tsx`,
+      `src/app/RootLayout.tsx`, `src/pages/cabinet/CabinetLayout.tsx`, a new module for the menu entries
+      (links by role, as the `roleCan` checks now in `CabinetLayout`), a context the cabinet route fills.
+      The header reads the context: no menu on sign-in, sign-up, invite and the booking page (they never
+      call `GET /me`). Nothing changes on screen yet; the links by role live in one module instead of
+      `CabinetLayout`. **Check:** `roles.test.tsx` and the navigation tests pass unchanged;
+      `npm run typecheck` and `npm run lint`.
+      _Done: `AppHeader` does not read the store yet (an unused read fails lint) — T1b does, when it renders the links._
+- [x] **T1b — one header on desktop.** Files: `AppHeader.tsx`, `AppHeader.module.scss`,
+      `CabinetLayout.tsx`, `SignOut.tsx`, `Cabinet.module.scss`, the cabinet tests. The navigation and
+      «Sign out» move into the header (logo, links, language, sign out in one row); `CabinetLayout`
+      keeps the frame and the page only. **Check:** tests find the navigation in the header; at 1440 px one
+      row; `npm run test:e2e` passes.
+      _Done: `SignOut` moved to `src/app/`; the store's empty list = the cabinet without a business (sign out, no links); the header is a `<header>` (banner)._
+- [x] **T1c — the burger on a phone.** Files: `AppHeader.tsx` (+ a `BurgerMenu.tsx` beside it),
+      styles, tests. Under the `mobile` mixin: the logo and an `IconButton` (`aria-label`); it opens a
+      `Modal` (`finalFocus` = the button) with the links, the language and «Sign out». A link closes it,
+      Escape closes it, focus returns to the button. If `Modal` cannot be a side sheet / a menu, stop:
+      that is a kit task (TedUI PR, tag, bump here), not a local override. **Check:** the test from the
+      Check below; 390×844 one row, no horizontal overflow; `npm run test:e2e`.
+      _Done: `BurgerMenu` = `IconButton` + the kit's `Modal` (a bottom sheet on a phone — no kit change needed); `AppHeader` picks it with `useBreakpoints` in the cabinet only (one copy of the links in the DOM). The language dropdown opens over the sheet._
+
 ## T2. The language moves to the back and comes in a cookie
 
 **Today:** the language is in `localStorage` (`src/language.ts`): a new device or the installed PWA

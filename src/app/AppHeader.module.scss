@@ -1,7 +1,7 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  flex-wrap: wrap;
   gap: var(--spacing-16);
   // Clear of the installed iOS app's top strip, like every page (AGENTS.md).
   padding: var(--spacing-16) var(--spacing-16) 0;
@@ -13,4 +13,23 @@
   gap: var(--spacing-8);
   color: var(--color-bw-black);
   text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-8) var(--spacing-16);
+}
+
+// What stands at the right: the language and «Sign out», or the burger.
+.end {
+  margin-left: auto;
+}
+
+.actions {
+  composes: end;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
 }

@@ -30,41 +30,6 @@
   min-height: 0;
 }
 
-.header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-8) var(--spacing-16);
-}
-
-.nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-8) var(--spacing-16);
-}
-
-.link {
-  color: var(--color-blue-300);
-
-  // The router marks the page you are on (aria-current="page").
-  &[aria-current='page'] {
-    color: var(--color-bw-black);
-    text-decoration: none;
-  }
-}
-
-.signOut {
-  // At the right with or without the navigation: on the «no business»
-  // screen it is the header's only child, and space-between would put it left.
-  margin-left: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--spacing-4);
-}
-
 // A cabinet page's own column: its heading, then its content.
 .page {
   display: flex;

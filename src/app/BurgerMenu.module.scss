@@ -1,0 +1,13 @@
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-16);
+  margin-top: var(--spacing-16);
+}

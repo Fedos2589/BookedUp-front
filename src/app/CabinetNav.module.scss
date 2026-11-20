@@ -1,0 +1,9 @@
+.link {
+  color: var(--color-blue-300);
+
+  // The router marks the page you are on (aria-current="page").
+  &[aria-current='page'] {
+    color: var(--color-bw-black);
+    text-decoration: none;
+  }
+}
