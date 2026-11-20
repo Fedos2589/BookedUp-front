@@ -40,13 +40,14 @@ role (`GET /me`, loaded by the cabinet route), and the kit has no ready side men
 is a header with a «back» arrow; a burger is most likely `IconButton` + `Modal`). Three tasks, in
 this order, one session each, one branch `feature/header-nav`:
 
-- [ ] **T1a — the header gets the cabinet's menu.** Files: `src/app/AppHeader.tsx`,
+- [x] **T1a — the header gets the cabinet's menu.** Files: `src/app/AppHeader.tsx`,
       `src/app/RootLayout.tsx`, `src/pages/cabinet/CabinetLayout.tsx`, a new module for the menu entries
       (links by role, as the `roleCan` checks now in `CabinetLayout`), a context the cabinet route fills.
       The header reads the context: no menu on sign-in, sign-up, invite and the booking page (they never
       call `GET /me`). Nothing changes on screen yet; the links by role live in one module instead of
       `CabinetLayout`. **Check:** `roles.test.tsx` and the navigation tests pass unchanged;
       `npm run typecheck` and `npm run lint`.
+      _Done: `AppHeader` does not read the store yet (an unused read fails lint) — T1b does, when it renders the links._
 - [ ] **T1b — one header on desktop.** Files: `AppHeader.tsx`, `AppHeader.module.scss`,
       `CabinetLayout.tsx`, `SignOut.tsx`, `Cabinet.module.scss`, the cabinet tests. The navigation and
       «Sign out» move into the header (logo, links, language, sign out in one row); `CabinetLayout`

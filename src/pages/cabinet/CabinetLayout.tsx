@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link, Outlet } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
@@ -5,7 +6,8 @@ import { Typography } from 'ted-ui/Typography'
 import { useMeControllerMeSuspense } from '@/api/account/account'
 import { CurrentBusiness, currentBusinessOf } from '@/business/currentBusiness'
 import { useFillsScreen } from '@/app/useFillsScreen'
-import { roleCan } from '@/business/roles'
+import { cabinetLinksFor } from '@/business/cabinetLinks'
+import { useCabinetMenu } from '@/app/cabinetMenu'
 import styles from './Cabinet.module.scss'
 import { NoBusiness } from './NoBusiness'
 import { SignOut } from './SignOut'
@@ -19,46 +21,26 @@ export function CabinetLayout() {
   const { data: account } = useMeControllerMeSuspense()
   const business = currentBusinessOf(account)
   const fillsScreen = useFillsScreen()
+  const links = business ? cabinetLinksFor(business.role) : []
+  const setMenu = useCabinetMenu((state) => state.set)
+  const role = business?.role
+  useEffect(() => {
+    setMenu(role ? cabinetLinksFor(role) : null)
+    return () => setMenu(null)
+  }, [role, setMenu])
 
   return (
     <div className={fillsScreen ? styles.screenShell : styles.shell}>
       <div className={styles.header}>
         {business && (
           <nav className={styles.nav} aria-label={t('cabinet.navigation')}>
-            <Typography variant="t3">
-              <Link to="/" className={styles.link}>
-                {t('cabinet.dashboard')}
-              </Link>
-            </Typography>
-            <Typography variant="t3">
-              <Link to="/calendar" className={styles.link}>
-                {t('cabinet.calendar')}
-              </Link>
-            </Typography>
-            <Typography variant="t3">
-              <Link to="/clients" className={styles.link}>
-                {t('cabinet.clients')}
-              </Link>
-            </Typography>
-            <Typography variant="t3">
-              <Link to="/schedule" className={styles.link}>
-                {t('cabinet.schedule')}
-              </Link>
-            </Typography>
-            {roleCan(business.role, 'viewSettings') && (
-              <Typography variant="t3">
-                <Link to="/settings" className={styles.link}>
-                  {t('cabinet.settings')}
+            {links.map(({ to, label }) => (
+              <Typography key={to} variant="t3">
+                <Link to={to} className={styles.link}>
+                  {t(label)}
                 </Link>
               </Typography>
-            )}
-            {roleCan(business.role, 'viewTeam') && (
-              <Typography variant="t3">
-                <Link to="/team" className={styles.link}>
-                  {t('cabinet.team')}
-                </Link>
-              </Typography>
-            )}
+            ))}
           </nav>
         )}
         <SignOut />
