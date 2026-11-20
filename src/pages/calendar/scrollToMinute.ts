@@ -9,7 +9,8 @@ export function scrollToMinute(box: HTMLElement, minute: number) {
   const body = box.querySelector<HTMLElement>(
     '[aria-labelledby] > :nth-child(2)',
   )
-  if (!body) return
+  // The top of the day is the top of the grid, with its column names.
+  if (!body || minute <= 0) return
   const top =
     body.getBoundingClientRect().top -
     box.getBoundingClientRect().top +

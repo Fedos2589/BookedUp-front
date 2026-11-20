@@ -101,3 +101,19 @@ test('a started booking’s dialog fits a phone: one main action in the footer',
     expect(box.y + box.height).toBeLessThanOrEqual(footerTop)
   }
 })
+
+// The calendar is one screen high: the page does not scroll, the day grid
+// does (the header stays in view), and it opens on the first booking's hour.
+test('the page is one screen high and only the day grid scrolls', async ({
+  page,
+}) => {
+  await withStartedBooking(page)
+  await page.keyboard.press('Escape')
+
+  expect(await page.evaluate('document.documentElement.scrollHeight')).toBe(844)
+  const grid = page.locator('[class*="gridBox"]')
+  const scrolls = await grid.evaluate((el) => el.scrollHeight > el.clientHeight)
+  expect(scrolls).toBe(true)
+  // The booking is at 00:00: the grid opens at the top of the day.
+  expect(await grid.evaluate((el) => el.scrollTop)).toBe(0)
+})
