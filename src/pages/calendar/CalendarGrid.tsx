@@ -141,7 +141,7 @@ export function CalendarGrid({
       <div
         ref={(box) => {
           gridBox.current = box
-          // Opens on the bookings, once for each day, week or master.
+          // The page opens on the bookings, once for each day, week or master.
           const opened = `${view}|${date}|${master.id}`
           if (box && openedAt.current !== opened) {
             openedAt.current = opened

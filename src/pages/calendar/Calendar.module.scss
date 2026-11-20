@@ -39,12 +39,6 @@
   gap: var(--spacing-8);
 }
 
-.gridBox {
-  // The grid is the whole day; the box scrolls it, opening on the bookings.
-  max-height: 70dvh;
-  overflow-y: auto;
-}
-
 .gridBox:focus {
   outline: none;
 }
