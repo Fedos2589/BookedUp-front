@@ -12,8 +12,7 @@
 // space left and right (its own max-width only caps it). A new page gets this
 // without styling it (see the front-cabinet skill). Pages stay at the top: only
 // whole-screen states (.error) are centred vertically.
-.shell > main,
-.screenShell > main {
+.shell > main {
   width: 100%;
   margin-inline: auto;
 }

@@ -76,6 +76,8 @@ const calendarRoute = createRoute({
   getParentRoute: () => cabinetRoute,
   path: '/calendar',
   validateSearch: calendarSearchOf,
+  // One screen high: only the day grid scrolls (see useFillsScreen).
+  staticData: { fillsScreen: true },
   component: CalendarPage,
 })
 
@@ -169,5 +171,8 @@ export function createAppRouter(
 declare module '@tanstack/react-router' {
   interface Register {
     router: ReturnType<typeof createAppRouter>
+  }
+  interface StaticDataRouteOption {
+    fillsScreen?: boolean
   }
 }
