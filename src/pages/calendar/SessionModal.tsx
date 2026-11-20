@@ -94,7 +94,7 @@ export function SessionModal({
             ]),
       ]}
     >
-      <div className={styles.session}>
+      <div className={styles.stack}>
         <Typography variant="t2">
           {over > 0
             ? t('calendar.session.over', { capacity: slot.capacity, over })
