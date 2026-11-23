@@ -62,7 +62,7 @@ export function ManagePage() {
           <MoveBooking
             token={token}
             slug={business.slug}
-            staffId={booking.staffId}
+            booking={booking}
             onMoved={() => setMoving(false)}
             onBack={() => setMoving(false)}
           />

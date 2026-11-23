@@ -153,6 +153,12 @@ const movable = () => ({
     [
       slot(ANNA, '2026-11-25T09:00:00.000Z', '2026-11-25T10:00:00.000Z'),
       slot(ANNA, '2026-11-25T13:00:00.000Z', '2026-11-25T14:00:00.000Z'),
+      // A group meeting is not offered to an hours booking (finding 9).
+      {
+        ...slot(ANNA, '2026-11-25T11:00:00.000Z', '2026-11-25T12:00:00.000Z'),
+        title: 'Judo',
+        groupId: '44444444-4444-4444-8444-444444444444',
+      },
       // Another master's time is not offered: a move stays with the master.
       slot(
         '22222222-2222-4222-8222-222222222222',
@@ -177,6 +183,7 @@ test('moves the booking to another time of the same master', async () => {
 
   fireEvent.click(await openMove())
   expect(screen.queryByRole('radio', { name: /16:00/ })).toBeNull()
+  expect(screen.queryByRole('radio', { name: /12:00/ })).toBeNull()
   api.set(MANAGED, [
     200,
     managed({

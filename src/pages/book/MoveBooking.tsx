@@ -5,12 +5,14 @@ import { Button } from 'ted-ui/Button'
 import { Spinner } from 'ted-ui/Spinner/Spinner'
 import { Typography } from 'ted-ui/Typography'
 
+import type { PublicBookingControllerManaged200Booking } from '@/api/generated.schemas'
 import {
   getPublicBookingControllerManagedQueryKey,
   usePublicBookingControllerMove,
 } from '@/api/public-booking/public-booking'
 import styles from './BookingPage.module.scss'
 import { changeFailureKey, refusalOf } from './bookRefusal'
+import { movableSlots } from './movableSlots'
 import { updateSavedBooking } from './savedBooking'
 import { slotOfKey } from './slotsForPicker'
 import { TimeStep } from './TimeStep'
@@ -19,16 +21,16 @@ import { useBookingData } from './useBookingData'
 type Props = {
   token: string
   slug: string
-  staffId: string
+  booking: PublicBookingControllerManaged200Booking
   onMoved: () => void
   onBack: () => void
 }
 
-// «Change time»: the times of the booking's own master (a move never goes to
-// «any»), then PATCH. A time taken meanwhile is said so and the times are
+// «Change time»: the times of the booking's own master and kind (a move never
+// goes to «any» or from hours to a group), then PATCH. A time taken meanwhile is said so and the times are
 // refetched; any other refusal is said too, and the booking is asked for again
 // (if it has started it now shows read-only). Inside the page's own <main>.
-export function MoveBooking({ token, slug, staffId, onMoved, onBack }: Props) {
+export function MoveBooking({ token, slug, booking, onMoved, onBack }: Props) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { business, slots, today } = useBookingData(slug)
@@ -96,9 +98,9 @@ export function MoveBooking({ token, slug, staffId, onMoved, onBack }: Props) {
     <>
       <TimeStep
         business={business.data}
-        slots={slots.data}
+        slots={movableSlots(slots.data, booking)}
         today={today}
-        staff={staffId}
+        staff={booking.staffId}
         day={choice.day}
         slot={choice.slot}
         taken={taken}
@@ -118,7 +120,13 @@ export function MoveBooking({ token, slug, staffId, onMoved, onBack }: Props) {
           )
           move.mutate({
             token,
-            data: { staffId, startsAt, endsAt, groupId, oneOffSessionId },
+            data: {
+              staffId: booking.staffId,
+              startsAt,
+              endsAt,
+              groupId,
+              oneOffSessionId,
+            },
           })
         }}
       />
