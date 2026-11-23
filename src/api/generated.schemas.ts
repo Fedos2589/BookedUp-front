@@ -4,6 +4,14 @@
  * BookedUp API
  * OpenAPI spec version: 0.0.1
  */
+export type SignUpControllerSignUpBodyLocale = typeof SignUpControllerSignUpBodyLocale[keyof typeof SignUpControllerSignUpBodyLocale];
+
+
+export const SignUpControllerSignUpBodyLocale = {
+  en: 'en',
+  ru: 'ru',
+} as const;
+
 export type SignUpControllerSignUpBodyBusiness = {
   /**
      * @minLength 1
@@ -32,8 +40,17 @@ export type SignUpControllerSignUpBody = {
      * @maxLength 100
      */
   name: string;
+  locale?: SignUpControllerSignUpBodyLocale;
   business: SignUpControllerSignUpBodyBusiness;
 };
+
+export type SignUpControllerSignUp201UserLocale = typeof SignUpControllerSignUp201UserLocale[keyof typeof SignUpControllerSignUp201UserLocale];
+
+
+export const SignUpControllerSignUp201UserLocale = {
+  en: 'en',
+  ru: 'ru',
+} as const;
 
 export type SignUpControllerSignUp201User = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
@@ -41,6 +58,7 @@ export type SignUpControllerSignUp201User = {
   /** @pattern ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$ */
   email: string;
   name: string;
+  locale: SignUpControllerSignUp201UserLocale;
 };
 
 export type SignUpControllerSignUp201Business = {
@@ -105,12 +123,21 @@ export type SessionControllerSignInBody = {
   password: string;
 };
 
+export type SessionControllerSignIn200UserLocale = typeof SessionControllerSignIn200UserLocale[keyof typeof SessionControllerSignIn200UserLocale];
+
+
+export const SessionControllerSignIn200UserLocale = {
+  en: 'en',
+  ru: 'ru',
+} as const;
+
 export type SessionControllerSignIn200User = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
   /** @pattern ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$ */
   email: string;
   name: string;
+  locale: SessionControllerSignIn200UserLocale;
 };
 
 export type SessionControllerSignIn200BusinessesItemRole = typeof SessionControllerSignIn200BusinessesItemRole[keyof typeof SessionControllerSignIn200BusinessesItemRole];
@@ -149,12 +176,21 @@ export type SessionControllerSignIn400 = {
   message: string[];
 };
 
+export type MeControllerMe200UserLocale = typeof MeControllerMe200UserLocale[keyof typeof MeControllerMe200UserLocale];
+
+
+export const MeControllerMe200UserLocale = {
+  en: 'en',
+  ru: 'ru',
+} as const;
+
 export type MeControllerMe200User = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
   /** @pattern ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$ */
   email: string;
   name: string;
+  locale: MeControllerMe200UserLocale;
 };
 
 export type MeControllerMe200BusinessesItemRole = typeof MeControllerMe200BusinessesItemRole[keyof typeof MeControllerMe200BusinessesItemRole];
@@ -178,6 +214,31 @@ export type MeControllerMe200BusinessesItem = {
 export type MeControllerMe200 = {
   user: MeControllerMe200User;
   businesses: MeControllerMe200BusinessesItem[];
+};
+
+export type LocaleControllerChooseBodyLocale = typeof LocaleControllerChooseBodyLocale[keyof typeof LocaleControllerChooseBodyLocale];
+
+
+export const LocaleControllerChooseBodyLocale = {
+  en: 'en',
+  ru: 'ru',
+} as const;
+
+export type LocaleControllerChooseBody = {
+  locale: LocaleControllerChooseBodyLocale;
+};
+
+export type LocaleControllerChoose400StatusCode = typeof LocaleControllerChoose400StatusCode[keyof typeof LocaleControllerChoose400StatusCode];
+
+
+export const LocaleControllerChoose400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type LocaleControllerChoose400 = {
+  statusCode: LocaleControllerChoose400StatusCode;
+  error: string;
+  message: string[];
 };
 
 export type BusinessControllerDescribe200Role = typeof BusinessControllerDescribe200Role[keyof typeof BusinessControllerDescribe200Role];
@@ -929,30 +990,12 @@ export type GroupsControllerChange400 = {
   message: string[];
 };
 
-export type GroupsControllerChange409StatusCode = typeof GroupsControllerChange409StatusCode[keyof typeof GroupsControllerChange409StatusCode];
-
-
-export const GroupsControllerChange409StatusCode = {
-  NUMBER_409: 409,
-} as const;
-
-export type GroupsControllerChange409Error = typeof GroupsControllerChange409Error[keyof typeof GroupsControllerChange409Error];
-
-
-export const GroupsControllerChange409Error = {
-  Conflict: 'Conflict',
-} as const;
-
-export type GroupsControllerChange409Field = typeof GroupsControllerChange409Field[keyof typeof GroupsControllerChange409Field];
-
-
-export const GroupsControllerChange409Field = {
-  startMinute: 'startMinute',
-  startsAt: 'startsAt',
-  date: 'date',
-} as const;
-
-export type GroupsControllerChange409ConflictsWith = {
+export type GroupsControllerChange409 = {
+  statusCode: 409;
+  error: 'Conflict';
+  message: string;
+  field: 'startMinute' | 'startsAt' | 'date';
+  conflictsWith: {
   kind: 'group';
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -971,13 +1014,16 @@ export type GroupsControllerChange409ConflictsWith = {
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
   startsAt: string;
 };
-
-export type GroupsControllerChange409 = {
-  statusCode: GroupsControllerChange409StatusCode;
-  error: GroupsControllerChange409Error;
+} | {
+  statusCode: 409;
+  error: 'Conflict';
   message: string;
-  field: GroupsControllerChange409Field;
-  conflictsWith: GroupsControllerChange409ConflictsWith;
+  code: 'hasBookings';
+  /**
+     * The bookings in the way
+     * @items.pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  appointmentIds: string[];
 };
 
 export type GroupsControllerRemove409StatusCode = typeof GroupsControllerRemove409StatusCode[keyof typeof GroupsControllerRemove409StatusCode];
@@ -2604,6 +2650,14 @@ export type InvitationLinkControllerAccept200 = {
   role: InvitationLinkControllerAccept200Role;
 };
 
+export type InvitationLinkControllerSignUpBodyLocale = typeof InvitationLinkControllerSignUpBodyLocale[keyof typeof InvitationLinkControllerSignUpBodyLocale];
+
+
+export const InvitationLinkControllerSignUpBodyLocale = {
+  en: 'en',
+  ru: 'ru',
+} as const;
+
 export type InvitationLinkControllerSignUpBody = {
   /** @maxLength 254 */
   email: string;
@@ -2617,7 +2671,16 @@ export type InvitationLinkControllerSignUpBody = {
      * @maxLength 100
      */
   name: string;
+  locale?: InvitationLinkControllerSignUpBodyLocale;
 };
+
+export type InvitationLinkControllerSignUp201UserLocale = typeof InvitationLinkControllerSignUp201UserLocale[keyof typeof InvitationLinkControllerSignUp201UserLocale];
+
+
+export const InvitationLinkControllerSignUp201UserLocale = {
+  en: 'en',
+  ru: 'ru',
+} as const;
 
 export type InvitationLinkControllerSignUp201User = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
@@ -2625,6 +2688,7 @@ export type InvitationLinkControllerSignUp201User = {
   /** @pattern ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$ */
   email: string;
   name: string;
+  locale: InvitationLinkControllerSignUp201UserLocale;
 };
 
 export type InvitationLinkControllerSignUp201BusinessRole = typeof InvitationLinkControllerSignUp201BusinessRole[keyof typeof InvitationLinkControllerSignUp201BusinessRole];
