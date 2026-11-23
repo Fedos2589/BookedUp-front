@@ -51,9 +51,16 @@ test('once installed, the app opens offline', async ({ page, context }) => {
   // Sign in tolerates a failed check: the form is still the page to show.
   await page.goto('/sign-in')
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
-  // A deep link falls back to the shell too.
+  // A deep link falls back to the shell too; the booking page cannot reach
+  // the API, so after the queries' retries (~7 s) it says so and offers to try again.
   await page.goto('/book/judo-kids')
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await expect(
+    page.getByRole('heading', {
+      level: 1,
+      name: "Couldn't load the booking page.",
+    }),
+  ).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
 
   expect(errors).toEqual([])
 })
