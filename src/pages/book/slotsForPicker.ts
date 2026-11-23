@@ -94,9 +94,11 @@ export function slotsForPicker({
 }: Input): PickerDay[] {
   const any = staff === ANY_MASTER
   const seen = new Set<string>()
-  const offered: { date: string; slot: PickerSlot; at: string }[] = []
+  const byDay = new Map<string, PickerSlot[]>()
 
-  for (const slot of slots) {
+  for (const slot of [...slots].sort((a, b) =>
+    a.startsAt.localeCompare(b.startsAt),
+  )) {
     if (!any && slot.staffId !== staff) continue
     if (any && slot.full) continue
     // "Any" books no master: its hours times carry none.
@@ -104,13 +106,9 @@ export function slotsForPicker({
     const picked = pickerSlot(slot, staffId, timeZone, any ? masters : null)
     if (seen.has(picked.id)) continue
     seen.add(picked.id)
-    offered.push({
-      date: dayOf(slot, timeZone),
-      slot: picked,
-      at: slot.startsAt,
-    })
+    const date = dayOf(slot, timeZone)
+    byDay.set(date, [...(byDay.get(date) ?? []), picked])
   }
-  offered.sort((a, b) => a.at.localeCompare(b.at))
 
   return Array.from({ length: DAYS_AHEAD }, (_, index) => {
     const date = addDays(today, index)
@@ -118,7 +116,7 @@ export function slotsForPicker({
       date,
       weekday: weekdayLabel(isoWeekday(date), language),
       number: String(Number(date.slice(8))),
-      slots: offered.filter((o) => o.date === date).map((o) => o.slot),
+      slots: byDay.get(date) ?? [],
     }
   })
 }
