@@ -50,6 +50,18 @@ const keyOf = (staffId: string, slot: Slot) =>
     slot.oneOffSessionId ?? '',
   ].join('|')
 
+// What a key from keyOf names, for the booking request.
+export function slotOfKey(key: string) {
+  const [staffId, startsAt, endsAt, groupId, oneOffSessionId] = key.split('|')
+  return {
+    staffId: staffId || undefined,
+    startsAt,
+    endsAt,
+    groupId: groupId || undefined,
+    oneOffSessionId: oneOffSessionId || undefined,
+  }
+}
+
 const dayOf = (slot: Slot, timeZone: string) =>
   dateIn(new Date(slot.startsAt), timeZone) ?? slot.startsAt.slice(0, 10)
 
@@ -120,3 +132,9 @@ export function slotsForPicker({
     }
   })
 }
+
+// The time the address names, if the picker offers it and it still has room.
+export const pickedSlot = (key: string | undefined, input: Input) =>
+  slotsForPicker(input)
+    .flatMap((day) => day.slots)
+    .find((slot) => slot.id === key && !slot.full)

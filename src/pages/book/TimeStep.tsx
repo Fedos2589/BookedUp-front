@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next'
+import { ActionBar } from 'ted-ui/ActionBar'
+import { Button } from 'ted-ui/Button'
 import { SlotPicker } from 'ted-ui/SlotPicker'
 import { Typography } from 'ted-ui/Typography'
 
@@ -18,6 +20,9 @@ type Props = {
   day: string | undefined
   slot: string | undefined
   onChange: (choice: { day: string; slot: string | undefined }) => void
+  onContinue: () => void
+  // Shows that the time the client had chosen was just taken.
+  taken: boolean
 }
 
 // Step 2: a day and a time. The first day with a free time is chosen until
@@ -30,6 +35,8 @@ export function TimeStep({
   day,
   slot,
   onChange,
+  onContinue,
+  taken,
 }: Props) {
   const { t, i18n } = useTranslation()
   const heading = useStepHeading()
@@ -63,6 +70,11 @@ export function TimeStep({
       <Typography variant="t2" component="h2" tabIndex={-1} ref={heading}>
         {t('booking.chooseTime')}
       </Typography>
+      {taken && (
+        <Typography variant="t3" color="red-300" role="status">
+          {t('booking.taken')}
+        </Typography>
+      )}
       <SlotPicker
         className={styles.picker}
         daysLabel={t('booking.daysLabel')}
@@ -90,6 +102,18 @@ export function TimeStep({
         <Typography variant="t4" color="grey-500" className={styles.zone}>
           {t('booking.zoneNote', { zone: business.timeZone })}
         </Typography>
+      )}
+      {slot && current.slots.some((s) => s.id === slot && !s.full) && (
+        <ActionBar>
+          <Button
+            fullWidth
+            size="large"
+            colorScheme="blue"
+            onClick={onContinue}
+          >
+            {t('booking.continue')}
+          </Button>
+        </ActionBar>
       )}
     </>
   )

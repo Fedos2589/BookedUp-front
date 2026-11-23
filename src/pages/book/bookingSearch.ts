@@ -2,7 +2,15 @@
 // goes one step back and a reload keeps the place. `staff` is a master's id or
 // 'any'; `day` is a calendar day on the business's clock; `slot` is the chosen
 // time's key (see slotsForPicker).
-export type BookingSearch = { staff?: string; day?: string; slot?: string }
+export type BookingSearch = {
+  staff?: string
+  day?: string
+  slot?: string
+  // Step 3, the client's details, for the chosen time.
+  contacts?: true
+  // Step 4, after the booking was made; the result itself is not in the address.
+  done?: true
+}
 
 export const ANY_MASTER = 'any'
 
@@ -15,4 +23,6 @@ export const bookingSearchOf = (
   staff: textOf(search.staff),
   day: textOf(search.day),
   slot: textOf(search.slot),
+  contacts: search.contacts === true ? true : undefined,
+  done: search.done === true ? true : undefined,
 })

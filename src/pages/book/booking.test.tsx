@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-import { fakeApi } from '@/test/fakeApi'
+import { deferredAnswer, fakeApi } from '@/test/fakeApi'
 import { renderApp } from '@/test/renderApp'
 
 beforeEach(() => {
@@ -13,6 +13,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
+  localStorage.clear()
   vi.useRealTimers()
   vi.unstubAllGlobals()
 })
@@ -249,4 +250,439 @@ test('?staff=any with no free hours shows step 1, as "any" is not offered', asyn
 
   expect(await screen.findByText('Choose a master')).toBeTruthy()
   expect(screen.queryByText('Choose a day and a time')).toBeNull()
+})
+
+const BOOK = 'POST /api/public/businesses/judo/bookings'
+const booked = (staffId: string) =>
+  [
+    201,
+    {
+      booking: {
+        id: 'b1',
+        staffId,
+        staffName: 'Anna',
+        startsAt: '2026-11-24T09:00:00.000Z',
+        endsAt: '2026-11-24T10:00:00.000Z',
+        title: null,
+        groupId: null,
+        oneOffSessionId: null,
+      },
+      manageLink: 'https://x.test/manage/abc',
+    },
+  ] as [number, unknown]
+
+const typeInto = (label: string, value: string) =>
+  fireEvent.change(screen.getByLabelText(label), { target: { value } })
+
+// From the first step, so the history holds step 1 behind step 2.
+const toContactsFromStart = async (master: RegExp) => {
+  const rendered = renderApp('/book/judo')
+  fireEvent.click(await screen.findByRole('button', { name: master }))
+  fireEvent.click(await screen.findByRole('radio', { name: '10:00' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
+  return rendered
+}
+
+const toContacts = async (staff: string) => {
+  const rendered = renderApp(`/book/judo?staff=${staff}`)
+  fireEvent.click(await screen.findByRole('radio', { name: '10:00' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
+  return rendered
+}
+
+test('step 3: name and phone book the chosen master and time', async () => {
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: booked(HOURS_ANNA),
+  })
+  await toContacts(HOURS_ANNA)
+
+  const heading = await screen.findByRole('heading', { name: 'Your details' })
+  expect(document.activeElement).toBe(heading)
+  expect(screen.getByText(/10:00–11:00/)).toBeTruthy()
+  expect(screen.getByText(/Anna/)).toBeTruthy()
+
+  typeInto('Name', 'Ira')
+  typeInto('Phone', '+66 81 234 5678')
+  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+
+  await waitFor(() =>
+    expect(api.calls.find((c) => c.route === BOOK)?.body).toEqual({
+      staffId: HOURS_ANNA,
+      startsAt: '2026-11-24T09:00:00.000Z',
+      endsAt: '2026-11-24T10:00:00.000Z',
+      name: 'Ira',
+      phone: '+66812345678',
+    }),
+  )
+})
+
+test('booking an "any master" time sends no master; a note goes along', async () => {
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_BORIS)]],
+    [BOOK]: booked(HOURS_BORIS),
+  })
+  await toContacts('any')
+
+  await screen.findByRole('heading', { name: 'Your details' })
+  typeInto('Name', 'Ira')
+  typeInto('Phone', '+66 81 234 5678')
+  typeInto('Note (optional)', 'First time')
+  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+
+  await waitFor(() =>
+    expect(api.calls.find((c) => c.route === BOOK)?.body).toEqual({
+      startsAt: '2026-11-24T09:00:00.000Z',
+      endsAt: '2026-11-24T10:00:00.000Z',
+      name: 'Ira',
+      phone: '+66812345678',
+      note: 'First time',
+    }),
+  )
+})
+
+test('step 3 refuses an empty name and a bad phone without asking the back', async () => {
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  await toContacts(HOURS_ANNA)
+
+  await screen.findByRole('heading', { name: 'Your details' })
+  typeInto('Phone', '12')
+  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+
+  expect(await screen.findByText('Required')).toBeTruthy()
+  expect(screen.getByText('Enter a valid phone number')).toBeTruthy()
+  expect(api.calls.some((c) => c.route === BOOK)).toBe(false)
+})
+
+test('the contacts step without a chosen time is step 2', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  renderApp(`/book/judo?staff=${HOURS_ANNA}&contacts=true`)
+
+  expect(await screen.findByText('Choose a day and a time')).toBeTruthy()
+  expect(screen.queryByText('Your details')).toBeNull()
+})
+
+const fillAndBook = async () => {
+  await screen.findByRole('heading', { name: 'Your details' })
+  typeInto('Name', 'Ira')
+  typeInto('Phone', '+66 81 234 5678')
+  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+}
+
+test.each(['notFree', 'full'])(
+  'a %s refusal sends the client back to step 2 with a note and fresh times',
+  async (code) => {
+    const api: ReturnType<typeof fakeApi> = fakeApi({
+      [BUSINESS]: [200, business],
+      [SLOTS]: [200, [slot(HOURS_ANNA)]],
+      [BOOK]: (): [number, unknown] => {
+        api.set(SLOTS, [200, []])
+        return [409, { statusCode: 409, error: 'Conflict', code }]
+      },
+    })
+    await toContacts(HOURS_ANNA)
+    await fillAndBook()
+
+    expect(
+      await screen.findByRole('heading', { name: 'Choose a day and a time' }),
+    ).toBeTruthy()
+    expect(screen.getByText(/That time was just taken/)).toBeTruthy()
+    await waitFor(() =>
+      expect(api.calls.filter((c) => c.route === SLOTS).length).toBe(2),
+    )
+    // The fresh times no longer hold it.
+    await waitFor(() =>
+      expect(screen.queryByRole('radio', { name: '10:00' })).toBeNull(),
+    )
+  },
+)
+
+test('tooManyBookings is said under the button; the form stays', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: [
+      409,
+      { statusCode: 409, error: 'Conflict', code: 'tooManyBookings' },
+    ],
+  })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  expect(await screen.findByText(/3 bookings to come/)).toBeTruthy()
+  expect(screen.getByLabelText('Name')).toBeTruthy()
+})
+
+test('429 asks to try later', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: [429, { statusCode: 429, message: 'Too Many Requests' }],
+  })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  expect(await screen.findByText('Too many attempts, try later')).toBeTruthy()
+})
+
+test('a 400 naming a field marks that field', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: [
+      400,
+      {
+        statusCode: 400,
+        error: 'Bad Request',
+        message: ['phone: Not a phone number'],
+      },
+    ],
+  })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  expect(await screen.findByText('Check this field')).toBeTruthy()
+})
+
+test('any other failure says it could not book', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: [500, { statusCode: 500, message: 'oops' }],
+  })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  expect(await screen.findByText("Couldn't book. Try again.")).toBeTruthy()
+})
+
+test('step 4: the booking, who, where, and the private link to copy', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: booked(HOURS_ANNA),
+  })
+  const writeText = vi.fn(async () => {})
+  vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  const heading = await screen.findByRole('heading', { name: 'You are booked' })
+  expect(document.activeElement).toBe(heading)
+  expect(screen.getByText(/10:00–11:00/)).toBeTruthy()
+  expect(screen.getByText(/Anna/)).toBeTruthy()
+  expect(screen.getByText(/Judo Kids/, { selector: 'p, span' })).toBeTruthy()
+  expect(
+    (screen.getByLabelText('Your booking link') as HTMLInputElement).value,
+  ).toBe('https://x.test/manage/abc')
+  expect(screen.getByText(/only way to cancel or move/)).toBeTruthy()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Copy link' }))
+  await waitFor(() =>
+    expect(writeText).toHaveBeenCalledWith('https://x.test/manage/abc'),
+  )
+  expect(JSON.parse(localStorage.getItem('booking:judo') ?? '{}')).toEqual({
+    manageLink: 'https://x.test/manage/abc',
+    startsAt: '2026-11-24T09:00:00.000Z',
+  })
+})
+
+test('a coming booking saved in the browser is offered on step 1', async () => {
+  localStorage.setItem(
+    'booking:judo',
+    JSON.stringify({
+      manageLink: 'https://x.test/manage/abc',
+      startsAt: '2026-11-24T09:00:00.000Z',
+    }),
+  )
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  renderApp('/book/judo')
+
+  const link = await screen.findByRole('link', { name: /Your booking on/ })
+  expect(link.getAttribute('href')).toBe('https://x.test/manage/abc')
+})
+
+test('a past saved booking is not offered', async () => {
+  localStorage.setItem(
+    'booking:judo',
+    JSON.stringify({
+      manageLink: 'https://x.test/manage/abc',
+      startsAt: '2026-11-20T09:00:00.000Z',
+    }),
+  )
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  renderApp('/book/judo')
+
+  await screen.findByRole('button', { name: /Anna/ })
+  expect(screen.queryByRole('link', { name: /Your booking on/ })).toBeNull()
+})
+
+// ---- review of #48 ----
+
+// The times are asked again and the time on screen is no longer among them.
+const refetchWithoutTimes = async (
+  api: ReturnType<typeof fakeApi>,
+  queryClient: { invalidateQueries: () => Promise<void> },
+) => {
+  api.set(SLOTS, [200, []])
+  await queryClient.invalidateQueries()
+  await new Promise((resolve) => setTimeout(resolve, 100))
+}
+
+test('the contacts form and what is typed survive a slots refetch that no longer lists the time', async () => {
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  const { queryClient } = await toContacts(HOURS_ANNA)
+  await screen.findByRole('heading', { name: 'Your details' })
+  typeInto('Name', 'Ira')
+
+  await refetchWithoutTimes(api, queryClient)
+
+  expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('Ira')
+  expect(screen.queryByText('Choose a day and a time')).toBeNull()
+})
+
+test('a booking made while the slots refetch still shows the link and saves it', async () => {
+  const later = deferredAnswer()
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: later.answer,
+  })
+  const { queryClient } = await toContacts(HOURS_ANNA)
+  await fillAndBook()
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === BOOK)).toBe(true),
+  )
+
+  await refetchWithoutTimes(api, queryClient)
+  later.send(booked(HOURS_ANNA))
+
+  expect(
+    await screen.findByRole('heading', { name: 'You are booked' }),
+  ).toBeTruthy()
+  expect(localStorage.getItem('booking:judo')).toContain('manage/abc')
+})
+
+test('Back from the done screen leaves it; the address no longer holds the time', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: booked(HOURS_ANNA),
+  })
+  const { router } = await toContacts(HOURS_ANNA)
+  await fillAndBook()
+  await screen.findByRole('heading', { name: 'You are booked' })
+  expect(router.state.location.search).not.toHaveProperty('contacts')
+
+  router.history.back()
+
+  expect(
+    await screen.findByRole('heading', { name: 'Choose a day and a time' }),
+  ).toBeTruthy()
+  expect(screen.queryByText('You are booked')).toBeNull()
+})
+
+test('after a refusal Back goes to step 1, not to a second step 2', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: [409, { statusCode: 409, error: 'Conflict', code: 'notFree' }],
+  })
+  const { router } = await toContactsFromStart(/Anna/)
+  await fillAndBook()
+  await screen.findByText(/That time was just taken/)
+
+  router.history.back()
+
+  expect(await screen.findByText('Choose a master')).toBeTruthy()
+})
+
+test('the "just taken" note does not follow the client to another master', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA), slot(HOURS_BORIS)]],
+    [BOOK]: [409, { statusCode: 409, error: 'Conflict', code: 'notFree' }],
+  })
+  const { router } = await toContactsFromStart(/Anna/)
+  await fillAndBook()
+  await screen.findByText(/That time was just taken/)
+  router.history.back()
+  fireEvent.click(await screen.findByRole('button', { name: /Boris/ }))
+
+  await screen.findByRole('heading', { name: 'Choose a day and a time' })
+  expect(screen.queryByText(/That time was just taken/)).toBeNull()
+})
+
+test('a bad phone puts focus on the phone field', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  await toContacts(HOURS_ANNA)
+  await screen.findByRole('heading', { name: 'Your details' })
+  typeInto('Name', 'Ira')
+  typeInto('Phone', '12')
+  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+
+  await screen.findByText('Enter a valid phone number')
+  expect(document.activeElement).toBe(screen.getByLabelText('Phone'))
+})
+
+test('a field the back refused is focused, and clears when the client edits it', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: [
+      400,
+      {
+        statusCode: 400,
+        error: 'Bad Request',
+        message: ['phone: Not a phone number'],
+      },
+    ],
+  })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  expect(await screen.findByText('Check this field')).toBeTruthy()
+  expect(document.activeElement).toBe(screen.getByLabelText('Phone'))
+  typeInto('Phone', '+66 81 234 5679')
+  await waitFor(() => expect(screen.queryByText('Check this field')).toBeNull())
+})
+
+test('a full meeting named in the address is not bookable: step 2', async () => {
+  const key = [
+    GROUPS_CARA,
+    '2026-11-24T09:00:00.000Z',
+    '2026-11-24T10:00:00.000Z',
+    'g',
+    '',
+  ].join('|')
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(GROUPS_CARA, { groupId: 'g', full: true })]],
+  })
+  renderApp(
+    `/book/judo?staff=${GROUPS_CARA}&slot=${encodeURIComponent(key)}&contacts=true`,
+  )
+
+  expect(await screen.findByText('Choose a day and a time')).toBeTruthy()
+  expect(screen.queryByText('Your details')).toBeNull()
 })
