@@ -1,67 +1,90 @@
 // @vitest-environment node
 import { expect, test } from 'vitest'
 
-import { bookChunkFiles, foreignPages, type Manifest } from './bookChunk.ts'
+import {
+  bookChunkFiles,
+  foreignPages,
+  type Chunk,
+  type Chunks,
+} from './bookChunk.ts'
 
-// A build's manifest in miniature: the entry loads the router and the booking
-// page's chunk; the cabinet's pages are chunks of their own.
-const manifest: Manifest = {
-  'index.html': {
-    file: 'assets/index.js',
+const chunk = (over: Partial<Chunk>): Chunk => ({
+  isEntry: false,
+  imports: [],
+  css: [],
+  modules: [],
+  ...over,
+})
+
+// A build's chunk map in miniature: the entry loads the router and a shared
+// chunk; the booking page and the calendar are chunks of their own.
+const chunks: Chunks = {
+  'assets/index.js': chunk({
     isEntry: true,
-    imports: ['_vendor.js'],
-    dynamicImports: [
-      'src/pages/book/BookingPage.tsx',
-      'src/pages/calendar/CalendarPage.tsx',
-    ],
-  },
-  '_vendor.js': { file: 'assets/vendor.js' },
-  'src/pages/book/BookingPage.tsx': {
-    file: 'assets/BookingPage.js',
-    src: 'src/pages/book/BookingPage.tsx',
-    isDynamicEntry: true,
-    imports: ['_vendor.js'],
-  },
-  'src/pages/calendar/CalendarPage.tsx': {
-    file: 'assets/CalendarPage.js',
-    src: 'src/pages/calendar/CalendarPage.tsx',
-    isDynamicEntry: true,
-    imports: ['_vendor.js'],
-  },
+    imports: ['assets/shared.js'],
+    css: ['assets/index.css'],
+    modules: ['src/app/router.tsx', 'src/pages/PagePending.tsx'],
+  }),
+  'assets/shared.js': chunk({ modules: ['src/dates.ts'] }),
+  'assets/BookingPage.js': chunk({
+    facade: 'src/pages/book/BookingPage.tsx',
+    imports: ['assets/shared.js'],
+    css: ['assets/BookingPage.css'],
+    modules: ['src/pages/book/BookingPage.tsx'],
+  }),
+  'assets/CalendarPage.js': chunk({
+    facade: 'src/pages/calendar/CalendarPage.tsx',
+    imports: ['assets/shared.js'],
+    modules: ['src/pages/calendar/CalendarPage.tsx'],
+  }),
 }
 
-test('the booking page loads the entry, the shared chunks and its own chunk, not the cabinet', () => {
-  expect(bookChunkFiles(manifest).sort()).toEqual([
+test('the booking page loads the entry, the shared chunks, its own chunk and their styles, not the cabinet', () => {
+  expect(bookChunkFiles(chunks).sort()).toEqual([
+    'assets/BookingPage.css',
     'assets/BookingPage.js',
+    'assets/index.css',
     'assets/index.js',
-    'assets/vendor.js',
+    'assets/shared.js',
   ])
-  expect(foreignPages(manifest)).toEqual([])
+  expect(foreignPages(chunks)).toEqual([])
 })
 
-test('a cabinet page imported by the booking page is named', () => {
-  const leaking: Manifest = {
-    ...manifest,
-    'src/pages/book/BookingPage.tsx': {
-      ...manifest['src/pages/book/BookingPage.tsx'],
-      imports: ['_vendor.js', 'src/pages/calendar/CalendarPage.tsx'],
-    },
+test('the routes’ search parsers may sit in the entry chunk', () => {
+  const parsers: Chunks = {
+    ...chunks,
+    'assets/index.js': chunk({
+      ...chunks['assets/index.js'],
+      modules: ['src/pages/calendar/calendarSearch.ts'],
+    }),
   }
-  expect(foreignPages(leaking)).toEqual(['src/pages/calendar/CalendarPage.tsx'])
+  expect(foreignPages(parsers)).toEqual([])
 })
 
-test('the entry importing a cabinet page statically is named too', () => {
-  const leaking: Manifest = {
-    ...manifest,
-    'index.html': {
-      ...manifest['index.html'],
-      imports: ['_vendor.js', 'src/pages/calendar/CalendarPage.tsx'],
-    },
+test('a cabinet page merged into the entry chunk is named', () => {
+  const merged: Chunks = {
+    ...chunks,
+    'assets/index.js': chunk({
+      ...chunks['assets/index.js'],
+      modules: ['src/pages/calendar/CalendarPage.tsx'],
+    }),
   }
-  expect(foreignPages(leaking)).toEqual(['src/pages/calendar/CalendarPage.tsx'])
+  expect(foreignPages(merged)).toEqual(['src/pages/calendar/CalendarPage.tsx'])
+})
+
+test('a cabinet page merged into a shared chunk is named', () => {
+  const merged: Chunks = {
+    ...chunks,
+    'assets/shared.js': chunk({
+      modules: ['src/pages/cabinet/Cabinet.module.scss'],
+    }),
+  }
+  expect(foreignPages(merged)).toEqual([
+    'src/pages/cabinet/Cabinet.module.scss',
+  ])
 })
 
 test('a build without the booking page fails loudly, not as a pass', () => {
-  const { 'src/pages/book/BookingPage.tsx': _gone, ...rest } = manifest
+  const { 'assets/BookingPage.js': _gone, ...rest } = chunks
   expect(() => bookChunkFiles(rest)).toThrow(/BookingPage/)
 })

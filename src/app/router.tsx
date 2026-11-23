@@ -8,21 +8,18 @@ import {
 } from '@tanstack/react-router'
 
 import { redirectIfSignedIn, requireAccount } from '@/auth/session'
-import { SignInPage } from '@/pages/auth/SignInPage'
 import { calendarSearchOf } from '@/pages/calendar/calendarSearch'
-import { DashboardError } from '@/pages/DashboardError'
 import { clientsSearchOf } from '@/pages/clients/clientsSearch'
-import { InvitationGone } from '@/pages/invite/InvitationGone'
-import { InvitePage } from '@/pages/invite/InvitePage'
 import { invitationTokenOf } from '@/pages/invite/invitationToken'
 import { PagePending } from '@/pages/PagePending'
-import { SignUpPage } from '@/pages/signUp/SignUpPage'
 import { RootLayout } from './RootLayout'
 
 type RouterContext = { queryClient: QueryClient }
 
-// Every page of the cabinet and the booking page are chunks of their own: a
-// client opening /book on a phone never downloads the cabinet (check:chunks).
+// Every page, the cabinet's error screen included, is a chunk of its own: a
+// client opening /book on a phone never downloads the cabinet or the sign-in
+// forms (check:chunks). Only the routes' search and param parsers, tiny and
+// pure, are imported here.
 const rootRoute = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
 })
@@ -37,7 +34,10 @@ const cabinetRoute = createRoute({
     () => import('@/pages/cabinet/CabinetLayout'),
     'CabinetLayout',
   ),
-  errorComponent: DashboardError,
+  errorComponent: lazyRouteComponent(
+    () => import('@/pages/DashboardError'),
+    'DashboardError',
+  ),
 })
 
 const dashboardRoute = createRoute({
@@ -123,7 +123,10 @@ const signInRoute = createRoute({
   }),
   beforeLoad: ({ context, search }) =>
     redirectIfSignedIn(context.queryClient, search.invitation),
-  component: SignInPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/auth/SignInPage'),
+    'SignInPage',
+  ),
 })
 
 // An owner registers with their business.
@@ -131,7 +134,10 @@ const signUpRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sign-up',
   beforeLoad: ({ context }) => redirectIfSignedIn(context.queryClient),
-  component: SignUpPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/signUp/SignUpPage'),
+    'SignUpPage',
+  ),
 })
 
 // The page an invitation link opens: join the team, signed in or by signing up.
@@ -143,12 +149,10 @@ const inviteRoute = createRoute({
     parse: ({ token }) => ({ token: invitationTokenOf(token) }),
     stringify: ({ token }) => ({ token: token ?? '' }),
   },
-  component: function Invite() {
-    const { token } = inviteRoute.useParams()
-    // No token of the back's shape in the address: a dead link. The generated
-    // client puts the token into the API path as is, so such a one is never sent.
-    return token ? <InvitePage token={token} /> : <InvitationGone />
-  },
+  component: lazyRouteComponent(
+    () => import('@/pages/invite/InviteRoute'),
+    'InviteRoute',
+  ),
 })
 
 // Public booking page of a business, for its clients.
@@ -186,6 +190,8 @@ export function createAppRouter(
     context: { queryClient },
     history,
     defaultPendingComponent: PagePending,
+    // A link's chunk loads while the pointer is still on it.
+    defaultPreload: 'intent',
   })
 }
 
