@@ -109,7 +109,7 @@ such page» (no link to the cabinet). Loading → `PagePending`. Picking sets `?
 when only GROUPS masters, 404 shows the screen, picking sets the search param. Commit
 `feat(book): choose a master`.
 
-### - [ ] G3: step 2, day and time
+### - [x] G3: step 2, day and time
 
 **Files:** create `src/pages/book/{TimeStep.tsx,slotsForPicker.ts,slotsForPicker.test.ts}`,
 `src/pages/book/BookingPage.tsx`, locales.

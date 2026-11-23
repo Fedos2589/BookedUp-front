@@ -4,9 +4,7 @@ import {
 } from '@/api'
 import { addDays, dateIn } from '@/dates'
 import { useNow } from '@/useNow'
-
-// How many days ahead the booking page looks, today included.
-const DAYS_AHEAD = 14
+import { DAYS_AHEAD } from './slotsForPicker'
 
 // The business and the free times of all its masters for the next two weeks;
 // steps 1 and 2 share the one slots request. "Today" is on the business's
@@ -22,5 +20,5 @@ export function useBookingData(slug: string) {
     { from: today, to: addDays(today, DAYS_AHEAD - 1) },
     { query: { enabled: Boolean(business.data) } },
   )
-  return { business, slots }
+  return { business, slots, today }
 }

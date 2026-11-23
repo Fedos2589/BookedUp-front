@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import { fakeApi } from '@/test/fakeApi'
@@ -114,4 +114,56 @@ test('picking a master puts it in the address', async () => {
   fireEvent.click(await screen.findByRole('button', { name: /Anna/ }))
 
   expect(router.state.location.search).toEqual({ staff: HOURS_ANNA })
+})
+
+test('step 2: the first day with time is chosen; picking a time puts day and time in the address', async () => {
+  const at = '2026-11-25T09:00:00.000Z' // Wed 10:00 in Berlin
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [
+      200,
+      [slot(HOURS_ANNA, { startsAt: at, endsAt: '2026-11-25T10:00:00.000Z' })],
+    ],
+  })
+  const { router } = renderApp(`/book/judo?staff=${HOURS_ANNA}`)
+
+  expect(
+    await screen.findByRole('heading', { name: 'Choose a day and a time' }),
+  ).toBeTruthy()
+  const time = await screen.findByRole('radio', { name: '10:00' })
+  fireEvent.click(time)
+
+  expect(router.state.location.search).toEqual({
+    staff: HOURS_ANNA,
+    day: '2026-11-25',
+    slot: `${HOURS_ANNA}|${at}|2026-11-25T10:00:00.000Z||`,
+  })
+  await waitFor(() =>
+    expect(
+      screen.getByRole('radio', { name: '10:00' }).getAttribute('aria-checked'),
+    ).toBe('true'),
+  )
+})
+
+test("step 2 names the business zone when it is not the browser's", async () => {
+  fakeApi({
+    [BUSINESS]: [200, { ...business, timeZone: 'Pacific/Kiritimati' }],
+    // 23 Nov 10:00 UTC is already the 24th there.
+    'GET /api/public/businesses/judo/slots?from=2026-11-24&to=2026-12-07': [
+      200,
+      [],
+    ],
+  })
+  renderApp('/book/judo?staff=any')
+
+  expect(
+    await screen.findByText('Times are in Pacific/Kiritimati'),
+  ).toBeTruthy()
+})
+
+test('an address naming an unknown master shows step 1', async () => {
+  fakeApi({ [BUSINESS]: [200, business], [SLOTS]: [200, []] })
+  renderApp('/book/judo?staff=nobody')
+
+  expect(await screen.findByText('Choose a master')).toBeTruthy()
 })

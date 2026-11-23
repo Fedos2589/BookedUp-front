@@ -1,0 +1,125 @@
+import type {
+  PublicBookingControllerBusiness200MastersItem as Master,
+  PublicBookingControllerSlots200Item as Slot,
+} from '@/api/generated.schemas'
+import { addDays, dateIn, timeIn } from '@/dates'
+import { ANY_MASTER } from './bookingSearch'
+
+// How many days the booking page offers, today included.
+export const DAYS_AHEAD = 14
+
+// One button of the time list. `staffId` is empty for an "any master" time:
+// booking it sends no master. `free` is only for a meeting (a seat count).
+export type PickerSlot = {
+  id: string
+  time: string
+  staffId: string
+  title: string | null
+  master: string | null
+  free: { left: number; of: number } | null
+  full: boolean
+}
+
+export type PickerDay = {
+  date: string
+  weekday: string
+  number: string
+  slots: PickerSlot[]
+}
+
+type Input = {
+  slots: Slot[]
+  staff: string
+  timeZone: string
+  masters: Master[]
+  today: string
+  language: string
+}
+
+const isMeeting = (slot: Slot) =>
+  slot.groupId !== null || slot.oneOffSessionId !== null
+
+// The slot's identity in the address: master (empty for "any"), start, end,
+// group and one-off session.
+const keyOf = (staffId: string, slot: Slot) =>
+  [
+    staffId,
+    slot.startsAt,
+    slot.endsAt,
+    slot.groupId ?? '',
+    slot.oneOffSessionId ?? '',
+  ].join('|')
+
+const dayOf = (slot: Slot, timeZone: string) =>
+  dateIn(new Date(slot.startsAt), timeZone) ?? slot.startsAt.slice(0, 10)
+
+const timeOf = (slot: Slot, timeZone: string) =>
+  timeIn(new Date(slot.startsAt), timeZone) ?? slot.startsAt.slice(11, 16)
+
+function pickerSlot(
+  slot: Slot,
+  staffId: string,
+  timeZone: string,
+  masters: Master[],
+): PickerSlot {
+  const meeting = isMeeting(slot)
+  return {
+    id: keyOf(staffId, slot),
+    time: timeOf(slot, timeZone),
+    staffId,
+    title: meeting ? slot.title : null,
+    master: meeting
+      ? (masters.find((master) => master.id === slot.staffId)?.name ?? null)
+      : null,
+    free: meeting
+      ? { left: Math.max(slot.capacity - slot.booked, 0), of: slot.capacity }
+      : null,
+    full: slot.full,
+  }
+}
+
+// The times the picker offers for the chosen master, or for "any": a master's
+// own hours and meetings, full ones shown but disabled; for "any" the free
+// hours of all masters merged by start and end (one button each), and every
+// free meeting on its own. Days and times are the business's, not the browser's.
+export function slotsForPicker({
+  slots,
+  staff,
+  timeZone,
+  masters,
+  today,
+  language,
+}: Input): PickerDay[] {
+  const any = staff === ANY_MASTER
+  const seen = new Set<string>()
+  const offered: { date: string; slot: PickerSlot; at: string }[] = []
+
+  for (const slot of slots) {
+    if (!any && slot.staffId !== staff) continue
+    if (any && slot.full) continue
+    // "Any" books no master: its hours times carry none.
+    const staffId = any && !isMeeting(slot) ? '' : slot.staffId
+    const picked = pickerSlot(slot, staffId, timeZone, masters)
+    if (seen.has(picked.id)) continue
+    seen.add(picked.id)
+    offered.push({
+      date: dayOf(slot, timeZone),
+      slot: picked,
+      at: slot.startsAt,
+    })
+  }
+  offered.sort((a, b) => a.at.localeCompare(b.at))
+
+  return Array.from({ length: DAYS_AHEAD }, (_, index) => {
+    const date = addDays(today, index)
+    return {
+      date,
+      weekday: new Intl.DateTimeFormat(language, {
+        timeZone: 'UTC',
+        weekday: 'short',
+      }).format(new Date(`${date}T00:00:00Z`)),
+      number: String(Number(date.slice(8))),
+      slots: offered.filter((o) => o.date === date).map((o) => o.slot),
+    }
+  })
+}
