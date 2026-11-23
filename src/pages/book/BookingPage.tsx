@@ -1,4 +1,4 @@
-import { getRouteApi } from '@tanstack/react-router'
+import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
@@ -20,7 +20,7 @@ import { ContactsStep } from './ContactsStep'
 import { MastersStep } from './MastersStep'
 import { NoSuchPage } from './NoSuchPage'
 import { savedBookingOf, saveBooking } from './savedBooking'
-import { slotsForPicker } from './slotsForPicker'
+import { type PickerSlot, pickedSlot } from './slotsForPicker'
 import { TimeStep } from './TimeStep'
 import { useBookingData } from './useBookingData'
 
@@ -38,26 +38,22 @@ const knownStaff = (
     : undefined
 }
 
-// The chosen time, if the address names one the picker still offers.
-const pickedSlot = (
-  key: string | undefined,
-  input: Parameters<typeof slotsForPicker>[0],
-) =>
-  slotsForPicker(input)
-    .flatMap((day) => day.slots)
-    .find((slot) => slot.id === key)
-
 const route = getRouteApi('/book/$businessSlug')
 
 export function BookingPage() {
   const { businessSlug } = route.useParams()
   const navigate = route.useNavigate()
+  const router = useRouter()
   const search = route.useSearch()
   const { i18n } = useTranslation()
   const { business, slots, today } = useBookingData(businessSlug)
   // The time the client had chosen was taken by someone else meanwhile.
   const [taken, setTaken] = useState(false)
   const [booked, setBooked] = useState<PublicBookingControllerBook201>()
+  // The time of the contacts step, kept from the moment the client reached it:
+  // a refetch of the times (the booking itself takes its seat) must not take
+  // the form away from under them.
+  const [chosen, setChosen] = useState<PickerSlot>()
   const now = useNow()
 
   if (business.error instanceof ApiError && business.error.status === 404) {
@@ -78,44 +74,48 @@ export function BookingPage() {
 
   const staff = knownStaff(search.staff, business.data, slots.data)
 
-  const chosen =
-    staff &&
-    search.contacts &&
-    pickedSlot(search.slot, {
-      slots: slots.data,
-      staff,
-      timeZone: business.data.timeZone,
-      masters: business.data.masters,
-      today,
-      language: i18n.language,
-    })
+  const wanted =
+    staff && search.contacts && chosen?.id !== search.slot
+      ? pickedSlot(search.slot, {
+          slots: slots.data,
+          staff,
+          timeZone: business.data.timeZone,
+          masters: business.data.masters,
+          today,
+          language: i18n.language,
+        })
+      : undefined
+  if (wanted) setChosen(wanted)
+  const contacts =
+    search.contacts && chosen?.id === search.slot ? chosen : undefined
 
   return (
     <main className={styles.page}>
       <Typography variant="h3" component="h1">
         {business.data.name}
       </Typography>
-      {booked ? (
+      {booked && search.done ? (
         <DoneStep
           booked={booked}
           businessName={business.data.name}
           timeZone={business.data.timeZone}
         />
-      ) : staff && chosen ? (
+      ) : contacts ? (
         <ContactsStep
           slug={businessSlug}
           timeZone={business.data.timeZone}
-          slot={chosen}
+          slot={contacts}
           master={
-            business.data.masters.find((m) => m.id === chosen.staffId)?.name
+            business.data.masters.find((m) => m.id === contacts.staffId)?.name
           }
           onTaken={() => {
             setTaken(true)
             void slots.refetch()
-            void navigate({
-              search: { staff, day: search.day },
-              replace: true,
-            })
+            // Back to the time step the client came from; opened by its address
+            // there is nothing behind, so the step replaces this one.
+            if (router.history.canGoBack()) router.history.back()
+            else
+              void navigate({ search: { staff: search.staff }, replace: true })
           }}
           onBooked={(result) => {
             saveBooking(businessSlug, {
@@ -123,6 +123,11 @@ export function BookingPage() {
               startsAt: result.booking.startsAt,
             })
             setBooked(result)
+            void slots.refetch()
+            void navigate({
+              search: { staff: search.staff, done: true },
+              replace: true,
+            })
           }}
         />
       ) : staff ? (
@@ -156,7 +161,10 @@ export function BookingPage() {
           timeZone={business.data.timeZone}
           business={business.data}
           slots={slots.data}
-          onPick={(staff) => void navigate({ search: { staff } })}
+          onPick={(staff) => {
+            setTaken(false)
+            void navigate({ search: { staff } })
+          }}
         />
       )}
     </main>

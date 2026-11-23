@@ -157,7 +157,7 @@ booking while it's in the future.
 Shows the booking (time in the business zone, master, title, status). `canChange` → «Cancel booking»
 (kit `ConfirmDialog`) and «Change time» (opens `TimeStep` for the same master; an «any» booking moves
 within its master — no «any» on a move) → `PATCH`. Started / cancelled → read-only with the status.
-404 → «This link doesn't work». After a cancel the saved booking is cleared.
+404 → «This link doesn't work». After a cancel the saved booking is cleared (`forgetSavedBooking(slug)`, made in G4a).
 
 **Check:** `manage.test.tsx` — read; cancel with confirm; move to another time; `badTransition` shows
 read-only; 404 screen. Commit `feat(book): manage a booking by link`.

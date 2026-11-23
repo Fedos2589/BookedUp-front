@@ -29,7 +29,7 @@ export function refusalOf(error: unknown): Refusal {
   if (error.status === 400) {
     const lines = Array.isArray(message) ? message.map(String) : []
     const fields = FIELDS.filter((field) =>
-      lines.some((line) => line.toLowerCase().includes(field)),
+      lines.some((line) => line.startsWith(`${field}:`)),
     )
     if (fields.length > 0) return { kind: 'fields', fields: [...fields] }
   }

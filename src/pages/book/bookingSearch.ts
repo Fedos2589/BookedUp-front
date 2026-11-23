@@ -8,6 +8,8 @@ export type BookingSearch = {
   slot?: string
   // Step 3, the client's details, for the chosen time.
   contacts?: true
+  // Step 4, after the booking was made; the result itself is not in the address.
+  done?: true
 }
 
 export const ANY_MASTER = 'any'
@@ -22,4 +24,5 @@ export const bookingSearchOf = (
   day: textOf(search.day),
   slot: textOf(search.slot),
   contacts: search.contacts === true ? true : undefined,
+  done: search.done === true ? true : undefined,
 })

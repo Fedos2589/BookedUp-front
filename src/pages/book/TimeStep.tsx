@@ -103,7 +103,7 @@ export function TimeStep({
           {t('booking.zoneNote', { zone: business.timeZone })}
         </Typography>
       )}
-      {slot && current.slots.some((s) => s.id === slot) && (
+      {slot && current.slots.some((s) => s.id === slot && !s.full) && (
         <ActionBar>
           <Button
             fullWidth

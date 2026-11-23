@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useId } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { ActionBar } from 'ted-ui/ActionBar'
@@ -53,7 +54,29 @@ export function ContactsStep({
   const phone = useWatch({ control: form.control, name: 'phone' })
   const errors = form.formState.errors
   useUnsavedInput(form.formState.isDirty)
-  const book = usePublicBookingControllerBook()
+  const phoneId = useId()
+  // The page's callbacks sit on the hook, not on mutate(): they still run if
+  // this step is gone by the time the back answers.
+  const book = usePublicBookingControllerBook({
+    mutation: {
+      onSuccess: onBooked,
+      onError: (error) => {
+        const refusal = refusalOf(error)
+        if (refusal.kind === 'taken') return onTaken()
+        if (refusal.kind !== 'fields') return
+        for (const field of refusal.fields)
+          form.setError(field, { message: 'validation.invalid' })
+        focusField(refusal.fields[0])
+      },
+    },
+  })
+
+  // The phone is not registered with the form (the kit's field is controlled),
+  // so its focus goes through the id given to it.
+  const focusField = (field: keyof ContactsForm) =>
+    field === 'phone'
+      ? document.getElementById(phoneId)?.focus()
+      : form.setFocus(field)
 
   const { startsAt, endsAt } = slotOfKey(slot.id)
   const when = [
@@ -63,24 +86,21 @@ export function ContactsStep({
   const who = master ?? slot.master ?? t('booking.anyMaster')
 
   const refusal = book.isError ? refusalOf(book.error) : undefined
-  const markedFields = refusal?.kind === 'fields' ? refusal.fields : []
 
   const submit = (values: ContactsForm) =>
-    book.mutate(
-      { slug, data: bookBody(slot.id, values) },
-      {
-        onSuccess: onBooked,
-        onError: (error) => {
-          if (refusalOf(error).kind === 'taken') onTaken()
-        },
-      },
-    )
+    book.mutate({ slug, data: bookBody(slot.id, values) })
+
+  // A failed submit puts focus on the first field to fix.
+  const invalid = (fields: typeof errors) => {
+    const first = (['name', 'phone', 'note'] as const).find((f) => fields[f])
+    if (first) focusField(first)
+  }
 
   return (
     <form
       noValidate
       className={styles.form}
-      onSubmit={form.handleSubmit(submit)}
+      onSubmit={form.handleSubmit(submit, invalid)}
     >
       <Typography variant="t2" component="h2" tabIndex={-1} ref={heading}>
         {t('booking.contactsTitle')}
@@ -92,37 +112,35 @@ export function ContactsStep({
         label={t('booking.name')}
         fullWidth
         autoComplete="name"
-        error={!!errors.name || markedFields.includes('name')}
-        errorText={
-          fieldErrorText(t, errors.name) ??
-          (markedFields.includes('name') ? t('validation.invalid') : undefined)
-        }
+        error={!!errors.name}
+        errorText={fieldErrorText(t, errors.name)}
         {...form.register('name')}
       />
       <PhoneNumberField
+        id={phoneId}
         label={t('booking.phone')}
         country={country}
         nationalNumber={phone}
         onCountryChange={(c) =>
-          form.setValue('country', c, { shouldDirty: true })
+          form.setValue('country', c, {
+            shouldDirty: true,
+            shouldValidate: form.formState.isSubmitted,
+          })
         }
         onNationalNumberChange={(n) =>
-          form.setValue('phone', n, { shouldDirty: true })
+          form.setValue('phone', n, {
+            shouldDirty: true,
+            shouldValidate: form.formState.isSubmitted,
+          })
         }
-        error={!!errors.phone || markedFields.includes('phone')}
-        errorText={
-          fieldErrorText(t, errors.phone) ??
-          (markedFields.includes('phone') ? t('validation.invalid') : undefined)
-        }
+        error={!!errors.phone}
+        errorText={fieldErrorText(t, errors.phone)}
       />
       <Textarea
         label={t('booking.note')}
         fullWidth
-        error={!!errors.note || markedFields.includes('note')}
-        errorText={
-          fieldErrorText(t, errors.note) ??
-          (markedFields.includes('note') ? t('validation.invalid') : undefined)
-        }
+        error={!!errors.note}
+        errorText={fieldErrorText(t, errors.note)}
         {...form.register('note')}
       />
       {refusal?.kind === 'text' && (

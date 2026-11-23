@@ -132,3 +132,9 @@ export function slotsForPicker({
     }
   })
 }
+
+// The time the address names, if the picker offers it and it still has room.
+export const pickedSlot = (key: string | undefined, input: Input) =>
+  slotsForPicker(input)
+    .flatMap((day) => day.slots)
+    .find((slot) => slot.id === key && !slot.full)
