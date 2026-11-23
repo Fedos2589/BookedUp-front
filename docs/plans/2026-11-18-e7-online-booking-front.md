@@ -176,7 +176,7 @@ within its master — no «any» on a move) → `PATCH`. Started / cancelled →
 **Check:** `manage.test.tsx` — read; cancel with confirm; move to another time; `badTransition` shows
 read-only; 404 screen. Commit `feat(book): manage a booking by link`.
 
-### - [ ] G6: install the business's page
+### - [x] G6: install the business's page
 
 **Files:** create `src/pages/book/useBusinessManifest.ts` (+ test), `src/pages/book/BookingPage.tsx`,
 `src/pages/book/ManagePage.tsx`, maybe `src/pwa/*` if the install prompt needs to know the page.
