@@ -1,4 +1,5 @@
 import { RiGlobalLine } from '@remixicon/react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
@@ -6,6 +7,7 @@ import { Popover } from 'ted-ui/Popover/Popover'
 
 import styles from './LanguageSelect.module.scss'
 import { useLocaleControllerChoose } from '@/api/account/account'
+import { type Account, meQueryKey } from '@/auth/session'
 import {
   isLanguage,
   LANGUAGE_NAMES,
@@ -20,16 +22,36 @@ export function LanguageSelect() {
   const { t, i18n } = useTranslation()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [open, setOpen] = useState(false)
-  const { mutate } = useLocaleControllerChoose()
+  const queryClient = useQueryClient()
+  // The callbacks are the hook's, not mutate()'s: they run after this component
+  // is gone too (the phone's menu closes at once), and one choice after another
+  // goes to the back in order.
+  const { mutate } = useLocaleControllerChoose({
+    mutation: {
+      scope: { id: 'locale' },
+      onMutate: (): { previous: Language } => ({ previous: current }),
+      onError: (_error, _variables, context) => {
+        void i18n.changeLanguage(context?.previous ?? 'en')
+      },
+      // GET /me in the cache says the language the back now keeps.
+      onSuccess: (_data, { data }) => {
+        queryClient.setQueryData<Account>(
+          meQueryKey(),
+          (account) =>
+            account && {
+              ...account,
+              user: { ...account.user, locale: data.locale },
+            },
+        )
+      },
+    },
+  })
   const current = isLanguage(i18n.language) ? i18n.language : 'en'
 
   // The interface answers at once; if the back refuses, it goes back, so the
   // screen never says a language the cookie does not hold.
   const choose = (language: Language) => {
-    mutate(
-      { data: { locale: language } },
-      { onError: () => void i18n.changeLanguage(current) },
-    )
+    mutate({ data: { locale: language } })
     void i18n.changeLanguage(language)
     setOpen(false)
   }

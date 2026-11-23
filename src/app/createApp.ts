@@ -1,6 +1,7 @@
 import type { RouterHistory } from '@tanstack/react-router'
 
 import { isNoSession, meQueryKey } from '@/auth/session'
+import { followAccountLanguage } from './followAccountLanguage'
 import { createQueryClient } from './queryClient'
 import { createAppRouter } from './router'
 
@@ -17,6 +18,7 @@ export function createApp(history?: RouterHistory) {
       void router.navigate({ to: '/sign-in', replace: true })
     },
   })
+  followAccountLanguage(queryClient)
   const router = createAppRouter(queryClient, history)
   return { queryClient, router }
 }

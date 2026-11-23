@@ -3,6 +3,7 @@ import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { getMeControllerMeQueryKey } from '@/api/account/account'
+import i18n from '@/i18n'
 import { hasUnsavedInput } from '@/pwa/unsavedInput'
 import { account, fakeApi } from '@/test/fakeApi'
 import { renderApp } from '@/test/renderApp'
@@ -208,4 +209,27 @@ test('the password can be shown and hidden, without submitting', async () => {
   fireEvent.click(toggle)
   expect(password.getAttribute('type')).toBe('password')
   expect(api.calls.map((call) => call.route)).toEqual(['GET /api/me'])
+})
+
+test("signing in switches the interface to the account's language at once", async () => {
+  fakeApi({
+    'GET /api/me': [401],
+    'POST /api/auth/sign-in': [
+      200,
+      { ...account, user: { ...account.user, locale: 'ru' } },
+    ],
+  })
+  renderApp('/sign-in')
+  await screen.findByRole('heading', { name: 'Sign in' })
+
+  try {
+    fill('Email', 'anna@example.com')
+    fill('Password', 'correct horse')
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+
+    expect(await screen.findByRole('button', { name: 'Выйти' })).toBeTruthy()
+    expect(document.documentElement.lang).toBe('ru')
+  } finally {
+    await i18n.changeLanguage('en')
+  }
 })

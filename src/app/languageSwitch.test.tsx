@@ -1,9 +1,24 @@
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 
 import i18n from '@/i18n'
+import { meQueryKey } from '@/auth/session'
 import { account, deferredAnswer, fakeApi } from '@/test/fakeApi'
 import { renderApp } from '@/test/renderApp'
+
+// happy-dom's window knows its size; the DOM typings do not know happy-dom.
+const setViewport = (size: { width: number; height: number }) =>
+  (
+    window as unknown as {
+      happyDOM: { setViewport: (size: object) => void }
+    }
+  ).happyDOM.setViewport(size)
 
 afterEach(async () => {
   cleanup()
@@ -81,4 +96,43 @@ test('a cached answer of GET /me does not undo the language just chosen', async 
   await router.navigate({ to: '/settings' })
   expect(await screen.findByRole('button', { name: 'Выйти' })).toBeTruthy()
   expect(document.documentElement.lang).toBe('ru')
+})
+
+test('the interface returns when the back refuses, though the menu with the dropdown is already closed', async () => {
+  const later = deferredAnswer()
+  fakeApi({ 'GET /api/me': [200, account], 'PUT /api/locale': later.answer })
+  setViewport({ width: 390, height: 844 })
+  try {
+    renderApp('/')
+    fireEvent.click(await screen.findByRole('button', { name: 'Menu' }))
+    const menu = await screen.findByRole('dialog')
+    fireEvent.click(within(menu).getByRole('button', { name: /Language/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Русский' }))
+    await waitFor(() => expect(document.documentElement.lang).toBe('ru'))
+
+    // A link closes the menu, and the language select with it.
+    fireEvent.click(within(menu).getByRole('link', { name: /Календарь/ }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+    later.send([500])
+    await waitFor(() => expect(document.documentElement.lang).toBe('en'))
+  } finally {
+    setViewport({ width: 1024, height: 768 })
+  }
+})
+
+test('a GET /me that answers while the choice is on its way does not undo it', async () => {
+  const later = deferredAnswer()
+  fakeApi({ 'GET /api/me': [200, account], 'PUT /api/locale': later.answer })
+  const { queryClient } = renderApp('/')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Language: English' }),
+  )
+  fireEvent.click(await screen.findByRole('button', { name: 'Русский' }))
+  expect(await screen.findByRole('button', { name: 'Выйти' })).toBeTruthy()
+
+  await queryClient.refetchQueries({ queryKey: meQueryKey() })
+  expect(document.documentElement.lang).toBe('ru')
+  later.send([204])
 })
