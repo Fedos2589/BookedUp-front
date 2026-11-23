@@ -2755,3 +2755,543 @@ export type InvitationLinkControllerSignUp409 = {
   field: InvitationLinkControllerSignUp409Field;
 };
 
+export type PublicBookingControllerBusiness200MastersItemScheduleMode = typeof PublicBookingControllerBusiness200MastersItemScheduleMode[keyof typeof PublicBookingControllerBusiness200MastersItemScheduleMode];
+
+
+export const PublicBookingControllerBusiness200MastersItemScheduleMode = {
+  HOURS: 'HOURS',
+  GROUPS: 'GROUPS',
+} as const;
+
+export type PublicBookingControllerBusiness200MastersItem = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  scheduleMode: PublicBookingControllerBusiness200MastersItemScheduleMode;
+};
+
+export type PublicBookingControllerBusiness200 = {
+  name: string;
+  slug: string;
+  timeZone: string;
+  masters: PublicBookingControllerBusiness200MastersItem[];
+};
+
+export type PublicBookingControllerBusiness400StatusCode = typeof PublicBookingControllerBusiness400StatusCode[keyof typeof PublicBookingControllerBusiness400StatusCode];
+
+
+export const PublicBookingControllerBusiness400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerBusiness400 = {
+  statusCode: PublicBookingControllerBusiness400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerManifest200Display = typeof PublicBookingControllerManifest200Display[keyof typeof PublicBookingControllerManifest200Display];
+
+
+export const PublicBookingControllerManifest200Display = {
+  standalone: 'standalone',
+} as const;
+
+export type PublicBookingControllerManifest200IconsItem = {
+  src: string;
+  sizes: string;
+  type: string;
+  purpose?: string;
+};
+
+export type PublicBookingControllerManifest200 = {
+  id: string;
+  name: string;
+  short_name: string;
+  start_url: string;
+  scope: string;
+  display: PublicBookingControllerManifest200Display;
+  background_color: string;
+  theme_color: string;
+  icons: PublicBookingControllerManifest200IconsItem[];
+};
+
+export type PublicBookingControllerManifest400StatusCode = typeof PublicBookingControllerManifest400StatusCode[keyof typeof PublicBookingControllerManifest400StatusCode];
+
+
+export const PublicBookingControllerManifest400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerManifest400 = {
+  statusCode: PublicBookingControllerManifest400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerSlotsParams = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  from: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  to: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId?: string;
+};
+
+export type PublicBookingControllerSlots200Item = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  /** @nullable */
+  title: string | null;
+  /** @nullable */
+  description: string | null;
+  /**
+     * How many people it is for: 1 in hours mode
+     * @minimum 1
+     * @maximum 9007199254740991
+     */
+  capacity: number;
+  /**
+     * How many have booked it
+     * @minimum 0
+     * @maximum 9007199254740991
+     */
+  booked: number;
+  /** Every place is booked: shown, but cannot be booked */
+  full: boolean;
+  /**
+     * The group it is a meeting of
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * The one-off session it is
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type PublicBookingControllerSlots400StatusCode = typeof PublicBookingControllerSlots400StatusCode[keyof typeof PublicBookingControllerSlots400StatusCode];
+
+
+export const PublicBookingControllerSlots400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerSlots400 = {
+  statusCode: PublicBookingControllerSlots400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerBookBody = {
+  /**
+     * The master; none: any master who is free at exactly this time
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  staffId?: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  endsAt: string;
+  /**
+     * Book a seat in the meeting of this group at this time
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId?: string;
+  /**
+     * Book a seat in this one-off session
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId?: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /**
+     * @maxLength 16
+     * @pattern ^\+[1-9]\d{6,14}$
+     */
+  phone: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  note?: string | null;
+};
+
+export type PublicBookingControllerBook201Booking = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  staffName: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  /**
+     * The meeting's title; none for an hours booking
+     * @nullable
+     */
+  title: string | null;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type PublicBookingControllerBook201 = {
+  booking: PublicBookingControllerBook201Booking;
+  /** Private: whoever has it can see, cancel and move this booking */
+  manageLink: string;
+};
+
+export type PublicBookingControllerBook400StatusCode = typeof PublicBookingControllerBook400StatusCode[keyof typeof PublicBookingControllerBook400StatusCode];
+
+
+export const PublicBookingControllerBook400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerBook400 = {
+  statusCode: PublicBookingControllerBook400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerBook409StatusCode = typeof PublicBookingControllerBook409StatusCode[keyof typeof PublicBookingControllerBook409StatusCode];
+
+
+export const PublicBookingControllerBook409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type PublicBookingControllerBook409Error = typeof PublicBookingControllerBook409Error[keyof typeof PublicBookingControllerBook409Error];
+
+
+export const PublicBookingControllerBook409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+/**
+ * notFree: no such slot or taken; full: every seat of the meeting is taken; tooManyBookings: this phone already has 3 bookings to come
+ */
+export type PublicBookingControllerBook409Code = typeof PublicBookingControllerBook409Code[keyof typeof PublicBookingControllerBook409Code];
+
+
+export const PublicBookingControllerBook409Code = {
+  notFree: 'notFree',
+  full: 'full',
+  tooManyBookings: 'tooManyBookings',
+} as const;
+
+export type PublicBookingControllerBook409 = {
+  statusCode: PublicBookingControllerBook409StatusCode;
+  error: PublicBookingControllerBook409Error;
+  message: string;
+  /**
+     * With phoneTaken: the holder of the phone
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  clientId?: string;
+  /** notFree: no such slot or taken; full: every seat of the meeting is taken; tooManyBookings: this phone already has 3 bookings to come */
+  code: PublicBookingControllerBook409Code;
+};
+
+export type PublicBookingControllerManaged200Business = {
+  name: string;
+  slug: string;
+  timeZone: string;
+};
+
+export type PublicBookingControllerManaged200BookingStatus = typeof PublicBookingControllerManaged200BookingStatus[keyof typeof PublicBookingControllerManaged200BookingStatus];
+
+
+export const PublicBookingControllerManaged200BookingStatus = {
+  BOOKED: 'BOOKED',
+  CONFIRMED: 'CONFIRMED',
+  DONE: 'DONE',
+  NO_SHOW: 'NO_SHOW',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type PublicBookingControllerManaged200Booking = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  staffName: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  /**
+     * The meeting's title; none for an hours booking
+     * @nullable
+     */
+  title: string | null;
+  status: PublicBookingControllerManaged200BookingStatus;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type PublicBookingControllerManaged200 = {
+  business: PublicBookingControllerManaged200Business;
+  booking: PublicBookingControllerManaged200Booking;
+  /** BOOKED or CONFIRMED and not started: it can be cancelled or moved */
+  canChange: boolean;
+};
+
+export type PublicBookingControllerManaged400StatusCode = typeof PublicBookingControllerManaged400StatusCode[keyof typeof PublicBookingControllerManaged400StatusCode];
+
+
+export const PublicBookingControllerManaged400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerManaged400 = {
+  statusCode: PublicBookingControllerManaged400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerMoveBody = {
+  /**
+     * The master to move to; none: the same master
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  staffId?: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  endsAt: string;
+  /**
+     * Move to the meeting of this group at this time
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId?: string;
+  /**
+     * Move to this one-off session
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId?: string;
+};
+
+export type PublicBookingControllerMove200Business = {
+  name: string;
+  slug: string;
+  timeZone: string;
+};
+
+export type PublicBookingControllerMove200BookingStatus = typeof PublicBookingControllerMove200BookingStatus[keyof typeof PublicBookingControllerMove200BookingStatus];
+
+
+export const PublicBookingControllerMove200BookingStatus = {
+  BOOKED: 'BOOKED',
+  CONFIRMED: 'CONFIRMED',
+  DONE: 'DONE',
+  NO_SHOW: 'NO_SHOW',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type PublicBookingControllerMove200Booking = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  staffName: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  /**
+     * The meeting's title; none for an hours booking
+     * @nullable
+     */
+  title: string | null;
+  status: PublicBookingControllerMove200BookingStatus;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type PublicBookingControllerMove200 = {
+  business: PublicBookingControllerMove200Business;
+  booking: PublicBookingControllerMove200Booking;
+  /** BOOKED or CONFIRMED and not started: it can be cancelled or moved */
+  canChange: boolean;
+};
+
+export type PublicBookingControllerMove400StatusCode = typeof PublicBookingControllerMove400StatusCode[keyof typeof PublicBookingControllerMove400StatusCode];
+
+
+export const PublicBookingControllerMove400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerMove400 = {
+  statusCode: PublicBookingControllerMove400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerMove409StatusCode = typeof PublicBookingControllerMove409StatusCode[keyof typeof PublicBookingControllerMove409StatusCode];
+
+
+export const PublicBookingControllerMove409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type PublicBookingControllerMove409Error = typeof PublicBookingControllerMove409Error[keyof typeof PublicBookingControllerMove409Error];
+
+
+export const PublicBookingControllerMove409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+export type PublicBookingControllerMove409Code = typeof PublicBookingControllerMove409Code[keyof typeof PublicBookingControllerMove409Code];
+
+
+export const PublicBookingControllerMove409Code = {
+  notFree: 'notFree',
+  full: 'full',
+  badTransition: 'badTransition',
+} as const;
+
+export type PublicBookingControllerMove409 = {
+  statusCode: PublicBookingControllerMove409StatusCode;
+  error: PublicBookingControllerMove409Error;
+  message: string;
+  /**
+     * With phoneTaken: the holder of the phone
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  clientId?: string;
+  code: PublicBookingControllerMove409Code;
+};
+
+export type PublicBookingControllerCancel201Business = {
+  name: string;
+  slug: string;
+  timeZone: string;
+};
+
+export type PublicBookingControllerCancel201BookingStatus = typeof PublicBookingControllerCancel201BookingStatus[keyof typeof PublicBookingControllerCancel201BookingStatus];
+
+
+export const PublicBookingControllerCancel201BookingStatus = {
+  BOOKED: 'BOOKED',
+  CONFIRMED: 'CONFIRMED',
+  DONE: 'DONE',
+  NO_SHOW: 'NO_SHOW',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type PublicBookingControllerCancel201Booking = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  staffId: string;
+  staffName: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  startsAt: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
+  endsAt: string;
+  /**
+     * The meeting's title; none for an hours booking
+     * @nullable
+     */
+  title: string | null;
+  status: PublicBookingControllerCancel201BookingStatus;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  groupId: string | null;
+  /**
+     * @nullable
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  oneOffSessionId: string | null;
+};
+
+export type PublicBookingControllerCancel201 = {
+  business: PublicBookingControllerCancel201Business;
+  booking: PublicBookingControllerCancel201Booking;
+  /** BOOKED or CONFIRMED and not started: it can be cancelled or moved */
+  canChange: boolean;
+};
+
+export type PublicBookingControllerCancel400StatusCode = typeof PublicBookingControllerCancel400StatusCode[keyof typeof PublicBookingControllerCancel400StatusCode];
+
+
+export const PublicBookingControllerCancel400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerCancel400 = {
+  statusCode: PublicBookingControllerCancel400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerCancel409StatusCode = typeof PublicBookingControllerCancel409StatusCode[keyof typeof PublicBookingControllerCancel409StatusCode];
+
+
+export const PublicBookingControllerCancel409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type PublicBookingControllerCancel409Error = typeof PublicBookingControllerCancel409Error[keyof typeof PublicBookingControllerCancel409Error];
+
+
+export const PublicBookingControllerCancel409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+/**
+ * The booking has started or is not BOOKED / CONFIRMED any more
+ */
+export type PublicBookingControllerCancel409Code = typeof PublicBookingControllerCancel409Code[keyof typeof PublicBookingControllerCancel409Code];
+
+
+export const PublicBookingControllerCancel409Code = {
+  badTransition: 'badTransition',
+} as const;
+
+export type PublicBookingControllerCancel409 = {
+  statusCode: PublicBookingControllerCancel409StatusCode;
+  error: PublicBookingControllerCancel409Error;
+  message: string;
+  /**
+     * With phoneTaken: the holder of the phone
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  clientId?: string;
+  /** The booking has started or is not BOOKED / CONFIRMED any more */
+  code: PublicBookingControllerCancel409Code;
+};
+
