@@ -2,7 +2,7 @@ import type {
   PublicBookingControllerBusiness200MastersItem as Master,
   PublicBookingControllerSlots200Item as Slot,
 } from '@/api/generated.schemas'
-import { addDays, dateIn, timeIn } from '@/dates'
+import { addDays, dateIn, isoWeekday, timeIn, weekdayLabel } from '@/dates'
 import { ANY_MASTER } from './bookingSearch'
 
 // How many days the booking page offers, today included.
@@ -60,7 +60,8 @@ function pickerSlot(
   slot: Slot,
   staffId: string,
   timeZone: string,
-  masters: Master[],
+  // Set for "any", where the meeting's master is not yet known to the client.
+  masters: Master[] | null,
 ): PickerSlot {
   const meeting = isMeeting(slot)
   return {
@@ -68,9 +69,10 @@ function pickerSlot(
     time: timeOf(slot, timeZone),
     staffId,
     title: meeting ? slot.title : null,
-    master: meeting
-      ? (masters.find((master) => master.id === slot.staffId)?.name ?? null)
-      : null,
+    master:
+      meeting && masters
+        ? (masters.find((master) => master.id === slot.staffId)?.name ?? null)
+        : null,
     free: meeting
       ? { left: Math.max(slot.capacity - slot.booked, 0), of: slot.capacity }
       : null,
@@ -99,7 +101,7 @@ export function slotsForPicker({
     if (any && slot.full) continue
     // "Any" books no master: its hours times carry none.
     const staffId = any && !isMeeting(slot) ? '' : slot.staffId
-    const picked = pickerSlot(slot, staffId, timeZone, masters)
+    const picked = pickerSlot(slot, staffId, timeZone, any ? masters : null)
     if (seen.has(picked.id)) continue
     seen.add(picked.id)
     offered.push({
@@ -114,10 +116,7 @@ export function slotsForPicker({
     const date = addDays(today, index)
     return {
       date,
-      weekday: new Intl.DateTimeFormat(language, {
-        timeZone: 'UTC',
-        weekday: 'short',
-      }).format(new Date(`${date}T00:00:00Z`)),
+      weekday: weekdayLabel(isoWeekday(date), language),
       number: String(Number(date.slice(8))),
       slots: offered.filter((o) => o.date === date).map((o) => o.slot),
     }

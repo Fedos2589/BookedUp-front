@@ -154,7 +154,7 @@ test("step 2 names the business zone when it is not the browser's", async () => 
       [],
     ],
   })
-  renderApp('/book/judo?staff=any')
+  renderApp(`/book/judo?staff=${HOURS_ANNA}`)
 
   expect(
     await screen.findByText('Times are in Pacific/Kiritimati'),
@@ -166,4 +166,87 @@ test('an address naming an unknown master shows step 1', async () => {
   renderApp('/book/judo?staff=nobody')
 
   expect(await screen.findByText('Choose a master')).toBeTruthy()
+})
+
+test('a failed load is a screen with a heading and "Try again", which asks only what failed', async () => {
+  const api = fakeApi({ [BUSINESS]: [503] })
+  renderApp('/book/judo')
+
+  expect(
+    await screen.findByRole('heading', {
+      level: 1,
+      name: "Couldn't load the booking page.",
+    }),
+  ).toBeTruthy()
+  api.set(BUSINESS, [200, business])
+  api.set(SLOTS, [200, [slot(HOURS_ANNA)]])
+  fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
+
+  expect(await screen.findByRole('button', { name: /Anna/ })).toBeTruthy()
+  expect(api.calls.map((call) => call.route)).not.toContain(
+    'GET /api/public/businesses/judo/slots?from=&to=Invalid%20Date',
+  )
+  expect(api.calls.every((call) => !call.route.includes('from=&'))).toBe(true)
+})
+
+test('a slots refetch that fails keeps the chosen step on screen', async () => {
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  const { queryClient } = renderApp(`/book/judo?staff=${HOURS_ANNA}`)
+  await screen.findByRole('radio', { name: '10:00' })
+
+  api.set(SLOTS, [503])
+  await queryClient.refetchQueries({
+    queryKey: ['/api/public/businesses/judo/slots'],
+  })
+
+  expect(screen.getByRole('radio', { name: '10:00' })).toBeTruthy()
+})
+
+test('choosing a day or a time replaces the history entry; choosing a master adds one', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  const { router } = renderApp('/book/judo')
+
+  fireEvent.click(await screen.findByRole('button', { name: /Anna/ }))
+  await screen.findByRole('radio', { name: '10:00' })
+  const length = router.history.length
+  fireEvent.click(screen.getByRole('radio', { name: '10:00' }))
+  await waitFor(() => expect(router.state.location.search.slot).toBeTruthy())
+
+  expect(router.history.length).toBe(length)
+})
+
+test('each step puts focus on its heading', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  const { router } = renderApp('/book/judo')
+
+  const step1 = await screen.findByRole('heading', { name: 'Choose a master' })
+  expect(document.activeElement).toBe(step1)
+  fireEvent.click(screen.getByRole('button', { name: /Anna/ }))
+  const step2 = await screen.findByRole('heading', {
+    name: 'Choose a day and a time',
+  })
+  expect(document.activeElement).toBe(step2)
+  router.history.back()
+  const back = await screen.findByRole('heading', { name: 'Choose a master' })
+  expect(document.activeElement).toBe(back)
+})
+
+test('?staff=any with no free hours shows step 1, as "any" is not offered', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(GROUPS_CARA, { groupId: 'g' })]],
+  })
+  renderApp('/book/judo?staff=any')
+
+  expect(await screen.findByText('Choose a master')).toBeTruthy()
+  expect(screen.queryByText('Choose a day and a time')).toBeNull()
 })

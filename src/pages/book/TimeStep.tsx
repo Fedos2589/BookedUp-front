@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SlotPicker } from 'ted-ui/SlotPicker'
 import { Typography } from 'ted-ui/Typography'
@@ -8,6 +7,7 @@ import type {
   PublicBookingControllerSlots200Item,
 } from '@/api/generated.schemas'
 import styles from './BookingPage.module.scss'
+import { useStepHeading } from './useStepHeading'
 import { slotsForPicker, type PickerSlot } from './slotsForPicker'
 
 type Props = {
@@ -32,9 +32,7 @@ export function TimeStep({
   onChange,
 }: Props) {
   const { t, i18n } = useTranslation()
-  const heading = useRef<HTMLHeadingElement>(null)
-  // A new step: focus goes to its heading, not to <body>.
-  useEffect(() => heading.current?.focus(), [])
+  const heading = useStepHeading()
 
   const days = slotsForPicker({
     slots,

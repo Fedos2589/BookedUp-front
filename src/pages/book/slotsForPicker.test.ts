@@ -139,3 +139,17 @@ test("days and times are the business's, also across a DST change (Berlin, 25 Oc
     days.find((d) => d.date === '2026-10-26')!.slots.map((s) => s.time),
   ).toEqual(['00:30'])
 })
+
+test('a meeting names its master only for "any"; a chosen master is already known', () => {
+  const at = '2026-11-24T09:00:00.000Z'
+  const meeting = slot(CARA, at, {
+    title: 'Football',
+    capacity: 10,
+    booked: 7,
+    groupId: 'g1',
+  })
+  expect(day(view([meeting], CARA), '2026-11-24').slots[0].master).toBeNull()
+  expect(day(view([meeting], ANY_MASTER), '2026-11-24').slots[0].master).toBe(
+    'Cara',
+  )
+})

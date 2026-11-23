@@ -1,7 +1,9 @@
+import { keepPreviousData } from '@tanstack/react-query'
+
 import {
   usePublicBookingControllerBusiness,
   usePublicBookingControllerSlots,
-} from '@/api'
+} from '@/api/public-booking/public-booking'
 import { addDays, dateIn } from '@/dates'
 import { useNow } from '@/useNow'
 import { DAYS_AHEAD } from './slotsForPicker'
@@ -18,7 +20,13 @@ export function useBookingData(slug: string) {
   const slots = usePublicBookingControllerSlots(
     slug,
     { from: today, to: addDays(today, DAYS_AHEAD - 1) },
-    { query: { enabled: Boolean(business.data) } },
+    {
+      query: {
+        enabled: Boolean(business.data),
+        // The window moves at midnight: the old times stay until the new come.
+        placeholderData: keepPreviousData,
+      },
+    },
   )
   return { business, slots, today }
 }

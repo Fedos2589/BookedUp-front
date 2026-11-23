@@ -1,53 +1,60 @@
 import { getRouteApi } from '@tanstack/react-router'
-import { useTranslation } from 'react-i18next'
-import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
-import { ANY_MASTER } from './bookingSearch'
+import type {
+  PublicBookingControllerBusiness200,
+  PublicBookingControllerSlots200Item,
+} from '@/api/generated.schemas'
 import { ApiError } from '@/apiFetch'
 import { PagePending } from '@/pages/PagePending'
+import { anyMasterOffered } from './anyMasterOffered'
+import { ANY_MASTER } from './bookingSearch'
 import styles from './BookingPage.module.scss'
+import { LoadFailed } from './LoadFailed'
 import { MastersStep } from './MastersStep'
 import { NoSuchPage } from './NoSuchPage'
 import { TimeStep } from './TimeStep'
 import { useBookingData } from './useBookingData'
 
 // An address naming a master the business doesn't have is the first step.
-const knownStaff = (staff: string | undefined, masters: { id: string }[]) =>
-  staff === ANY_MASTER || masters.some((master) => master.id === staff)
+const knownStaff = (
+  staff: string | undefined,
+  business: PublicBookingControllerBusiness200,
+  slots: PublicBookingControllerSlots200Item[],
+) => {
+  if (staff === ANY_MASTER) {
+    return anyMasterOffered(business.masters, slots) ? staff : undefined
+  }
+  return business.masters.some((master) => master.id === staff)
     ? staff
     : undefined
+}
 
 const route = getRouteApi('/book/$businessSlug')
 
 export function BookingPage() {
   const { businessSlug } = route.useParams()
   const navigate = route.useNavigate()
-  const { t } = useTranslation()
   const search = route.useSearch()
   const { business, slots, today } = useBookingData(businessSlug)
 
   if (business.error instanceof ApiError && business.error.status === 404) {
     return <NoSuchPage />
   }
-  if (business.isError || slots.isError) {
+  // A failed refetch keeps what is already on screen (the old data stays).
+  if ((business.isError && !business.data) || (slots.isError && !slots.data)) {
     return (
-      <main className={styles.page}>
-        <Typography variant="t2">{t('booking.loadFailed')}</Typography>
-        <Button
-          onClick={() => {
-            void business.refetch()
-            void slots.refetch()
-          }}
-        >
-          {t('common.tryAgain')}
-        </Button>
-      </main>
+      <LoadFailed
+        onRetry={() => {
+          if (business.isError) void business.refetch()
+          if (slots.isError) void slots.refetch()
+        }}
+      />
     )
   }
   if (!business.data || !slots.data) return <PagePending />
 
-  const staff = knownStaff(search.staff, business.data.masters)
+  const staff = knownStaff(search.staff, business.data, slots.data)
 
   return (
     <main className={styles.page}>
@@ -62,7 +69,10 @@ export function BookingPage() {
           staff={staff}
           day={search.day}
           slot={search.slot}
-          onChange={(choice) => void navigate({ search: { staff, ...choice } })}
+          // Day and time refine the step: Back leaves it, not each tap.
+          onChange={(choice) =>
+            void navigate({ search: { staff, ...choice }, replace: true })
+          }
         />
       ) : (
         <MastersStep
