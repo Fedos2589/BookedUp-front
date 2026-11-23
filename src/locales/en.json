@@ -21,7 +21,11 @@
     "name": "Name",
     "phone": "Phone",
     "note": "Note (optional)",
-    "book": "Book"
+    "book": "Book",
+    "taken": "That time was just taken. Choose another.",
+    "tooMany": "You already have 3 bookings to come. Cancel one to book another.",
+    "tooManyAttempts": "Too many attempts, try later",
+    "failed": "Couldn't book. Try again."
   },
   "auth": {
     "email": "Email",

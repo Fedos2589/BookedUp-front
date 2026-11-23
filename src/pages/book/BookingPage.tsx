@@ -1,4 +1,5 @@
 import { getRouteApi } from '@tanstack/react-router'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
@@ -51,6 +52,8 @@ export function BookingPage() {
   const search = route.useSearch()
   const { i18n } = useTranslation()
   const { business, slots, today } = useBookingData(businessSlug)
+  // The time the client had chosen was taken by someone else meanwhile.
+  const [taken, setTaken] = useState(false)
 
   if (business.error instanceof ApiError && business.error.status === 404) {
     return <NoSuchPage />
@@ -95,6 +98,14 @@ export function BookingPage() {
           master={
             business.data.masters.find((m) => m.id === chosen.staffId)?.name
           }
+          onTaken={() => {
+            setTaken(true)
+            void slots.refetch()
+            void navigate({
+              search: { staff, day: search.day },
+              replace: true,
+            })
+          }}
           onBooked={({ booking, manageLink }) =>
             saveBooking(businessSlug, {
               manageLink,
@@ -104,6 +115,7 @@ export function BookingPage() {
         />
       ) : staff ? (
         <TimeStep
+          taken={taken}
           business={business.data}
           slots={slots.data}
           today={today}
@@ -111,9 +123,10 @@ export function BookingPage() {
           day={search.day}
           slot={search.slot}
           // Day and time refine the step: Back leaves it, not each tap.
-          onChange={(choice) =>
+          onChange={(choice) => {
+            setTaken(false)
             void navigate({ search: { staff, ...choice }, replace: true })
-          }
+          }}
           onContinue={() =>
             void navigate({
               search: {

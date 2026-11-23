@@ -21,6 +21,8 @@ type Props = {
   slot: string | undefined
   onChange: (choice: { day: string; slot: string | undefined }) => void
   onContinue: () => void
+  // Shows that the time the client had chosen was just taken.
+  taken: boolean
 }
 
 // Step 2: a day and a time. The first day with a free time is chosen until
@@ -34,6 +36,7 @@ export function TimeStep({
   slot,
   onChange,
   onContinue,
+  taken,
 }: Props) {
   const { t, i18n } = useTranslation()
   const heading = useStepHeading()
@@ -67,6 +70,11 @@ export function TimeStep({
       <Typography variant="t2" component="h2" tabIndex={-1} ref={heading}>
         {t('booking.chooseTime')}
       </Typography>
+      {taken && (
+        <Typography variant="t3" color="red-300" role="status">
+          {t('booking.taken')}
+        </Typography>
+      )}
       <SlotPicker
         className={styles.picker}
         daysLabel={t('booking.daysLabel')}

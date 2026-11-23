@@ -12,6 +12,7 @@ import type { PublicBookingControllerBook201 } from '@/api/generated.schemas'
 import { dateTimeIn, timeIn } from '@/dates'
 import { fieldErrorText } from '@/forms/fieldError'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
+import { refusalOf } from './bookRefusal'
 import styles from './BookingPage.module.scss'
 import {
   bookBody,
@@ -29,6 +30,8 @@ type Props = {
   // The master's name, or undefined for "any" (known after booking).
   master: string | undefined
   onBooked: (booked: PublicBookingControllerBook201) => void
+  // The time is gone: the client picks another.
+  onTaken: () => void
 }
 
 // Step 3: who is booking. The chosen time and master are shown above the form.
@@ -38,6 +41,7 @@ export function ContactsStep({
   slot,
   master,
   onBooked,
+  onTaken,
 }: Props) {
   const { t, i18n } = useTranslation()
   const heading = useStepHeading()
@@ -58,10 +62,18 @@ export function ContactsStep({
   ].join('–')
   const who = master ?? slot.master ?? t('booking.anyMaster')
 
+  const refusal = book.isError ? refusalOf(book.error) : undefined
+  const markedFields = refusal?.kind === 'fields' ? refusal.fields : []
+
   const submit = (values: ContactsForm) =>
     book.mutate(
       { slug, data: bookBody(slot.id, values) },
-      { onSuccess: onBooked },
+      {
+        onSuccess: onBooked,
+        onError: (error) => {
+          if (refusalOf(error).kind === 'taken') onTaken()
+        },
+      },
     )
 
   return (
@@ -80,8 +92,11 @@ export function ContactsStep({
         label={t('booking.name')}
         fullWidth
         autoComplete="name"
-        error={!!errors.name}
-        errorText={fieldErrorText(t, errors.name)}
+        error={!!errors.name || markedFields.includes('name')}
+        errorText={
+          fieldErrorText(t, errors.name) ??
+          (markedFields.includes('name') ? t('validation.invalid') : undefined)
+        }
         {...form.register('name')}
       />
       <PhoneNumberField
@@ -94,16 +109,27 @@ export function ContactsStep({
         onNationalNumberChange={(n) =>
           form.setValue('phone', n, { shouldDirty: true })
         }
-        error={!!errors.phone}
-        errorText={fieldErrorText(t, errors.phone)}
+        error={!!errors.phone || markedFields.includes('phone')}
+        errorText={
+          fieldErrorText(t, errors.phone) ??
+          (markedFields.includes('phone') ? t('validation.invalid') : undefined)
+        }
       />
       <Textarea
         label={t('booking.note')}
         fullWidth
-        error={!!errors.note}
-        errorText={fieldErrorText(t, errors.note)}
+        error={!!errors.note || markedFields.includes('note')}
+        errorText={
+          fieldErrorText(t, errors.note) ??
+          (markedFields.includes('note') ? t('validation.invalid') : undefined)
+        }
         {...form.register('note')}
       />
+      {refusal?.kind === 'text' && (
+        <Typography variant="t4" color="red-300" role="alert">
+          {t(refusal.key)}
+        </Typography>
+      )}
       <ActionBar>
         <Button
           type="submit"

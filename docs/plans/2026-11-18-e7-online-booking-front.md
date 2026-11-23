@@ -142,7 +142,7 @@ booking while it's in the future.
       in `bookingSearch.ts`, `BookingPage.tsx` routing, locales. Check: component test — pick a time,
       continue, fill, POST body is right (no `staffId` for «any»), validation errors show.
       Commit `feat(book): contacts step`.
-- [ ] **G4c refusals** — 409 `notFree`/`full` → step 2 + toast + slots refetch; `tooManyBookings`,
+- [x] **G4c refusals** — 409 `notFree`/`full` → step 2 + a note on it (no toast: the app has no ToastProvider, and /book stays light) + slots refetch; `tooManyBookings`,
       429, 400 texts. Files: `ContactsStep.tsx`, `BookingPage.tsx`, locales, `booking.test.tsx`.
       Commit `feat(book): booking refusals`.
 - [ ] **G4d done screen** — `DoneStep.tsx` (when, who, where, manage link + «Copy»), saves via

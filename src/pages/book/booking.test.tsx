@@ -359,3 +359,89 @@ test('the contacts step without a chosen time is step 2', async () => {
   expect(await screen.findByText('Choose a day and a time')).toBeTruthy()
   expect(screen.queryByText('Your details')).toBeNull()
 })
+
+const fillAndBook = async () => {
+  await screen.findByRole('heading', { name: 'Your details' })
+  typeInto('Name', 'Ira')
+  typeInto('Phone', '+66 81 234 5678')
+  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+}
+
+test.each(['notFree', 'full'])(
+  'a %s refusal sends the client back to step 2 with a note and fresh times',
+  async (code) => {
+    const api = fakeApi({
+      [BUSINESS]: [200, business],
+      [SLOTS]: [200, [slot(HOURS_ANNA)]],
+      [BOOK]: [409, { statusCode: 409, error: 'Conflict', code }],
+    })
+    await toContacts(HOURS_ANNA)
+    await fillAndBook()
+
+    expect(
+      await screen.findByRole('heading', { name: 'Choose a day and a time' }),
+    ).toBeTruthy()
+    expect(screen.getByText(/That time was just taken/)).toBeTruthy()
+    expect(
+      screen.getByRole('radio', { name: '10:00' }).getAttribute('aria-checked'),
+    ).toBe('false')
+    await waitFor(() =>
+      expect(api.calls.filter((c) => c.route === SLOTS).length).toBe(2),
+    )
+  },
+)
+
+test('tooManyBookings is said under the button; the form stays', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: [
+      409,
+      { statusCode: 409, error: 'Conflict', code: 'tooManyBookings' },
+    ],
+  })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  expect(await screen.findByText(/3 bookings to come/)).toBeTruthy()
+  expect(screen.getByLabelText('Name')).toBeTruthy()
+})
+
+test('429 asks to try later', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: [429, { statusCode: 429, message: 'Too Many Requests' }],
+  })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  expect(await screen.findByText('Too many attempts, try later')).toBeTruthy()
+})
+
+test('a 400 naming a field marks that field', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: [
+      400,
+      { statusCode: 400, error: 'Bad Request', message: ['phone is invalid'] },
+    ],
+  })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  expect(await screen.findByText('Check this field')).toBeTruthy()
+})
+
+test('any other failure says it could not book', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: [500, { statusCode: 500, message: 'oops' }],
+  })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  expect(await screen.findByText("Couldn't book. Try again.")).toBeTruthy()
+})
