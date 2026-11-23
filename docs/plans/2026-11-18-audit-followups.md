@@ -22,7 +22,7 @@ here.
 
 ## K-A1 (ted-ui): README stops naming a stale version
 
-- [ ] **Branch** `docs/readme-version` from ted-ui `main`.
+- [x] **Branch** `docs/readme-version` from ted-ui `main`. Done — ted-ui PR #22 (`5982246`).
 - **Problem:** `README.md` shows `npm install github:Fedos2589/TedUI#v0.1.0` and
   `"ted-ui": "github:Fedos2589/TedUI#v0.1.0"`; the kit is at 0.7.0. Every release would have to
   remember to edit it, so it will drift again.
@@ -35,7 +35,7 @@ here.
 
 ## K-A2 (ted-ui): CI runs the checks AGENTS.md lists
 
-- [ ] **Branch** `ci/checks` from ted-ui `main`.
+- [x] **Branch** `ci/checks` from ted-ui `main`. Done — ted-ui PR #22 (`f0c4e8d`, `887f3fa`).
 - **Problem:** AGENTS.md says «There is no CI: run all of them before every PR» — so a PR that skipped
   a check (most often `test:stories`, which needs a browser) merges unnoticed.
 - **Do:** `.github/workflows/ci.yml` on `pull_request` and `push` to `main`, modelled on
@@ -53,7 +53,7 @@ here.
 
 ## F-A1 (front): README stops naming a stale kit version
 
-- [ ] **Branch** `docs/audit-followups` (this one).
+- [x] **Branch** `docs/audit-followups-done`.
 - **Problem:** `README.md` «TedUI in Vite» says the kit is installed by tag
   `github:Fedos2589/TedUI#v0.1.0`; `package.json` pins `v0.7.0`.
 - **Do:** say the kit is installed as source by the tag `package.json` pins (no number), and that
