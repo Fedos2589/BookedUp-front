@@ -50,7 +50,12 @@ const master = {
 // An admin signed in as Boris, the admin in the members list.
 const asAdmin = () => ({
   ...withRole('ADMIN'),
-  user: { id: admin.userId, email: admin.email, name: admin.name },
+  user: {
+    id: admin.userId,
+    email: admin.email,
+    name: admin.name,
+    locale: 'en',
+  },
 })
 
 const staffOfVera = {

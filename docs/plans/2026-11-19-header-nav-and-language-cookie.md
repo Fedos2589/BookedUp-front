@@ -64,6 +64,8 @@ this order, one session each, one branch `feature/header-nav`:
 
 ## T2. The language moves to the back and comes in a cookie
 
+_Done 2026-11-23: back = `users.locale`, `GET /me` → `user.locale`, cookie `lang` (readable from JS, `Path=/`, `SameSite=Lax`), `PUT /locale` (open to a visitor: cookie only). Front: starts in the cookie, a fresh `GET /me` switches to the account's language, the dropdown switches at once and reverts if `PUT /locale` fails._
+
 **Today:** the language is in `localStorage` (`src/language.ts`): a new device or the installed PWA
 on iOS (its own storage) falls back to the browser's language.
 

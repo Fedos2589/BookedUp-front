@@ -11,8 +11,9 @@ export const resources = {
   ru: { translation: ru },
 } as const
 
-// The language the person saved; without one, the browser's preferred language
-// when the app speaks it, English otherwise.
+// The cookie the back set; without one, the browser's preferred language when
+// the app speaks it, English otherwise. The account's language (GET /me) takes
+// over later: followAccountLanguage.
 void i18n.use(initReactI18next).init({
   lng: initialLanguage(navigator.languages ?? [navigator.language]),
   fallbackLng: 'en',

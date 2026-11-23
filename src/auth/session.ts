@@ -1,7 +1,10 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { redirect } from '@tanstack/react-router'
 
-import { getMeControllerMeQueryOptions } from '@/api/account/account'
+import {
+  getMeControllerMeQueryOptions,
+  type meControllerMe,
+} from '@/api/account/account'
 import { ApiError } from '@/apiFetch'
 import { retryServerErrors } from '@/app/queryClient'
 
@@ -16,6 +19,8 @@ export const sessionCheckOptions = () => ({
   retry: retryServerErrors(1),
   staleTime: 30_000,
 })
+
+export type Account = Awaited<ReturnType<typeof meControllerMe>>
 
 export const meQueryKey = () => getMeControllerMeQueryOptions().queryKey
 

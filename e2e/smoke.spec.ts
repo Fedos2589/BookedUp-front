@@ -147,6 +147,9 @@ test('the «no business» screen keeps sign out in the burger', async ({
       }),
     }),
   )
+  // The language choice goes to the back; there is none here, and a refusal
+  // would take the interface back to English.
+  await page.route('**/api/locale', (route) => route.fulfill({ status: 204 }))
   await page.setViewportSize({ width: 390, height: 844 })
 
   await page.goto('/', { waitUntil: 'networkidle' })
