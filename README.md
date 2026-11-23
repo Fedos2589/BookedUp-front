@@ -25,7 +25,7 @@ npm run api:generate  # the back must be running, see orval.config.ts
 
 ## TedUI in Vite
 
-The kit is installed as source by tag (`github:Fedos2589/TedUI#v0.1.0`). Vite needs:
+The kit is installed as source by the tag `package.json` pins (`github:Fedos2589/TedUI#vX.Y.Z`); bumping it goes through the kit's `release` skill. Vite needs:
 
 - `vite-plugin-svgr` with `include: '**/*.svg'` — the kit imports SVGs without the `?react` suffix;
 - `optimizeDeps.exclude: ['ted-ui']` — the package is `.tsx`, Vite compiles it;
