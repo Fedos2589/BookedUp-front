@@ -2,17 +2,16 @@ import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 
 import i18n from '@/i18n'
-import { fakeApi } from '@/test/fakeApi'
+import { deferredAnswer, fakeApi } from '@/test/fakeApi'
 import { renderApp } from '@/test/renderApp'
 
 afterEach(async () => {
   cleanup()
-  localStorage.clear()
   await i18n.changeLanguage('en')
 })
 
-test('the header switches the language, keeps the choice and leads home', async () => {
-  fakeApi({ 'GET /api/me': [401] })
+test('the header switches the language, tells the back and leads home', async () => {
+  const api = fakeApi({ 'GET /api/me': [401], 'PUT /api/locale': [204] })
   renderApp('/sign-in')
 
   expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeTruthy()
@@ -22,8 +21,28 @@ test('the header switches the language, keeps the choice and leads home', async 
   fireEvent.click(await screen.findByRole('button', { name: 'Русский' }))
 
   expect(await screen.findByRole('heading', { name: 'Вход' })).toBeTruthy()
-  expect(localStorage.getItem('language')).toBe('ru')
+  expect(api.calls).toContainEqual({
+    route: 'PUT /api/locale',
+    body: { locale: 'ru' },
+  })
   expect(document.documentElement.lang).toBe('ru')
+})
+
+test('the interface switches before the back answers, and returns if it refuses', async () => {
+  const later = deferredAnswer()
+  fakeApi({ 'GET /api/me': [401], 'PUT /api/locale': later.answer })
+  renderApp('/sign-in')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Language: English' }),
+  )
+  fireEvent.click(await screen.findByRole('button', { name: 'Русский' }))
+  expect(await screen.findByRole('heading', { name: 'Вход' })).toBeTruthy()
+
+  later.send([500])
+  expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Language: English' })).toBeTruthy()
+  expect(document.documentElement.lang).toBe('en')
 })
 
 test("a client's booking page has the language, but no way into the cabinet", async () => {
