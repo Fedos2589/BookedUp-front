@@ -4,7 +4,18 @@
     "loadFailed": "Couldn't load your account"
   },
   "booking": {
-    "title": "Booking: {{businessSlug}}"
+    "chooseMaster": "Choose a master",
+    "anyMaster": "Any free master",
+    "noFreeTime": "No free time in the next two weeks",
+    "noSuchPage": "No such page",
+    "loadFailed": "Couldn't load the booking page.",
+    "chooseTime": "Choose a day and a time",
+    "daysLabel": "Day",
+    "timesLabel": "Time",
+    "noTimesThisDay": "No free time this day",
+    "freeOf": "free {{left}} of {{of}}",
+    "full": "full",
+    "zoneNote": "Times are in {{zone}}"
   },
   "auth": {
     "email": "Email",

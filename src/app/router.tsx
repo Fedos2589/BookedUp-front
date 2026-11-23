@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-router'
 
 import { redirectIfSignedIn, requireAccount } from '@/auth/session'
+import { bookingSearchOf } from '@/pages/book/bookingSearch'
 import { calendarSearchOf } from '@/pages/calendar/calendarSearch'
 import { clientsSearchOf } from '@/pages/clients/clientsSearch'
 import { invitationTokenOf } from '@/pages/invite/invitationToken'
@@ -159,6 +160,7 @@ const inviteRoute = createRoute({
 const bookingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/book/$businessSlug',
+  validateSearch: bookingSearchOf,
   component: lazyRouteComponent(
     () => import('@/pages/book/BookingPage'),
     'BookingPage',

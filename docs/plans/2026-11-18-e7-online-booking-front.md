@@ -94,7 +94,7 @@ the precache (`dist/sw.js` list) — record both in the commit message (decision
 **Check:** `npm run build && npm run check:chunks` passes; `npm run test:e2e` and `npm run test:pwa`
 green (cabinet routes still work). Commit `perf(app): lazy pages, the booking page without the cabinet`.
 
-### - [ ] G2: booking page — step 1, masters
+### - [x] G2: booking page — step 1, masters
 
 **Files:** move `src/pages/BookingPage.tsx` + `.module.scss` into `src/pages/book/`, create
 `src/pages/book/{useBookingData.ts,MastersStep.tsx,booking.test.tsx}`, `src/app/router.tsx` (search
@@ -109,7 +109,7 @@ such page» (no link to the cabinet). Loading → `PagePending`. Picking sets `?
 when only GROUPS masters, 404 shows the screen, picking sets the search param. Commit
 `feat(book): choose a master`.
 
-### - [ ] G3: step 2, day and time
+### - [x] G3: step 2, day and time
 
 **Files:** create `src/pages/book/{TimeStep.tsx,slotsForPicker.ts,slotsForPicker.test.ts}`,
 `src/pages/book/BookingPage.tsx`, locales.

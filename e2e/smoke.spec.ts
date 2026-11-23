@@ -8,7 +8,7 @@ async function expectClearOfTopEdge(heading: Locator) {
 }
 
 // No back here (CI has none): pages that ask the API get a stubbed answer.
-for (const path of ['/sign-in', '/sign-up', '/book/judo-kids']) {
+for (const path of ['/sign-in', '/sign-up']) {
   test(`${path} renders without page errors`, async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (error) => errors.push(error.message))
@@ -22,6 +22,45 @@ for (const path of ['/sign-in', '/sign-up', '/book/judo-kids']) {
     await expectClearOfTopEdge(heading)
   })
 }
+
+// The booking page asks the public API for the business and its free times.
+test('/book/judo-kids renders without page errors', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.route('**/api/public/businesses/judo-kids', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        name: 'Judo Kids',
+        slug: 'judo-kids',
+        timeZone: 'Asia/Bangkok',
+        masters: [
+          {
+            id: '00000000-0000-4000-8000-000000000003',
+            name: 'Anna',
+            scheduleMode: 'HOURS',
+          },
+        ],
+      }),
+    }),
+  )
+  await page.route('**/api/public/businesses/judo-kids/slots*', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: '[]',
+    }),
+  )
+
+  await page.goto('/book/judo-kids', { waitUntil: 'networkidle' })
+
+  expect(errors).toEqual([])
+  const heading = page.getByRole('heading', { level: 1, name: 'Judo Kids' })
+  await expect(heading).toBeVisible()
+  await expect(page.getByRole('button', { name: /Anna/ })).toBeVisible()
+  await expectClearOfTopEdge(heading)
+})
 
 test('a guest opening the cabinet lands on sign in', async ({ page }) => {
   await page.route('**/api/me', (route) => route.fulfill({ status: 401 }))
