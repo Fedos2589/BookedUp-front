@@ -193,7 +193,7 @@ Commit `feat(book): installable as the business's app`.
 ### - [ ] G7: e2e, test plan, close the step
 
 - [x] **G7a `e2e/book.spec.ts`** — «any» → done → link → move → cancel on 390×844 with the API answered by the test; Book above the keyboard.
-- [ ] **G7b** manual test plan (`docs/manual-test-plan.html`), republish.
+- [x] **G7b** manual test plan (`docs/manual-test-plan.html`), republish.
 - [ ] **G7c** after the merge: the common plan in BookedUp-back.
 
 **Files:** create `e2e/book.spec.ts`, `docs/manual-test-plan.html`, then the common plan in
