@@ -125,21 +125,29 @@ master part empty for «any»).
 full meeting disabled; DST day in `Europe/Berlin` labels right); component test: choose a day and a
 time. Commit `feat(book): choose a time`.
 
-### - [ ] G4: steps 3–4, contacts and done
-
-**Files:** create `src/pages/book/{ContactsStep.tsx,DoneStep.tsx,savedBooking.ts,savedBooking.test.ts}`,
-`src/pages/book/BookingPage.tsx`, locales.
+### - [ ] G4: steps 3–4, contacts and done — split into four small tasks
 
 Step 3: the chosen time and master as a summary, name, phone (`PhoneNumberField`), optional note, the
 kit's `ActionBar` button «Book». 409 `notFree` / `full` → back to step 2 with a toast «That time was
 just taken», slots refetched; `tooManyBookings` → the message under the button; 429 → «Too many
-attempts, try later»; 400 → field errors. Step 4 (kit `SuccessScreen`): when, with whom, where
-(business name), the manage link with «Copy», the «save this link» text. `savedBooking.ts` keeps
-`{ manageLink, startsAt }` per slug in `localStorage` (try/catch); step 1 shows «Your booking on …»
-linking to it while it's in the future.
+attempts, try later»; 400 → field errors. Step 4: when, with whom, where (business name), the manage
+link with «Copy», the «save this link» text. Step 1 shows «Your booking on …» linking to the saved
+booking while it's in the future.
 
-**Check:** component tests — a full booking from step 1 to 4 with MSW; 409 `notFree` returns to step 2;
-`tooManyBookings` shown; the saved booking appears on step 1. Commit `feat(book): book and get the link`.
+- [x] **G4a `savedBooking.ts`** — `{ manageLink, startsAt }` per slug in `localStorage` (try/catch,
+      zod-parsed, gone once started). Files: `src/pages/book/{savedBooking.ts,savedBooking.test.ts}`.
+      Check: its test. Commit `feat(book): remember the booking in the browser`.
+- [ ] **G4b step 3 form** — `contactsForm.ts` (zod schema + request body from the chosen slot),
+      `ContactsStep.tsx` (form, `ActionBar`, `useUnsavedInput`), «Continue» on `TimeStep`, `contacts`
+      in `bookingSearch.ts`, `BookingPage.tsx` routing, locales. Check: component test — pick a time,
+      continue, fill, POST body is right (no `staffId` for «any»), validation errors show.
+      Commit `feat(book): contacts step`.
+- [ ] **G4c refusals** — 409 `notFree`/`full` → step 2 + toast + slots refetch; `tooManyBookings`,
+      429, 400 texts. Files: `ContactsStep.tsx`, `BookingPage.tsx`, locales, `booking.test.tsx`.
+      Commit `feat(book): booking refusals`.
+- [ ] **G4d done screen** — `DoneStep.tsx` (when, who, where, manage link + «Copy»), saves via
+      `savedBooking`, «Your booking on …» on `MastersStep`. Check: a full booking from step 1 to 4 with
+      MSW; the saved booking appears on step 1. Commit `feat(book): booking done screen`.
 
 ### - [ ] G5: manage page — see, cancel, move
 
