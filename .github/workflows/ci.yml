@@ -31,6 +31,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      # The booking page must not load the cabinet's pages (needs the build).
+      - run: npm run check:chunks
       # Smoke tests run against the dev server (see playwright.config.ts).
       # The headless shell is all the smoke tests need (as in AGENTS.md).
       - run: npx playwright install --with-deps --only-shell chromium

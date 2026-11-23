@@ -61,6 +61,10 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
+    build: {
+      // dist/.vite/manifest.json: scripts/check-book-chunk.mjs reads what /book loads.
+      manifest: true,
+    },
     server: {
       proxy: {
         // The API on the app's own origin: the back's CSRF check refuses writes from

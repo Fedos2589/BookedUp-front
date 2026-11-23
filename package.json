@@ -19,6 +19,7 @@
     "api:generate": "orval",
     "prepare": "husky || true",
     "pwa:icons": "node scripts/pwa-icons.mjs",
+    "check:chunks": "node scripts/check-book-chunk.mjs",
     "test:pwa": "playwright test --config playwright.pwa.config.ts"
   },
   "dependencies": {

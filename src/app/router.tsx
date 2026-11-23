@@ -3,32 +3,26 @@ import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   type RouterHistory,
 } from '@tanstack/react-router'
 
 import { redirectIfSignedIn, requireAccount } from '@/auth/session'
 import { SignInPage } from '@/pages/auth/SignInPage'
-import { CabinetLayout } from '@/pages/cabinet/CabinetLayout'
-import { CalendarPage } from '@/pages/calendar/CalendarPage'
 import { calendarSearchOf } from '@/pages/calendar/calendarSearch'
-import { BookingPage } from '@/pages/BookingPage'
 import { DashboardError } from '@/pages/DashboardError'
-import { ClientPage } from '@/pages/clients/ClientPage'
-import { ClientsPage } from '@/pages/clients/ClientsPage'
 import { clientsSearchOf } from '@/pages/clients/clientsSearch'
-import { DashboardPage } from '@/pages/DashboardPage'
 import { InvitationGone } from '@/pages/invite/InvitationGone'
 import { InvitePage } from '@/pages/invite/InvitePage'
 import { invitationTokenOf } from '@/pages/invite/invitationToken'
 import { PagePending } from '@/pages/PagePending'
-import { SchedulePage } from '@/pages/schedule/SchedulePage'
-import { SettingsPage } from '@/pages/settings/SettingsPage'
 import { SignUpPage } from '@/pages/signUp/SignUpPage'
-import { TeamPage } from '@/pages/team/TeamPage'
 import { RootLayout } from './RootLayout'
 
 type RouterContext = { queryClient: QueryClient }
 
+// Every page of the cabinet and the booking page are chunks of their own: a
+// client opening /book on a phone never downloads the cabinet (check:chunks).
 const rootRoute = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
 })
@@ -39,35 +33,50 @@ const cabinetRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'cabinet',
   beforeLoad: ({ context }) => requireAccount(context.queryClient),
-  component: CabinetLayout,
+  component: lazyRouteComponent(
+    () => import('@/pages/cabinet/CabinetLayout'),
+    'CabinetLayout',
+  ),
   errorComponent: DashboardError,
 })
 
 const dashboardRoute = createRoute({
   getParentRoute: () => cabinetRoute,
   path: '/',
-  component: DashboardPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/DashboardPage'),
+    'DashboardPage',
+  ),
 })
 
 // The business's settings.
 const settingsRoute = createRoute({
   getParentRoute: () => cabinetRoute,
   path: '/settings',
-  component: SettingsPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/settings/SettingsPage'),
+    'SettingsPage',
+  ),
 })
 
 // Who works in the business, and the invitations to it.
 const teamRoute = createRoute({
   getParentRoute: () => cabinetRoute,
   path: '/team',
-  component: TeamPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/team/TeamPage'),
+    'TeamPage',
+  ),
 })
 
 // A master's working hours, or their groups.
 const scheduleRoute = createRoute({
   getParentRoute: () => cabinetRoute,
   path: '/schedule',
-  component: SchedulePage,
+  component: lazyRouteComponent(
+    () => import('@/pages/schedule/SchedulePage'),
+    'SchedulePage',
+  ),
 })
 
 // The bookings: a day or a week of them. View, day and master live in the
@@ -78,7 +87,10 @@ const calendarRoute = createRoute({
   validateSearch: calendarSearchOf,
   // One screen high: only the day grid scrolls (see useFillsScreen).
   staticData: { fillsScreen: true },
-  component: CalendarPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/calendar/CalendarPage'),
+    'CalendarPage',
+  ),
 })
 
 // The business's clients; the search text lives in the address.
@@ -86,14 +98,20 @@ const clientsRoute = createRoute({
   getParentRoute: () => cabinetRoute,
   path: '/clients',
   validateSearch: clientsSearchOf,
-  component: ClientsPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/clients/ClientsPage'),
+    'ClientsPage',
+  ),
 })
 
 // One client's card.
 const clientRoute = createRoute({
   getParentRoute: () => cabinetRoute,
   path: '/clients/$clientId',
-  component: ClientPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/clients/ClientPage'),
+    'ClientPage',
+  ),
 })
 
 // `?invitation=<token>`: signed in, go back to that invitation, not the cabinet.
@@ -137,7 +155,10 @@ const inviteRoute = createRoute({
 const bookingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/book/$businessSlug',
-  component: BookingPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/book/BookingPage'),
+    'BookingPage',
+  ),
 })
 
 export const routeTree = rootRoute.addChildren([
