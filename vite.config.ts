@@ -1,3 +1,6 @@
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { relative } from 'node:path'
+
 import react from '@vitejs/plugin-react'
 import { loadEnv } from 'vite'
 import { defineConfig } from 'vitest/config'
@@ -17,6 +20,37 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
+      // What each chunk holds, for scripts/check-book-chunk.mjs: a module
+      // Rollup merged into a shared chunk has no manifest key of its own, so the
+      // build manifest cannot show a cabinet page leaking into /book. Written
+      // outside dist/, so it is not deployed.
+      {
+        name: 'chunk-modules',
+        apply: 'build',
+        generateBundle(_, bundle) {
+          const root = process.cwd()
+          const chunks: Record<string, unknown> = {}
+          for (const chunk of Object.values(bundle)) {
+            if (chunk.type !== 'chunk') continue
+            chunks[chunk.fileName] = {
+              isEntry: chunk.isEntry,
+              facade: chunk.facadeModuleId
+                ? relative(root, chunk.facadeModuleId)
+                : undefined,
+              imports: chunk.imports,
+              css: [...(chunk.viteMetadata?.importedCss ?? [])],
+              modules: chunk.moduleIds
+                .map((id) => relative(root, id.split('?')[0]))
+                .filter((id) => id.startsWith('src/')),
+            }
+          }
+          mkdirSync('node_modules/.cache', { recursive: true })
+          writeFileSync(
+            'node_modules/.cache/book-chunks.json',
+            JSON.stringify(chunks),
+          )
+        },
+      },
       // TedUI imports `.svg` as React components without the `?react` suffix.
       svgr({ include: '**/*.svg', svgrOptions: { exportType: 'default' } }),
       // Installable app (E20): manifest + a service worker for the app shell.

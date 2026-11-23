@@ -78,7 +78,7 @@ startsAt, endsAt, groupId?, oneOffSessionId? }` — same 409s, plus `badTransiti
 
 ---
 
-### - [ ] G1: kit, API, lazy chunks
+### - [x] G1: kit, API, lazy chunks
 
 **Files:** `package.json` (ted-ui `#v0.8.0`), `src/api/**` (generated), `src/app/router.tsx`,
 `vite.config.ts` (`build.manifest: true` if the check needs it), create `scripts/check-book-chunk.mjs`,

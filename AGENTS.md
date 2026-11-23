@@ -74,7 +74,10 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
+npm run check:chunks
 npm run test:pwa
 ```
+
+`npm run check:chunks` (после `build`) падает, если страница записи `/book` грузит код кабинета или входа. Поэтому страница, включая экраны ошибок, подключается в `router.tsx` через `lazyRouteComponent`; статически — только чистые парсеры search и params.
 
 `npm run test:e2e` — Playwright на dev-сервере, падает на любой ошибке страницы (один раз нужен `npx playwright install chromium --only-shell`). Обязателен после изменений `vite.config.ts` и обновления TedUI: `build` проблемы dev-режима не видит.
