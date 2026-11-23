@@ -37,7 +37,10 @@
       "DONE": "Состоялась",
       "NO_SHOW": "Не пришёл",
       "CANCELLED": "Отменена"
-    }
+    },
+    "cancelBooking": "Отменить запись",
+    "cancelTitle": "Отменить эту запись?",
+    "cancelConfirm": "Да, отменить"
   },
   "auth": {
     "email": "Email",

@@ -7,6 +7,7 @@ import { ApiError } from '@/apiFetch'
 import { dateTimeIn, timeIn } from '@/dates'
 import { PagePending } from '@/pages/PagePending'
 import styles from './BookingPage.module.scss'
+import { CancelBooking } from './CancelBooking'
 import { LoadFailed } from './LoadFailed'
 
 const route = getRouteApi('/book/$businessSlug/manage/$token')
@@ -52,6 +53,9 @@ export function ManagePage() {
       <Typography variant="t2">
         {t(`booking.manageStatus.${booking.status}`)}
       </Typography>
+      {managed.data.canChange && (
+        <CancelBooking token={token} slug={business.slug} />
+      )}
     </main>
   )
 }

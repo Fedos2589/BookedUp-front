@@ -154,9 +154,9 @@ booking while it's in the future.
 - [x] **G5a read-only page** — route `/book/$businessSlug/manage/$token` (lazy, in `router.tsx`),
       `ManagePage.tsx`: time in the business zone, master, title, status; 404/400 → «This link
       doesn't work»; load error → `LoadFailed`. Files: `router.tsx`, `src/pages/book/{ManagePage.tsx,
-    manage.test.tsx}`, locales. Check: `manage.test.tsx` (read, 404) + `npm run check:chunks`.
+  manage.test.tsx}`, locales. Check: `manage.test.tsx` (read, 404) + `npm run check:chunks`.
       Commit `feat(book): manage page, read-only`.
-- [ ] **G5b cancel** — «Cancel booking» with `ConfirmDialog` when `canChange`, `POST …/cancel`,
+- [x] **G5b cancel** — «Cancel booking» with `ConfirmDialog` when `canChange`, `POST …/cancel`,
       `forgetSavedBooking(slug)`, status shows cancelled. Files: `ManagePage.tsx`, `manage.test.tsx`,
       locales. Check: test — cancel with confirm, saved booking cleared. Commit `feat(book): cancel by link`.
 - [ ] **G5c move** — «Change time» opens `TimeStep` for the same master (no «any»), `PATCH`;

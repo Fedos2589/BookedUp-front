@@ -37,7 +37,10 @@
       "DONE": "Done",
       "NO_SHOW": "No-show",
       "CANCELLED": "Cancelled"
-    }
+    },
+    "cancelBooking": "Cancel booking",
+    "cancelTitle": "Cancel this booking?",
+    "cancelConfirm": "Yes, cancel"
   },
   "auth": {
     "email": "Email",
