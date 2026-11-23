@@ -35,3 +35,9 @@ export function refusalOf(error: unknown): Refusal {
   }
   return { kind: 'text', key: 'booking.failed' }
 }
+
+// The text under a cancel or a move that did not go through.
+export const changeFailureKey = (error: unknown) =>
+  error instanceof ApiError && error.status === 429
+    ? ('booking.tooManyAttempts' as const)
+    : ('booking.changeFailed' as const)

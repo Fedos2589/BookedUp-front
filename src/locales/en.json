@@ -29,7 +29,22 @@
     "doneTitle": "You are booked",
     "linkLabel": "Your booking link",
     "saveLink": "Save this link: it is the only way to cancel or move your booking.",
-    "yourBooking": "Your booking on {{when}}"
+    "yourBooking": "Your booking on {{when}}",
+    "badLink": "This link doesn't work",
+    "manageStatus": {
+      "BOOKED": "Booked",
+      "CONFIRMED": "Confirmed",
+      "DONE": "Done",
+      "NO_SHOW": "No-show",
+      "CANCELLED": "Cancelled"
+    },
+    "cancelBooking": "Cancel booking",
+    "cancelTitle": "Cancel this booking?",
+    "cancelConfirm": "Yes, cancel",
+    "changeTime": "Change time",
+    "move": "Move",
+    "changeFailed": "Couldn't save the change. Try again.",
+    "back": "Back"
   },
   "auth": {
     "email": "Email",

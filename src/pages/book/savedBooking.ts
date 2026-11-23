@@ -17,23 +17,38 @@ export function saveBooking(slug: string, booking: SavedBooking) {
   }
 }
 
-export function forgetSavedBooking(slug: string) {
-  try {
-    localStorage.removeItem(keyOf(slug))
-  } catch {
-    // Nothing to forget.
-  }
-}
-
-// The saved booking while it is still to come, else null.
-export function savedBookingOf(slug: string, now: Date): SavedBooking | null {
+const readSaved = (slug: string): SavedBooking | null => {
   try {
     const raw = localStorage.getItem(keyOf(slug))
     if (!raw) return null
     const saved = savedSchema.safeParse(JSON.parse(raw))
-    if (!saved.success) return null
-    return new Date(saved.data.startsAt) > now ? saved.data : null
+    return saved.success ? saved.data : null
   } catch {
     return null
   }
+}
+
+// The manage page changed the booking behind `token`: the remembered one
+// follows it (a new time, or none after a cancel), but only when it is that
+// very booking — the client may hold others. The link ends in /manage/<token>.
+export function updateSavedBooking(
+  slug: string,
+  token: string,
+  startsAt: string | null,
+) {
+  const saved = readSaved(slug)
+  if (!saved?.manageLink.endsWith(`/manage/${token}`)) return
+  if (startsAt === null) {
+    try {
+      localStorage.removeItem(keyOf(slug))
+    } catch {
+      // Nothing to forget.
+    }
+  } else saveBooking(slug, { ...saved, startsAt })
+}
+
+// The saved booking while it is still to come, else null.
+export function savedBookingOf(slug: string, now: Date): SavedBooking | null {
+  const saved = readSaved(slug)
+  return saved && new Date(saved.startsAt) > now ? saved : null
 }
