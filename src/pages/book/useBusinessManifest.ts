@@ -1,19 +1,20 @@
 import { useEffect } from 'react'
 
+import { getPublicBookingControllerManifestUrl } from '@/api/public-booking/public-booking'
+
 // While a business's booking page is open, the app that can be installed from
 // it is that business's: its manifest, its name under the icon (iOS) and in the
-// tab. Leaving restores the cabinet's. The name arrives later than the slug.
-export function useBusinessManifest(slug: string, name?: string) {
+// tab. Leaving restores the cabinet's. Both come from the back's answer, not
+// from the address: no answer yet (or none for this address) — nothing changes.
+export function useBusinessManifest(slug?: string, name?: string) {
   useEffect(() => {
+    if (!slug) return
     const link = document.head.querySelector<HTMLLinkElement>(
       'link[rel="manifest"]',
     )
     if (!link) return
     const was = link.getAttribute('href')
-    link.setAttribute(
-      'href',
-      `/api/public/businesses/${slug}/manifest.webmanifest`,
-    )
+    link.setAttribute('href', getPublicBookingControllerManifestUrl(slug))
     return () => {
       if (was) link.setAttribute('href', was)
     }

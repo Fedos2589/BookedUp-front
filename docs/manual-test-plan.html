@@ -4246,14 +4246,18 @@
       <dl class="pre">
         <dt>Старт</dt>
         <dd>
-          Телефон (iOS Safari или Android Chrome) или Chrome DevTools →
-          Application → Manifest, <code>localhost:5173/book/yoga-plus-qa</code>
+          Сборка, не dev:
+          <code>npm run build &amp;&amp; npx vite preview</code> →
+          <code>localhost:4173</code> (бэк запущен; в dev-режиме ссылки на
+          манифест нет — ничего не подменяется, это ожидаемо). Телефон (iOS
+          Safari или Android Chrome) или Chrome DevTools → Application →
+          Manifest, <code>localhost:4173/book/yoga-plus-qa</code>
         </dd>
       </dl>
       <ol class="steps">
         <li>
           <div class="act">
-            Откройте <code>localhost:5173/book/yoga-plus-qa</code>, затем
+            Откройте <code>localhost:4173/book/yoga-plus-qa</code>, затем
             DevTools → Application → Manifest.
           </div>
           <div class="exp">
@@ -4268,7 +4272,7 @@
           <div class="exp">Манифест и название те же (бизнеса).</div>
         </li>
         <li>
-          <div class="act">Откройте <code>localhost:5173/sign-in</code>.</div>
+          <div class="act">Откройте <code>localhost:4173/sign-in</code>.</div>
           <div class="exp">
             Манифест снова <code>/manifest.webmanifest</code>, название
             <span class="ui">«BookedUp»</span>.

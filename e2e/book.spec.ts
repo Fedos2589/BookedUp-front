@@ -18,9 +18,13 @@ const json = (body: unknown, status = 200) => ({
   body: JSON.stringify(body),
 })
 
-// Tomorrow in UTC, at the given hour: always inside the next two weeks.
+// Tomorrow on the business's clock (the strip of days starts from its today),
+// at the given hour UTC: 09:00Z is 10:00 or 11:00 in Berlin, the same date.
+// Tomorrow in UTC would be today in Berlin for an hour or two every evening.
 const tomorrowAt = (hour: number) => {
-  const day = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)
+  const day = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Berlin',
+  }).format(Date.now() + 86_400_000)
   return `${day}T${String(hour).padStart(2, '0')}:00:00.000Z`
 }
 const slot = (staffId: string, hour: number) => ({
@@ -81,11 +85,9 @@ async function openBusiness(page: Page) {
   })
   await page.route(`**/api/public/bookings/${TOKEN}`, async (route) => {
     if (route.request().method() === 'PATCH') {
-      requests.push('move')
-      current = {
-        ...current,
-        startsAt: route.request().postDataJSON().startsAt,
-      }
+      const { startsAt } = route.request().postDataJSON()
+      requests.push(`move to ${startsAt}`)
+      current = { ...current, startsAt }
     }
     const end = new Date(Date.parse(current.startsAt) + 3_600_000)
     return route.fulfill(
@@ -157,12 +159,13 @@ test('book with «any master», then move and cancel by the private link', async
   await (await times(page)).first().click()
   await page.getByRole('button', { name: 'Move' }).click()
   await expect(page.getByRole('button', { name: 'Change time' })).toBeVisible()
-  expect(requests).toContain('move')
 
   await page.getByRole('button', { name: 'Cancel booking' }).click()
   await page.getByRole('button', { name: 'Yes, cancel' }).click()
   await expect(page.getByText('Cancelled', { exact: true })).toBeVisible()
-  expect(requests).toEqual(['book', 'move', 'cancel'])
+  // The move asked for the time the strip offered: Anna's 11:00Z (her 09:00Z
+  // is the booking's own, not offered again).
+  expect(requests).toEqual(['book', `move to ${tomorrowAt(11)}`, 'cancel'])
 })
 
 // iOS Safari lays the keyboard over the page: only the visual viewport

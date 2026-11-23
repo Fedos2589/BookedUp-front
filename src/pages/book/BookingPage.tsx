@@ -56,7 +56,7 @@ export function BookingPage() {
   // the form away from under them.
   const [chosen, setChosen] = useState<PickerSlot>()
   const now = useNow()
-  useBusinessManifest(businessSlug, business.data?.name)
+  useBusinessManifest(business.data?.slug, business.data?.name)
 
   if (business.error instanceof ApiError && business.error.status === 404) {
     return <NoSuchPage />

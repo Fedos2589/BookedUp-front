@@ -46,3 +46,16 @@ test('until the name is known only the manifest is swapped', () => {
   page.rerender({ name: 'Judo Kids' })
   expect(document.title).toBe('Judo Kids')
 })
+
+test('until the business is known the cabinet’s manifest stays', () => {
+  const page = renderHook(
+    ({ slug }: { slug?: string }) => useBusinessManifest(slug),
+    { initialProps: {} },
+  )
+  expect(manifest()).not.toContain('/api/public')
+
+  page.rerender({ slug: 'judo' })
+  expect(manifest()).toContain(
+    '/api/public/businesses/judo/manifest.webmanifest',
+  )
+})
