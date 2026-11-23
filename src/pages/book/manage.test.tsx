@@ -1,13 +1,21 @@
 // @vitest-environment happy-dom
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
-import { afterEach, expect, test } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import { fakeApi } from '@/test/fakeApi'
 import { renderApp } from '@/test/renderApp'
 
+beforeEach(() => {
+  // Only the clock: the times offered for a move start from "today".
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-23T10:00:00Z'))
+})
+
 afterEach(() => {
   cleanup()
   localStorage.clear()
+  vi.useRealTimers()
+  vi.unstubAllGlobals()
 })
 
 const MANAGED = 'GET /api/public/bookings/secret-token'
@@ -102,4 +110,117 @@ test('a refused cancel (already started) falls back to read-only', async () => {
 
   expect(await screen.findByText('Done')).toBeTruthy()
   expect(screen.queryByRole('button', { name: 'Cancel booking' })).toBeNull()
+})
+
+const ANNA = '11111111-1111-4111-8111-111111111111'
+const BUSINESS = 'GET /api/public/businesses/judo'
+const SLOTS =
+  'GET /api/public/businesses/judo/slots?from=2026-11-23&to=2026-12-06'
+const MOVE = 'PATCH /api/public/bookings/secret-token'
+
+const business = {
+  name: 'Judo Kids',
+  slug: 'judo',
+  timeZone: 'Europe/Berlin',
+  masters: [
+    { id: ANNA, name: 'Anna', scheduleMode: 'HOURS' },
+    {
+      id: '22222222-2222-4222-8222-222222222222',
+      name: 'Boris',
+      scheduleMode: 'HOURS',
+    },
+  ],
+}
+
+const slot = (staffId: string, startsAt: string, endsAt: string) => ({
+  staffId,
+  startsAt,
+  endsAt,
+  title: null,
+  description: null,
+  capacity: 1,
+  booked: 0,
+  full: false,
+  groupId: null,
+  oneOffSessionId: null,
+})
+
+const movable = () => ({
+  [MANAGED]: [200, managed()] as [number, unknown],
+  [BUSINESS]: [200, business] as [number, unknown],
+  [SLOTS]: [
+    200,
+    [
+      slot(ANNA, '2026-11-25T09:00:00.000Z', '2026-11-25T10:00:00.000Z'),
+      slot(ANNA, '2026-11-25T13:00:00.000Z', '2026-11-25T14:00:00.000Z'),
+      // Another master's time is not offered: a move stays with the master.
+      slot(
+        '22222222-2222-4222-8222-222222222222',
+        '2026-11-25T15:00:00.000Z',
+        '2026-11-25T16:00:00.000Z',
+      ),
+    ],
+  ] as [number, unknown],
+})
+
+const openMove = async () => {
+  fireEvent.click(await screen.findByRole('button', { name: 'Change time' }))
+  return screen.findByRole('radio', { name: /14:00/ })
+}
+
+test('moves the booking to another time of the same master', async () => {
+  const api = fakeApi({
+    ...movable(),
+    [MOVE]: [200, managed()],
+  })
+  renderApp('/book/judo/manage/secret-token')
+
+  fireEvent.click(await openMove())
+  expect(screen.queryByRole('radio', { name: /16:00/ })).toBeNull()
+  api.set(MANAGED, [
+    200,
+    managed({
+      startsAt: '2026-11-25T13:00:00.000Z',
+      endsAt: '2026-11-25T14:00:00.000Z',
+    }),
+  ])
+  fireEvent.click(await screen.findByRole('button', { name: 'Move' }))
+
+  await waitFor(() => expect(screen.queryByRole('radio')).toBeNull())
+  expect(screen.getByText(/14:00–15:00/)).toBeTruthy()
+  expect(api.calls.find((c) => c.route === MOVE)?.body).toEqual({
+    staffId: ANNA,
+    startsAt: '2026-11-25T13:00:00.000Z',
+    endsAt: '2026-11-25T14:00:00.000Z',
+  })
+})
+
+test('a time taken meanwhile is said so and stays on the choice', async () => {
+  fakeApi({
+    ...movable(),
+    [MOVE]: [409, { statusCode: 409, code: 'notFree', message: 'x' }],
+  })
+  renderApp('/book/judo/manage/secret-token')
+
+  fireEvent.click(await openMove())
+  fireEvent.click(await screen.findByRole('button', { name: 'Move' }))
+
+  expect(await screen.findByRole('status')).toBeTruthy()
+  expect(screen.getByRole('radio', { name: /14:00/ })).toBeTruthy()
+})
+
+test('a move refused because it started falls back to read-only', async () => {
+  const api = fakeApi({
+    ...movable(),
+    [MOVE]: [409, { statusCode: 409, code: 'badTransition', message: 'x' }],
+  })
+  renderApp('/book/judo/manage/secret-token')
+
+  fireEvent.click(await openMove())
+  api.set(MANAGED, [200, managed({ status: 'DONE' }, false)])
+  fireEvent.click(await screen.findByRole('button', { name: 'Move' }))
+
+  expect(await screen.findByText('Done')).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Change time' })).toBeNull()
+  expect(screen.queryByRole('radio')).toBeNull()
 })

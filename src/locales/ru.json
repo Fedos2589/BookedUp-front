@@ -40,7 +40,9 @@
     },
     "cancelBooking": "Отменить запись",
     "cancelTitle": "Отменить эту запись?",
-    "cancelConfirm": "Да, отменить"
+    "cancelConfirm": "Да, отменить",
+    "changeTime": "Изменить время",
+    "move": "Перенести"
   },
   "auth": {
     "email": "Email",

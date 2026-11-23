@@ -149,17 +149,17 @@ booking while it's in the future.
       `savedBooking`, «Your booking on …» on `MastersStep`. Check: a full booking from step 1 to 4 with
       MSW; the saved booking appears on step 1. Commit `feat(book): booking done screen`.
 
-### - [ ] G5: manage page — see, cancel, move — split into three small tasks
+### - [x] G5: manage page — see, cancel, move — split into three small tasks
 
 - [x] **G5a read-only page** — route `/book/$businessSlug/manage/$token` (lazy, in `router.tsx`),
       `ManagePage.tsx`: time in the business zone, master, title, status; 404/400 → «This link
       doesn't work»; load error → `LoadFailed`. Files: `router.tsx`, `src/pages/book/{ManagePage.tsx,
-  manage.test.tsx}`, locales. Check: `manage.test.tsx` (read, 404) + `npm run check:chunks`.
+manage.test.tsx}`, locales. Check: `manage.test.tsx` (read, 404) + `npm run check:chunks`.
       Commit `feat(book): manage page, read-only`.
 - [x] **G5b cancel** — «Cancel booking» with `ConfirmDialog` when `canChange`, `POST …/cancel`,
       `forgetSavedBooking(slug)`, status shows cancelled. Files: `ManagePage.tsx`, `manage.test.tsx`,
       locales. Check: test — cancel with confirm, saved booking cleared. Commit `feat(book): cancel by link`.
-- [ ] **G5c move** — «Change time» opens `TimeStep` for the same master (no «any»), `PATCH`;
+- [x] **G5c move** — «Change time» opens `TimeStep` for the same master (no «any»), `PATCH`;
       `badTransition` → read-only. May need pulling the shared part out of `TimeStep`; if it grows, split.
       Check: test — move to another time, `badTransition`. Commit `feat(book): move by link`.
 

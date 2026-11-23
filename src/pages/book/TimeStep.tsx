@@ -23,6 +23,8 @@ type Props = {
   onContinue: () => void
   // Shows that the time the client had chosen was just taken.
   taken: boolean
+  // The button under the times; «Continue» unless the step ends in something else.
+  actionLabel?: string
 }
 
 // Step 2: a day and a time. The first day with a free time is chosen until
@@ -37,6 +39,7 @@ export function TimeStep({
   onChange,
   onContinue,
   taken,
+  actionLabel,
 }: Props) {
   const { t, i18n } = useTranslation()
   const heading = useStepHeading()
@@ -111,7 +114,7 @@ export function TimeStep({
             colorScheme="blue"
             onClick={onContinue}
           >
-            {t('booking.continue')}
+            {actionLabel ?? t('booking.continue')}
           </Button>
         </ActionBar>
       )}

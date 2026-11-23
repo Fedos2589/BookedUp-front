@@ -40,7 +40,9 @@
     },
     "cancelBooking": "Cancel booking",
     "cancelTitle": "Cancel this booking?",
-    "cancelConfirm": "Yes, cancel"
+    "cancelConfirm": "Yes, cancel",
+    "changeTime": "Change time",
+    "move": "Move"
   },
   "auth": {
     "email": "Email",

@@ -1,5 +1,7 @@
 import { getRouteApi } from '@tanstack/react-router'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
 import { usePublicBookingControllerManaged } from '@/api/public-booking/public-booking'
@@ -9,6 +11,7 @@ import { PagePending } from '@/pages/PagePending'
 import styles from './BookingPage.module.scss'
 import { CancelBooking } from './CancelBooking'
 import { LoadFailed } from './LoadFailed'
+import { MoveBooking } from './MoveBooking'
 
 const route = getRouteApi('/book/$businessSlug/manage/$token')
 
@@ -17,6 +20,7 @@ export function ManagePage() {
   const { token } = route.useParams()
   const { t, i18n } = useTranslation()
   const managed = usePublicBookingControllerManaged(token)
+  const [moving, setMoving] = useState(false)
 
   // 400 is a token of the wrong shape, 404 one nobody holds: both are a dead link.
   if (
@@ -53,9 +57,27 @@ export function ManagePage() {
       <Typography variant="t2">
         {t(`booking.manageStatus.${booking.status}`)}
       </Typography>
-      {managed.data.canChange && (
-        <CancelBooking token={token} slug={business.slug} />
-      )}
+      {managed.data.canChange &&
+        (moving ? (
+          <MoveBooking
+            token={token}
+            slug={business.slug}
+            staffId={booking.staffId}
+            onMoved={() => setMoving(false)}
+          />
+        ) : (
+          <>
+            <Button
+              variant="solid"
+              colorScheme="blue"
+              className={styles.retry}
+              onClick={() => setMoving(true)}
+            >
+              {t('booking.changeTime')}
+            </Button>
+            <CancelBooking token={token} slug={business.slug} />
+          </>
+        ))}
     </main>
   )
 }
