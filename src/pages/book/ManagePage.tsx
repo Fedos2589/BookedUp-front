@@ -64,6 +64,7 @@ export function ManagePage() {
             slug={business.slug}
             staffId={booking.staffId}
             onMoved={() => setMoving(false)}
+            onBack={() => setMoving(false)}
           />
         ) : (
           <>

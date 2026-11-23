@@ -42,7 +42,9 @@
     "cancelTitle": "Cancel this booking?",
     "cancelConfirm": "Yes, cancel",
     "changeTime": "Change time",
-    "move": "Move"
+    "move": "Move",
+    "changeFailed": "Couldn't save the change. Try again.",
+    "back": "Back"
   },
   "auth": {
     "email": "Email",

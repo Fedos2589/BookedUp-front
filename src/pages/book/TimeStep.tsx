@@ -25,6 +25,9 @@ type Props = {
   taken: boolean
   // The button under the times; «Continue» unless the step ends in something else.
   actionLabel?: string
+  actionLoading?: boolean
+  // A text under the times when the step's action failed (a locale key's text).
+  failure?: string
 }
 
 // Step 2: a day and a time. The first day with a free time is chosen until
@@ -40,6 +43,8 @@ export function TimeStep({
   onContinue,
   taken,
   actionLabel,
+  actionLoading,
+  failure,
 }: Props) {
   const { t, i18n } = useTranslation()
   const heading = useStepHeading()
@@ -106,12 +111,18 @@ export function TimeStep({
           {t('booking.zoneNote', { zone: business.timeZone })}
         </Typography>
       )}
+      {failure && (
+        <Typography variant="t4" color="red-300" role="alert">
+          {failure}
+        </Typography>
+      )}
       {slot && current.slots.some((s) => s.id === slot && !s.full) && (
         <ActionBar>
           <Button
             fullWidth
             size="large"
             colorScheme="blue"
+            loading={actionLoading}
             onClick={onContinue}
           >
             {actionLabel ?? t('booking.continue')}

@@ -32,17 +32,19 @@
     "yourBooking": "Ваша запись на {{when}}",
     "badLink": "Эта ссылка не работает",
     "manageStatus": {
-      "BOOKED": "Записан",
+      "BOOKED": "Создана",
       "CONFIRMED": "Подтверждена",
       "DONE": "Состоялась",
-      "NO_SHOW": "Не пришёл",
+      "NO_SHOW": "Неявка",
       "CANCELLED": "Отменена"
     },
     "cancelBooking": "Отменить запись",
     "cancelTitle": "Отменить эту запись?",
     "cancelConfirm": "Да, отменить",
     "changeTime": "Изменить время",
-    "move": "Перенести"
+    "move": "Перенести",
+    "changeFailed": "Не удалось сохранить изменение. Попробуйте ещё раз.",
+    "back": "Назад"
   },
   "auth": {
     "email": "Email",

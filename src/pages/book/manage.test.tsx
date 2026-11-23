@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-import { fakeApi } from '@/test/fakeApi'
+import { deferredAnswer, fakeApi } from '@/test/fakeApi'
 import { renderApp } from '@/test/renderApp'
 
 beforeEach(() => {
@@ -64,7 +64,7 @@ const openCancel = async () => {
 test('cancels after a confirmation and forgets the saved booking', async () => {
   localStorage.setItem(
     'booking:judo',
-    JSON.stringify({ manageLink: 'x', startsAt: '2026-11-24T09:00:00.000Z' }),
+    JSON.stringify({ manageLink: LINK, startsAt: '2026-11-24T09:00:00.000Z' }),
   )
   const api = fakeApi({
     [MANAGED]: [200, managed()],
@@ -223,4 +223,113 @@ test('a move refused because it started falls back to read-only', async () => {
   expect(await screen.findByText('Done')).toBeTruthy()
   expect(screen.queryByRole('button', { name: 'Change time' })).toBeNull()
   expect(screen.queryByRole('radio')).toBeNull()
+})
+
+// Review of #49.
+test('a failed cancel says so and keeps the button (finding 2)', async () => {
+  fakeApi({
+    [MANAGED]: [200, managed()],
+    [CANCEL]: [500, { statusCode: 500, message: 'x' }],
+  })
+  renderApp('/book/judo/manage/secret-token')
+  fireEvent.click(await openCancel())
+
+  expect(await screen.findByRole('alert')).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Cancel booking' })).toBeTruthy()
+})
+
+test('a failed move says so and keeps the choice (finding 2)', async () => {
+  fakeApi({
+    ...movable(),
+    [MOVE]: [500, { statusCode: 500, message: 'x' }],
+  })
+  renderApp('/book/judo/manage/secret-token')
+  fireEvent.click(await openMove())
+  fireEvent.click(await screen.findByRole('button', { name: 'Move' }))
+
+  expect(await screen.findByRole('alert')).toBeTruthy()
+  expect(screen.getByRole('radio', { name: /14:00/ })).toBeTruthy()
+})
+
+test('a second press while the move is in flight sends nothing (finding 3)', async () => {
+  const later = deferredAnswer()
+  const api = fakeApi({ ...movable(), [MOVE]: later.answer })
+  renderApp('/book/judo/manage/secret-token')
+  fireEvent.click(await openMove())
+  const move = await screen.findByRole('button', { name: 'Move' })
+
+  fireEvent.click(move)
+  // The button shows the request is on its way, and a press now does nothing.
+  await waitFor(() => expect(move.getAttribute('aria-busy')).toBe('true'))
+  fireEvent.click(move)
+
+  expect(api.calls.filter((c) => c.route === MOVE)).toHaveLength(1)
+  later.send([200, managed()])
+})
+
+test('changing one’s mind: back from the times to the booking (finding 4)', async () => {
+  fakeApi(movable())
+  renderApp('/book/judo/manage/secret-token')
+  await openMove()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+
+  expect(screen.queryByRole('radio')).toBeNull()
+  expect(screen.getByRole('button', { name: 'Cancel booking' })).toBeTruthy()
+})
+
+test('times that fail to load keep one main and one heading (finding 5)', async () => {
+  fakeApi({
+    ...movable(),
+    [SLOTS]: [500, { statusCode: 500, message: 'x' }],
+  })
+  renderApp('/book/judo/manage/secret-token')
+  fireEvent.click(await screen.findByRole('button', { name: 'Change time' }))
+
+  expect(await screen.findByRole('button', { name: 'Try again' })).toBeTruthy()
+  expect(screen.getAllByRole('main')).toHaveLength(1)
+  expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+})
+
+const LINK = 'https://app.test/book/judo/manage/secret-token'
+
+test('moving updates the remembered booking (finding 7)', async () => {
+  localStorage.setItem(
+    'booking:judo',
+    JSON.stringify({ manageLink: LINK, startsAt: '2026-11-24T09:00:00.000Z' }),
+  )
+  fakeApi({
+    ...movable(),
+    [MOVE]: [
+      200,
+      managed({
+        startsAt: '2026-11-25T13:00:00.000Z',
+        endsAt: '2026-11-25T14:00:00.000Z',
+      }),
+    ],
+  })
+  renderApp('/book/judo/manage/secret-token')
+  fireEvent.click(await openMove())
+  fireEvent.click(await screen.findByRole('button', { name: 'Move' }))
+
+  await waitFor(() =>
+    expect(JSON.parse(localStorage.getItem('booking:judo') ?? '{}')).toEqual({
+      manageLink: LINK,
+      startsAt: '2026-11-25T13:00:00.000Z',
+    }),
+  )
+})
+
+test('cancelling another booking leaves the remembered one (finding 7)', async () => {
+  const saved = JSON.stringify({
+    manageLink: 'https://app.test/book/judo/manage/another-token',
+    startsAt: '2026-11-30T09:00:00.000Z',
+  })
+  localStorage.setItem('booking:judo', saved)
+  fakeApi({ [MANAGED]: [200, managed()], [CANCEL]: [201, {}] })
+  renderApp('/book/judo/manage/secret-token')
+  fireEvent.click(await openCancel())
+
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  expect(localStorage.getItem('booking:judo')).toBe(saved)
 })
