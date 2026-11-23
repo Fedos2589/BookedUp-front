@@ -4,7 +4,7 @@ import {
   initMonitoring,
   scrubBreadcrumb,
   scrubCapture,
-  scrubInvitationTokens,
+  scrubSecretTokens,
 } from './monitoring'
 
 const TOKEN = 'gZSff5LUn1PJSpUmEuQ2akYnZ4o62dkMZpTp_SXDcx8'
@@ -15,9 +15,18 @@ test.each([
   [`https://app.test/invite/${TOKEN}`, 'https://app.test/invite/:token'],
   [`/api/invitations/${TOKEN}/accept`, '/api/invitations/:token/accept'],
   [`/sign-in?invitation=${TOKEN}&x=1`, '/sign-in?invitation=:token&x=1'],
+  // A client's manage link lets anyone cancel or move the booking.
+  [
+    `https://app.test/book/judo/manage/${TOKEN}`,
+    'https://app.test/book/judo/manage/:token',
+  ],
+  [
+    `/api/public/bookings/${TOKEN}/cancel`,
+    '/api/public/bookings/:token/cancel',
+  ],
   ['/team', '/team'],
 ])('%s is reported as %s', (url, scrubbed) => {
-  expect(scrubInvitationTokens(url)).toBe(scrubbed)
+  expect(scrubSecretTokens(url)).toBe(scrubbed)
 })
 
 test('a PostHog event loses the token in every URL property', () => {
