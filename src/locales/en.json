@@ -15,7 +15,13 @@
     "noTimesThisDay": "No free time this day",
     "freeOf": "free {{left}} of {{of}}",
     "full": "full",
-    "zoneNote": "Times are in {{zone}}"
+    "zoneNote": "Times are in {{zone}}",
+    "continue": "Continue",
+    "contactsTitle": "Your details",
+    "name": "Name",
+    "phone": "Phone",
+    "note": "Note (optional)",
+    "book": "Book"
   },
   "auth": {
     "email": "Email",

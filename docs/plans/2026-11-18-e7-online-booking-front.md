@@ -137,7 +137,7 @@ booking while it's in the future.
 - [x] **G4a `savedBooking.ts`** — `{ manageLink, startsAt }` per slug in `localStorage` (try/catch,
       zod-parsed, gone once started). Files: `src/pages/book/{savedBooking.ts,savedBooking.test.ts}`.
       Check: its test. Commit `feat(book): remember the booking in the browser`.
-- [ ] **G4b step 3 form** — `contactsForm.ts` (zod schema + request body from the chosen slot),
+- [x] **G4b step 3 form** — `contactsForm.ts` (zod schema + request body from the chosen slot),
       `ContactsStep.tsx` (form, `ActionBar`, `useUnsavedInput`), «Continue» on `TimeStep`, `contacts`
       in `bookingSearch.ts`, `BookingPage.tsx` routing, locales. Check: component test — pick a time,
       continue, fill, POST body is right (no `staffId` for «any»), validation errors show.

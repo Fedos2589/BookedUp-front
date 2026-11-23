@@ -250,3 +250,112 @@ test('?staff=any with no free hours shows step 1, as "any" is not offered', asyn
   expect(await screen.findByText('Choose a master')).toBeTruthy()
   expect(screen.queryByText('Choose a day and a time')).toBeNull()
 })
+
+const BOOK = 'POST /api/public/businesses/judo/bookings'
+const booked = (staffId: string) =>
+  [
+    201,
+    {
+      booking: {
+        id: 'b1',
+        staffId,
+        staffName: 'Anna',
+        startsAt: '2026-11-24T09:00:00.000Z',
+        endsAt: '2026-11-24T10:00:00.000Z',
+        title: null,
+        groupId: null,
+        oneOffSessionId: null,
+      },
+      manageLink: 'https://x.test/manage/abc',
+    },
+  ] as [number, unknown]
+
+const typeInto = (label: string, value: string) =>
+  fireEvent.change(screen.getByLabelText(label), { target: { value } })
+
+const toContacts = async (staff: string) => {
+  const rendered = renderApp(`/book/judo?staff=${staff}`)
+  fireEvent.click(await screen.findByRole('radio', { name: '10:00' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
+  return rendered
+}
+
+test('step 3: name and phone book the chosen master and time', async () => {
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: booked(HOURS_ANNA),
+  })
+  await toContacts(HOURS_ANNA)
+
+  const heading = await screen.findByRole('heading', { name: 'Your details' })
+  expect(document.activeElement).toBe(heading)
+  expect(screen.getByText(/10:00–11:00/)).toBeTruthy()
+  expect(screen.getByText(/Anna/)).toBeTruthy()
+
+  typeInto('Name', 'Ira')
+  typeInto('Phone', '+66 81 234 5678')
+  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+
+  await waitFor(() =>
+    expect(api.calls.find((c) => c.route === BOOK)?.body).toEqual({
+      staffId: HOURS_ANNA,
+      startsAt: '2026-11-24T09:00:00.000Z',
+      endsAt: '2026-11-24T10:00:00.000Z',
+      name: 'Ira',
+      phone: '+66812345678',
+    }),
+  )
+})
+
+test('booking an "any master" time sends no master; a note goes along', async () => {
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_BORIS)]],
+    [BOOK]: booked(HOURS_BORIS),
+  })
+  await toContacts('any')
+
+  await screen.findByRole('heading', { name: 'Your details' })
+  typeInto('Name', 'Ira')
+  typeInto('Phone', '+66 81 234 5678')
+  typeInto('Note (optional)', 'First time')
+  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+
+  await waitFor(() =>
+    expect(api.calls.find((c) => c.route === BOOK)?.body).toEqual({
+      startsAt: '2026-11-24T09:00:00.000Z',
+      endsAt: '2026-11-24T10:00:00.000Z',
+      name: 'Ira',
+      phone: '+66812345678',
+      note: 'First time',
+    }),
+  )
+})
+
+test('step 3 refuses an empty name and a bad phone without asking the back', async () => {
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  await toContacts(HOURS_ANNA)
+
+  await screen.findByRole('heading', { name: 'Your details' })
+  typeInto('Phone', '12')
+  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+
+  expect(await screen.findByText('Required')).toBeTruthy()
+  expect(screen.getByText('Enter a valid phone number')).toBeTruthy()
+  expect(api.calls.some((c) => c.route === BOOK)).toBe(false)
+})
+
+test('the contacts step without a chosen time is step 2', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  renderApp(`/book/judo?staff=${HOURS_ANNA}&contacts=true`)
+
+  expect(await screen.findByText('Choose a day and a time')).toBeTruthy()
+  expect(screen.queryByText('Your details')).toBeNull()
+})

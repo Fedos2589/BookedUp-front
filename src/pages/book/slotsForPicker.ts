@@ -50,6 +50,18 @@ const keyOf = (staffId: string, slot: Slot) =>
     slot.oneOffSessionId ?? '',
   ].join('|')
 
+// What a key from keyOf names, for the booking request.
+export function slotOfKey(key: string) {
+  const [staffId, startsAt, endsAt, groupId, oneOffSessionId] = key.split('|')
+  return {
+    staffId: staffId || undefined,
+    startsAt,
+    endsAt,
+    groupId: groupId || undefined,
+    oneOffSessionId: oneOffSessionId || undefined,
+  }
+}
+
 const dayOf = (slot: Slot, timeZone: string) =>
   dateIn(new Date(slot.startsAt), timeZone) ?? slot.startsAt.slice(0, 10)
 
