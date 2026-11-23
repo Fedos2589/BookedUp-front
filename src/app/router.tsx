@@ -167,6 +167,16 @@ const bookingRoute = createRoute({
   ),
 })
 
+// A client's private link to see their booking.
+const manageRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/book/$businessSlug/manage/$token',
+  component: lazyRouteComponent(
+    () => import('@/pages/book/ManagePage'),
+    'ManagePage',
+  ),
+})
+
 export const routeTree = rootRoute.addChildren([
   cabinetRoute.addChildren([
     dashboardRoute,
@@ -181,6 +191,7 @@ export const routeTree = rootRoute.addChildren([
   signUpRoute,
   inviteRoute,
   bookingRoute,
+  manageRoute,
 ])
 
 export function createAppRouter(
