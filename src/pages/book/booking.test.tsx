@@ -13,6 +13,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
+  localStorage.clear()
   vi.useRealTimers()
   vi.unstubAllGlobals()
 })
@@ -444,4 +445,71 @@ test('any other failure says it could not book', async () => {
   await fillAndBook()
 
   expect(await screen.findByText("Couldn't book. Try again.")).toBeTruthy()
+})
+
+test('step 4: the booking, who, where, and the private link to copy', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: booked(HOURS_ANNA),
+  })
+  const writeText = vi.fn(async () => {})
+  vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  const heading = await screen.findByRole('heading', { name: 'You are booked' })
+  expect(document.activeElement).toBe(heading)
+  expect(screen.getByText(/10:00–11:00/)).toBeTruthy()
+  expect(screen.getByText(/Anna/)).toBeTruthy()
+  expect(screen.getByText(/Judo Kids/, { selector: 'p, span' })).toBeTruthy()
+  expect(
+    (screen.getByLabelText('Your booking link') as HTMLInputElement).value,
+  ).toBe('https://x.test/manage/abc')
+  expect(screen.getByText(/only way to cancel or move/)).toBeTruthy()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Copy link' }))
+  await waitFor(() =>
+    expect(writeText).toHaveBeenCalledWith('https://x.test/manage/abc'),
+  )
+  expect(JSON.parse(localStorage.getItem('booking:judo') ?? '{}')).toEqual({
+    manageLink: 'https://x.test/manage/abc',
+    startsAt: '2026-11-24T09:00:00.000Z',
+  })
+})
+
+test('a coming booking saved in the browser is offered on step 1', async () => {
+  localStorage.setItem(
+    'booking:judo',
+    JSON.stringify({
+      manageLink: 'https://x.test/manage/abc',
+      startsAt: '2026-11-24T09:00:00.000Z',
+    }),
+  )
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  renderApp('/book/judo')
+
+  const link = await screen.findByRole('link', { name: /Your booking on/ })
+  expect(link.getAttribute('href')).toBe('https://x.test/manage/abc')
+})
+
+test('a past saved booking is not offered', async () => {
+  localStorage.setItem(
+    'booking:judo',
+    JSON.stringify({
+      manageLink: 'https://x.test/manage/abc',
+      startsAt: '2026-11-20T09:00:00.000Z',
+    }),
+  )
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  renderApp('/book/judo')
+
+  await screen.findByRole('button', { name: /Anna/ })
+  expect(screen.queryByRole('link', { name: /Your booking on/ })).toBeNull()
 })

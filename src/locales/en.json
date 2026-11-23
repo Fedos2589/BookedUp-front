@@ -25,7 +25,11 @@
     "taken": "That time was just taken. Choose another.",
     "tooMany": "You already have 3 bookings to come. Cancel one to book another.",
     "tooManyAttempts": "Too many attempts, try later",
-    "failed": "Couldn't book. Try again."
+    "failed": "Couldn't book. Try again.",
+    "doneTitle": "You are booked",
+    "linkLabel": "Your booking link",
+    "saveLink": "Save this link: it is the only way to cancel or move your booking.",
+    "yourBooking": "Your booking on {{when}}"
   },
   "auth": {
     "email": "Email",
@@ -92,7 +96,10 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "close": "Close"
+    "close": "Close",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "copyFailed": "Couldn’t copy. Select the link and copy it."
   },
   "settings": {
     "title": "Business settings",
@@ -197,9 +204,6 @@
       "note": "Who is it for (optional)",
       "create": "Create link",
       "link": "Invitation link",
-      "copy": "Copy link",
-      "copied": "Copied",
-      "copyFailed": "Couldn’t copy. Select the link and copy it.",
       "sendUntil": "Send this link to the person you invite. It works once, until {{date}}, and is shown only now.",
       "send": "Send this link to the person you invite. It works once and is shown only now.",
       "done": "Done",

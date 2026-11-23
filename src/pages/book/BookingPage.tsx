@@ -4,19 +4,22 @@ import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
 import type {
+  PublicBookingControllerBook201,
   PublicBookingControllerBusiness200,
   PublicBookingControllerSlots200Item,
 } from '@/api/generated.schemas'
 import { ApiError } from '@/apiFetch'
 import { PagePending } from '@/pages/PagePending'
+import { useNow } from '@/useNow'
 import { anyMasterOffered } from './anyMasterOffered'
 import { ANY_MASTER } from './bookingSearch'
 import styles from './BookingPage.module.scss'
+import { DoneStep } from './DoneStep'
 import { LoadFailed } from './LoadFailed'
 import { ContactsStep } from './ContactsStep'
 import { MastersStep } from './MastersStep'
 import { NoSuchPage } from './NoSuchPage'
-import { saveBooking } from './savedBooking'
+import { savedBookingOf, saveBooking } from './savedBooking'
 import { slotsForPicker } from './slotsForPicker'
 import { TimeStep } from './TimeStep'
 import { useBookingData } from './useBookingData'
@@ -54,6 +57,8 @@ export function BookingPage() {
   const { business, slots, today } = useBookingData(businessSlug)
   // The time the client had chosen was taken by someone else meanwhile.
   const [taken, setTaken] = useState(false)
+  const [booked, setBooked] = useState<PublicBookingControllerBook201>()
+  const now = useNow()
 
   if (business.error instanceof ApiError && business.error.status === 404) {
     return <NoSuchPage />
@@ -90,7 +95,13 @@ export function BookingPage() {
       <Typography variant="h3" component="h1">
         {business.data.name}
       </Typography>
-      {staff && chosen ? (
+      {booked ? (
+        <DoneStep
+          booked={booked}
+          businessName={business.data.name}
+          timeZone={business.data.timeZone}
+        />
+      ) : staff && chosen ? (
         <ContactsStep
           slug={businessSlug}
           timeZone={business.data.timeZone}
@@ -106,12 +117,13 @@ export function BookingPage() {
               replace: true,
             })
           }}
-          onBooked={({ booking, manageLink }) =>
+          onBooked={(result) => {
             saveBooking(businessSlug, {
-              manageLink,
-              startsAt: booking.startsAt,
+              manageLink: result.manageLink,
+              startsAt: result.booking.startsAt,
             })
-          }
+            setBooked(result)
+          }}
         />
       ) : staff ? (
         <TimeStep
@@ -140,6 +152,8 @@ export function BookingPage() {
         />
       ) : (
         <MastersStep
+          saved={savedBookingOf(businessSlug, now)}
+          timeZone={business.data.timeZone}
           business={business.data}
           slots={slots.data}
           onPick={(staff) => void navigate({ search: { staff } })}

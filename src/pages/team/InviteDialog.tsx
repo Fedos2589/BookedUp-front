@@ -14,8 +14,8 @@ import { useCurrentBusiness } from '@/business/currentBusiness'
 import { rolesManagedBy } from '@/business/roles'
 import { dateTimeIn } from '@/dates'
 import { fieldErrorText } from '@/forms/fieldError'
+import { CopyLink } from '@/forms/CopyLink'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
-import { CopyLink } from './CopyLink'
 import type { Staff } from './StaffWithoutAccount'
 import { changeErrorText, useReloadTeam } from './teamChanges'
 import styles from './Team.module.scss'
@@ -111,7 +111,7 @@ export function InviteDialog({
               ? t('team.invite.sendUntil', { date: until })
               : t('team.invite.send')}
           </Typography>
-          <CopyLink url={link.url} />
+          <CopyLink url={link.url} label={t('team.invite.link')} />
         </div>
       ) : (
         <form

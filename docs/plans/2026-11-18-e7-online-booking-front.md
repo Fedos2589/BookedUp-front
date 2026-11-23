@@ -125,7 +125,7 @@ master part empty for «any»).
 full meeting disabled; DST day in `Europe/Berlin` labels right); component test: choose a day and a
 time. Commit `feat(book): choose a time`.
 
-### - [ ] G4: steps 3–4, contacts and done — split into four small tasks
+### - [x] G4: steps 3–4, contacts and done — split into four small tasks
 
 Step 3: the chosen time and master as a summary, name, phone (`PhoneNumberField`), optional note, the
 kit's `ActionBar` button «Book». 409 `notFree` / `full` → back to step 2 with a toast «That time was
@@ -145,7 +145,7 @@ booking while it's in the future.
 - [x] **G4c refusals** — 409 `notFree`/`full` → step 2 + a note on it (no toast: the app has no ToastProvider, and /book stays light) + slots refetch; `tooManyBookings`,
       429, 400 texts. Files: `ContactsStep.tsx`, `BookingPage.tsx`, locales, `booking.test.tsx`.
       Commit `feat(book): booking refusals`.
-- [ ] **G4d done screen** — `DoneStep.tsx` (when, who, where, manage link + «Copy»), saves via
+- [x] **G4d done screen** — `DoneStep.tsx` (when, who, where, manage link + «Copy»; not the kit's `SuccessScreen`, which wants an image and a button; `CopyLink` moved from team to `src/forms/`), saves via
       `savedBooking`, «Your booking on …» on `MastersStep`. Check: a full booking from step 1 to 4 with
       MSW; the saved booking appears on step 1. Commit `feat(book): booking done screen`.
 
