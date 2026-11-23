@@ -12,6 +12,7 @@ import styles from './BookingPage.module.scss'
 import { CancelBooking } from './CancelBooking'
 import { LoadFailed } from './LoadFailed'
 import { MoveBooking } from './MoveBooking'
+import { useBusinessManifest } from './useBusinessManifest'
 
 const route = getRouteApi('/book/$businessSlug/manage/$token')
 
@@ -21,6 +22,7 @@ export function ManagePage() {
   const { t, i18n } = useTranslation()
   const managed = usePublicBookingControllerManaged(token)
   const [moving, setMoving] = useState(false)
+  useBusinessManifest(managed.data?.business.slug, managed.data?.business.name)
 
   // 400 is a token of the wrong shape, 404 one nobody holds: both are a dead link.
   if (

@@ -176,7 +176,7 @@ within its master — no «any» on a move) → `PATCH`. Started / cancelled →
 **Check:** `manage.test.tsx` — read; cancel with confirm; move to another time; `badTransition` shows
 read-only; 404 screen. Commit `feat(book): manage a booking by link`.
 
-### - [ ] G6: install the business's page
+### - [x] G6: install the business's page
 
 **Files:** create `src/pages/book/useBusinessManifest.ts` (+ test), `src/pages/book/BookingPage.tsx`,
 `src/pages/book/ManagePage.tsx`, maybe `src/pwa/*` if the install prompt needs to know the page.
@@ -191,6 +191,10 @@ Chrome DevTools → Application → Manifest on `/book/<slug>`: the business's n
 Commit `feat(book): installable as the business's app`.
 
 ### - [ ] G7: e2e, test plan, close the step
+
+- [x] **G7a `e2e/book.spec.ts`** — «any» → done → link → move → cancel on 390×844 with the API answered by the test; Book above the keyboard.
+- [x] **G7b** manual test plan (`docs/manual-test-plan.html`), republish.
+- [ ] **G7c** after the merge: the common plan in BookedUp-back.
 
 **Files:** create `e2e/book.spec.ts`, `docs/manual-test-plan.html`, then the common plan in
 BookedUp-back.

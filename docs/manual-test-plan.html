@@ -311,16 +311,80 @@
     gap: 4px;
     font-size: 14px;
   }
+  /* Copy buttons next to test data (added by script below) */
+  .cp {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin: 0 2px 0 1px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    vertical-align: -5px;
+  }
+  .cp:hover {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .cp svg {
+    width: 14px;
+    height: 14px;
+  }
+  .cp .ok {
+    display: none;
+  }
+  .cp.done {
+    color: var(--nit);
+  }
+  .cp.done .ok {
+    display: block;
+  }
+  .cp.done .copy {
+    display: none;
+  }
+  .acc-note {
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .acc td code {
+    white-space: nowrap;
+  }
+  .acc-pill {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right, 0px));
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    z-index: 10;
+    background: var(--accent);
+    color: var(--surface);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+  @media (pointer: coarse) {
+    .cp {
+      width: 32px;
+      height: 32px;
+      vertical-align: -10px;
+    }
+  }
 </style>
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow">План ручного тестирования · 18.11.2026</div>
+    <div class="eyebrow">План ручного тестирования · 23.11.2026</div>
     <h1>BookedUp — весь текущий функционал</h1>
     <div class="meta">
-      <span>BookedUp-front <code>main @ ea4aced</code></span>
-      <span>BookedUp-back <code>main @ aa7e98d</code></span>
-      <span>46 сценариев</span>
+      <span>BookedUp-front <code>e7/booking-g6 @ 86b96cc</code></span>
+      <span>BookedUp-back <code>main @ 3eac4d6</code></span>
+      <span>55 сценариев</span>
     </div>
     <p>
       Что сейчас есть в приложении: регистрация владельца вместе с бизнесом,
@@ -331,9 +395,95 @@
       и отгулы, английский и русский интерфейс, PWA. Календарь записей (E6):
       день и неделя, запись в свободное время, места в группах и «пришедший»,
       статусы, перенос и отмена, прошедшие занятия, отказ расписания из-за
-      записей. Публичная страница <code>/book/…</code> — по-прежнему заглушка.
+      записей. Публичная страница записи (E7): выбор мастера или «любого
+      свободного», день и время, данные клиента, личная ссылка для просмотра,
+      переноса и отмены, установка страницы бизнеса на главный экран.
     </p>
   </header>
+
+  <section id="accounts">
+    <h2>Аккаунты: логины и пароли</h2>
+    <p class="acc-note">
+      Все тестовые аккаунты в одном месте. Каждый живёт в своём окне и не должен
+      выходить из него до конца прогона: если окно разлогинено, войдите заново
+      по этой таблице. Пароль у всех <code>qa-pass-1234</code>.
+    </p>
+    <div class="tbl acc">
+      <table>
+        <thead>
+          <tr>
+            <th>Окно</th>
+            <th>Кто</th>
+            <th>Email (логин)</th>
+            <th>Пароль</th>
+            <th>Создаётся</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>О</b> · Chrome, профиль «Owner»</td>
+            <td>Олег Владелец, владелец «Студия Йога Плюс Центр»</td>
+            <td><code>owner.qa@example.com</code></td>
+            <td><code>qa-pass-1234</code></td>
+            <td>сценарий 1</td>
+          </tr>
+          <tr>
+            <td><b>А</b> · Chrome, профиль «Admin»</td>
+            <td>Аня Админ, администратор</td>
+            <td><code>admin.qa@example.com</code></td>
+            <td><code>qa-pass-1234</code></td>
+            <td>сценарий 5</td>
+          </tr>
+          <tr>
+            <td><b>М</b> · Firefox или Safari</td>
+            <td>Маша Мастер, мастер (в сценарии 8 на время админ)</td>
+            <td><code>master.qa@example.com</code></td>
+            <td><code>qa-pass-1234</code></td>
+            <td>сценарий 6</td>
+          </tr>
+          <tr>
+            <td><b>П</b> · Chrome, профиль «Petr»</td>
+            <td>Пётр Тренер, мастер (бывший «без аккаунта»)</td>
+            <td><code>petr.qa@example.com</code></td>
+            <td><code>qa-pass-1234</code></td>
+            <td>сценарий 9</td>
+          </tr>
+          <tr>
+            <td><b>Б</b> · Chrome Incognito</td>
+            <td>
+              Борис, второй владелец «Фитнес Б» (в сценарии 8 удалён из команды
+              Студии)
+            </td>
+            <td><code>owner2.qa@example.com</code></td>
+            <td><code>qa-pass-1234</code></td>
+            <td>сценарий 7</td>
+          </tr>
+          <tr>
+            <td>—</td>
+            <td>
+              Третий владелец, только для проверки занятого/свободного email
+            </td>
+            <td><code>owner3.qa@example.com</code></td>
+            <td><code>qa-pass-1234</code></td>
+            <td>сценарий 20</td>
+          </tr>
+          <tr>
+            <td>—</td>
+            <td>Несуществующий аккаунт для ошибки входа (не создаётся)</td>
+            <td><code>nobody.qa@example.com</code></td>
+            <td>любой</td>
+            <td>сценарий 21</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="acc-note">
+      Если email уже заняты в вашей базе — добавьте к имени цифру и впишите
+      сюда, какие взяли (правьте таблицу в этой версии плана).
+    </p>
+  </section>
+
+  <a class="acc-pill" href="#accounts">Аккаунты</a>
 
   <section id="toc">
     <h2>Сценарии</h2>
@@ -478,8 +628,8 @@
         <span class="chip c-corner">корнер-кейс</span>
       </li>
       <li>
-        <a href="#t35">Страница записи <code>/book/…</code></a>
-        <span class="chip c-corner">корнер-кейс</span>
+        <a href="#t35">Запись к мастеру: четыре экрана до «You are booked»</a>
+        <span class="chip c-happy">основной</span>
       </li>
       <li>
         <a href="#t36"
@@ -529,6 +679,44 @@
         <a href="#t46">Календарь: бэк недоступен</a>
         <span class="chip c-corner">корнер-кейс</span>
       </li>
+      <li>
+        <a href="#t47">Запись «Any free master»</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t48">Группа: места, «free X of N», заполненная группа</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t49">Ссылка управления: просмотр и перенос</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t50">Ссылка управления: отмена и мёртвая ссылка</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t51">Гонка: два клиента на одно время</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t52">Не больше трёх предстоящих записей</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t53">Страница записи: нет бизнеса, бэк недоступен</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t54"
+          >Страница записи на телефоне 390px, с клавиатурой и по-русски</a
+        >
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t55">Установка страницы бизнеса на главный экран</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
     </ol>
   </section>
 
@@ -549,19 +737,16 @@
         <dd>
           Сессия хранится в cookie, поэтому каждому аккаунту — свой профиль
           браузера: <b>О</b> — Chrome, профиль «Owner»; <b>А</b> — Chrome,
-          профиль «Admin»; <b>М</b> — Firefox или Safari (мастер); <b>Б</b> —
-          Chrome Incognito (второй владелец). Окно инкогнито живёт до закрытия
-          всех инкогнито-окон.
+          профиль «Admin»; <b>М</b> — Firefox или Safari (мастер Маша);
+          <b>П</b> — Chrome, профиль «Petr» (мастер Пётр); <b>Б</b> — Chrome
+          Incognito (второй владелец). Окно инкогнито живёт до закрытия всех
+          инкогнито-окон.
         </dd>
         <dt>Аккаунты</dt>
         <dd>
-          Придуманные для плана, создаются в сценариях 1, 5, 6, 7: владелец
-          <code>owner.qa@example.com</code>, администратор
-          <code>admin.qa@example.com</code>, мастер
-          <code>master.qa@example.com</code>, второй владелец
-          <code>owner2.qa@example.com</code>. Пароль у всех
-          <code>qa-pass-1234</code>. Если эти email уже заняты в вашей базе —
-          добавьте к имени цифру и записывайте, какие взяли.
+          Таблица «Аккаунты: логины и пароли» вверху страницы (кнопка «Аккаунты»
+          в углу ведёт к ней). Окна не выходить: Пётр заводится в отдельном окне
+          П, чтобы Маша в окне М осталась в системе.
         </dd>
         <dt>Данные для календаря</dt>
         <dd>
@@ -813,8 +998,8 @@
           <div class="act">Нажмите ссылку страницы записи.</div>
           <div class="exp">
             Адрес <code>/book/yoga-plus-qa</code>, заголовок
-            <span class="ui">«Booking: yoga-plus-qa»</span>, навигации кабинета
-            нет.
+            <span class="ui">«Студия Йога Плюс Центр»</span>, шаг
+            <span class="ui">«Choose a master»</span>, навигации кабинета нет.
           </div>
         </li>
         <li>
@@ -1234,8 +1419,9 @@
         </li>
         <li>
           <div class="act">
-            В окне М выйдите (<span class="ui">«Sign out»</span>), откройте
-            ССЫЛКУ-П, зарегистрируйтесь: <code>Пётр</code>,
+            В окне П (Chrome, профиль «Petr», не вошедший; окно М не трогайте —
+            Маша должна остаться в системе) откройте ССЫЛКУ-П,
+            зарегистрируйтесь: <code>Пётр</code>,
             <code>petr.qa@example.com</code>, <code>qa-pass-1234</code>.
           </div>
           <div class="exp">
@@ -2342,11 +2528,19 @@
       </dl>
       <ol class="steps">
         <li>
-          <div class="act">У Monday поставьте интервал 18:00–09:00, Save.</div>
+          <div class="act">У Monday поставьте интервал 09:00–09:00, Save.</div>
           <div class="exp">
             У интервала
             <span class="ui">«The end must be after the start»</span>, фокус на
             нём, запроса нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">У Monday поставьте интервал 18:00–09:00, Save.</div>
+          <div class="exp">
+            Ошибки нет: конец раньше начала читается как следующий день, это
+            ночное окно. Запрос ушёл, после перезагрузки интервал снова
+            18:00–09:00.
           </div>
         </li>
         <li>
@@ -2765,12 +2959,19 @@
 
     <article class="tc" id="t35">
       <div class="hd">
-        <h3>35. Страница записи <code>/book/…</code></h3>
-        <span class="chip c-corner">корнер-кейс</span>
+        <h3>
+          35. Запись к мастеру: четыре экрана, от выбора мастера до «You are
+          booked»
+        </h3>
+        <span class="chip c-happy">основной</span>
       </div>
       <dl class="pre">
         <dt>Старт</dt>
-        <dd>Окно Б, не вошедший</dd>
+        <dd>
+          Окно Б (инкогнито; вошёл ли Борис — не важно, страница публичная),
+          телефонный размер или обычное окно; у Маши есть свободное время
+          (сценарий 11)
+        </dd>
       </dl>
       <ol class="steps">
         <li>
@@ -2778,17 +2979,98 @@
             Откройте <code>localhost:5173/book/yoga-plus-qa</code>.
           </div>
           <div class="exp">
-            <span class="ui">«Booking: yoga-plus-qa»</span>, без требования
-            входа.
+            Заголовок <span class="ui">«Студия Йога Плюс Центр»</span>, без
+            шапки кабинета и без требования входа; шаг
+            <span class="ui">«Choose a master»</span>: кнопки
+            <span class="ui">«Any free master»</span>,
+            <span class="ui">«Маша Мастер»</span>,
+            <span class="ui">«Пётр»</span>. Мастер без свободного времени серый,
+            с пометкой
+            <span class="ui">«No free time in the next two weeks»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Маша Мастер»</span>.</div>
+          <div class="exp">
+            Шаг <span class="ui">«Choose a day and a time»</span>: полоса из 14
+            дней (Day) и под ней времена выбранного дня (Time); первый день со
+            свободным временем выбран сам; строка
+            <span class="ui">«Times are in Europe/Moscow»</span>. Адрес получил
+            <span class="ui">?staff=…</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Выберите другой день, затем время.</div>
+          <div class="exp">
+            Времена сменились под день; выбранное время подсвечено; кнопка
+            <span class="ui">«Continue»</span> доступна только после выбора.
+            Адрес получил день и время.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Continue»</span>.</div>
+          <div class="exp">
+            Шаг <span class="ui">«Your details»</span>: поля
+            <span class="ui">Name</span>, <span class="ui">Phone</span>,
+            <span class="ui">Note (optional)</span>; выбранное время и мастер
+            показаны над ними.
           </div>
         </li>
         <li>
           <div class="act">
-            Откройте <code>localhost:5173/book/no-such-business</code>.
+            Нажмите <span class="ui">«Book»</span> с пустыми полями.
           </div>
           <div class="exp">
-            Тот же заголовок со словом из адреса — страница пока заглушка и
-            бизнес не проверяет. Ожидаемо до E7.
+            Ошибки под Name и Phone, курсор в первом неверном поле; запроса не
+            было.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В <span class="ui">Name</span> — <code>Ира</code>, в
+            <span class="ui">Phone</span> — <code>+79001234567</code>, нажмите
+            <span class="ui">«Book»</span>.
+          </div>
+          <div class="exp">
+            Экран <span class="ui">«You are booked»</span>: время в часовом
+            поясе бизнеса, мастер, поле
+            <span class="ui">«Your booking link»</span> со ссылкой и кнопка
+            <span class="ui">«Copy link»</span>; текст
+            <span class="ui"
+              >«Save this link: it is the only way to cancel or move your
+              booking.»</span
+            >
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Copy link»</span>.</div>
+          <div class="exp">
+            Подпись сменилась на <span class="ui">«Copied»</span>; вставьте из
+            буфера в адресную строку — ссылка открывается (сценарий 49).
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите «Назад» браузера.</div>
+          <div class="exp">
+            Запись второй раз не создаётся ни при каком шаге назад. Куда именно
+            вернуло (на выбор времени или на предыдущую страницу) — запишите.
+          </div>
+        </li>
+        <li>
+          <div class="act">В окне О откройте календарь на этот день.</div>
+          <div class="exp">
+            В колонке Маши запись «Ира» с телефоном, статус
+            <span class="ui">Booked</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Обновите <code>localhost:5173/book/yoga-plus-qa</code> в окне Б.
+          </div>
+          <div class="exp">
+            Над списком мастеров ссылка
+            <span class="ui">«Your booking on …»</span> — она ведёт на страницу
+            записи (сценарий 49).
           </div>
         </li>
       </ol>
@@ -3049,15 +3331,19 @@
           <div class="exp">
             Модалка «Футбол дети», подзаголовок — дата и время занятия.
             <span class="ui">«Free 12 of 12»</span>,
-            <span class="ui">«Nobody has booked yet»</span>, форма (Name, Phone,
-            Note), кнопки <span class="ui">«Close»</span> и
-            <span class="ui">«Add»</span>.
+            <span class="ui">«Nobody has booked yet»</span>, поле
+            <span class="ui">Client</span>, кнопка
+            <span class="ui">«New client»</span>, поле
+            <span class="ui">Note</span>, кнопки
+            <span class="ui">«Close»</span> и <span class="ui">«Add»</span>.
           </div>
         </li>
         <li>
           <div class="act">
-            Name — <code>Клиент Второй</code>, Phone — <code>9007654321</code>,
-            <span class="ui">«Add»</span>.
+            Нажмите <span class="ui">«New client»</span>: Phone —
+            <code>9007654321</code> (страна RU), Name —
+            <code>Клиент Второй</code>. Нажмите <span class="ui">«Add»</span>.
+            Кнопка неактивна, пока клиент не выбран или не заполнен.
           </div>
           <div class="exp">
             Форма очистилась, в списке <span class="ui">Booked</span> — Клиент
@@ -3067,7 +3353,10 @@
         </li>
         <li>
           <div class="act">
-            Нажмите «Йога» у Петра, добавьте любого клиента.
+            Нажмите «Йога» у Петра. В поле <span class="ui">Client</span>
+            выберите «Клиент Второй» из списка (или создайте нового через
+            <span class="ui">«New client»</span>), нажмите
+            <span class="ui">«Add»</span>.
           </div>
           <div class="exp">
             Счёт <span class="ui">«Free 0 of 1»</span>, форма пропала, вместо
@@ -3077,8 +3366,14 @@
         </li>
         <li>
           <div class="act">
-            Сдвиньте у «Футбол дети» начало на 10 минут назад (сценарий 14,
-            «Change»), вернитесь в календарь, нажмите на занятие.
+            Сделайте так, чтобы «Футбол дети» уже начался. Откройте
+            <span class="ui">Schedule</span>, выберите Петра, режим
+            <span class="ui">Groups</span>, у «Футбол дети» нажмите
+            <span class="ui">«Change»</span> и поставьте время начала на 10
+            минут раньше текущего (по часам бизнеса, например сейчас 14:30 —
+            ставьте 14:20; конец оставьте позже текущего времени). Сохраните,
+            откройте <span class="ui">Calendar</span> и нажмите на сегодняшнее
+            занятие «Футбол дети» (не на завтрашнее).
           </div>
           <div class="exp">
             Занятие уже идёт: вместо <span class="ui">«Add»</span> кнопка
@@ -3087,7 +3382,9 @@
         </li>
         <li>
           <div class="act">
-            Добавьте клиента <code>Пришедший</code> с этим кнопкой.
+            Нажмите <span class="ui">«New client»</span>: Phone —
+            <code>9001112233</code> (страна RU), Name — <code>Пришедший</code>.
+            Нажмите <span class="ui">«Add someone who came»</span>.
           </div>
           <div class="exp">
             Клиент в списке. Если занятие было заполнено — счёт читается
@@ -3536,6 +3833,464 @@
       </ol>
     </article>
 
+    <article class="tc" id="t47">
+      <div class="hd">
+        <h3>47. Запись «Any free master»</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно Б, <code>localhost:5173/book/yoga-plus-qa</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Any free master»</span>.
+          </div>
+          <div class="exp">
+            Шаг выбора времени: в Time под каждым временем вторая строка с
+            именем мастера; времена всех мастеров с рабочими часами, без групп и
+            без полных.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Выберите время, за которое есть и Маша, и другой мастер (если нет —
+            любое).
+          </div>
+          <div class="exp">Время одно в списке, а не по одному на мастера.</div>
+        </li>
+        <li>
+          <div class="act">
+            <span class="ui">«Continue»</span>, имя <code>Олег</code>, телефон
+            <code>+79007654321</code>, <span class="ui">«Book»</span>.
+          </div>
+          <div class="exp">
+            <span class="ui">«You are booked»</span>: назван мастер, которому
+            досталось время.
+          </div>
+        </li>
+        <li>
+          <div class="act">В окне О откройте календарь.</div>
+          <div class="exp">Запись «Олег» у названного мастера, не у двух.</div>
+        </li>
+        <li>
+          <div class="act">
+            Если у всех мастеров с часами нет свободного времени (занять его
+            записями в календаре).
+          </div>
+          <div class="exp">
+            На странице записи кнопки
+            <span class="ui">«Any free master»</span> нет.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t48">
+      <div class="hd">
+        <h3>48. Группа: места, «free X of N», заполненная группа</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно Б, <code>localhost:5173/book/yoga-plus-qa</code>; у Петра группы
+          «Футбол дети» (12 мест) и «Йога» (1 место)
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Нажмите <span class="ui">«Пётр»</span>.</div>
+          <div class="exp">
+            Времена групп: вторая строка — название и
+            <span class="ui">«free 12 of 12»</span> у «Футбол дети»;
+            <span class="ui">«free 1 of 1»</span> у «Йога».
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Запишитесь на «Йога» (имя <code>Анна</code>, телефон
+            <code>+79001112233</code>).
+          </div>
+          <div class="exp"><span class="ui">«You are booked»</span>.</div>
+        </li>
+        <li>
+          <div class="act">
+            Вернитесь на страницу записи Петра в окне Б (новая вкладка).
+          </div>
+          <div class="exp">
+            Это же время «Йога» теперь с пометкой
+            <span class="ui">«full»</span>, недоступно для выбора; «Футбол дети»
+            — <span class="ui">«free 11 of 12»</span> после записи на него.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Выберите <span class="ui">«Any free master»</span>.
+          </div>
+          <div class="exp">Групповых времён среди них нет.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t49">
+      <div class="hd">
+        <h3>49. Ссылка управления: просмотр и перенос</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно Б, ссылка из экрана «You are booked» (сценарий 35), запись Ира
+          ещё не началась
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Откройте ссылку без входа в кабинет.</div>
+          <div class="exp">
+            Заголовок с названием бизнеса, время в часовом поясе бизнеса,
+            мастер, статус <span class="ui">«Booked»</span>; кнопки
+            <span class="ui">«Change time»</span> и
+            <span class="ui">«Cancel booking»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Change time»</span>.</div>
+          <div class="exp">
+            Шаг выбора времени того же мастера (без
+            <span class="ui">«Any free master»</span>); текущее время в списке
+            не предлагается; кнопки <span class="ui">«Move»</span> и
+            <span class="ui">«Back»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Back»</span>.</div>
+          <div class="exp">
+            Вернулись к просмотру записи, ничего не изменилось.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Снова <span class="ui">«Change time»</span>, выберите другое время,
+            <span class="ui">«Move»</span>.
+          </div>
+          <div class="exp">
+            Просмотр записи с новым временем. В окне О после обновления
+            календаря запись Иры на новом времени.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте ссылку в двух вкладках. В первой дойдите до выбора нового
+            времени и не нажимайте «Move». Во второй запишите другого клиента к
+            Маше на это же время. В первой нажмите «Move».
+          </div>
+          <div class="exp">
+            Перенос не проходит:
+            <span class="ui">«That time was just taken. Choose another.»</span>,
+            остаёмся на выборе времени.
+          </div>
+        </li>
+        <li>
+          <div class="act">Остановите бэк, перенесите на другое время.</div>
+          <div class="exp">
+            <span class="ui">«Couldn’t save the change. Try again.»</span>;
+            запустите бэк, повторите — перенесло.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t50">
+      <div class="hd">
+        <h3>50. Ссылка управления: отмена и мёртвая ссылка</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно Б, ссылка записи</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Cancel booking»</span>.
+          </div>
+          <div class="exp">
+            Диалог <span class="ui">«Cancel this booking?»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Закройте диалог (Escape).</div>
+          <div class="exp">Запись не тронута.</div>
+        </li>
+        <li>
+          <div class="act">
+            Снова <span class="ui">«Cancel booking»</span>,
+            <span class="ui">«Yes, cancel»</span>.
+          </div>
+          <div class="exp">
+            Статус <span class="ui">«Cancelled»</span>, кнопок
+            <span class="ui">«Change time»</span> /
+            <span class="ui">«Cancel booking»</span> нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">В окне О обновите календарь.</div>
+          <div class="exp">
+            Записи Иры в календаре нет (или она «Cancelled», как в сценарии 40).
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте <code>localhost:5173/book/yoga-plus-qa</code>.
+          </div>
+          <div class="exp">
+            Ссылки <span class="ui">«Your booking on …»</span> над мастерами
+            больше нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте ссылку записи, исправив в токене одну букву.
+          </div>
+          <div class="exp">
+            <span class="ui">«This link doesn't work»</span>, без кнопок.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t51">
+      <div class="hd">
+        <h3>51. Гонка: два клиента на одно время</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Две вкладки окна Б ( B1 и B2 ),
+          <code>localhost:5173/book/yoga-plus-qa</code>, Маша, у выбранного
+          времени одно место
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            В обеих вкладках дойдите до шага «Your details» с одним и тем же
+            временем.
+          </div>
+          <div class="exp">Обе показывают одно время.</div>
+        </li>
+        <li>
+          <div class="act">
+            В B1 заполните и нажмите <span class="ui">«Book»</span>.
+          </div>
+          <div class="exp"><span class="ui">«You are booked»</span>.</div>
+        </li>
+        <li>
+          <div class="act">
+            В B2 заполните (другое имя) и нажмите
+            <span class="ui">«Book»</span>.
+          </div>
+          <div class="exp">
+            Возврат на шаг выбора времени, над ним
+            <span class="ui">«That time was just taken. Choose another.»</span>;
+            этого времени в списке уже нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">Выберите другое время и запишитесь.</div>
+          <div class="exp"><span class="ui">«You are booked»</span>.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t52">
+      <div class="hd">
+        <h3>52. Не больше трёх предстоящих записей</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно Б, один и тот же телефон <code>+79005550000</code></dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Запишите этот телефон трижды на разные времена.</div>
+          <div class="exp">
+            Три раза <span class="ui">«You are booked»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">Попробуйте записать в четвёртый раз.</div>
+          <div class="exp">
+            <span class="ui"
+              >«You already have 3 bookings to come. Cancel one to book
+              another.»</span
+            >; запись не создана.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Отмените одну запись по её ссылке и запишитесь снова.
+          </div>
+          <div class="exp">Четвёртая запись проходит.</div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t53">
+      <div class="hd">
+        <h3>53. Страница записи: нет бизнеса, бэк недоступен</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно Б</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Откройте <code>localhost:5173/book/no-such-business</code>.
+          </div>
+          <div class="exp">
+            <span class="ui">«No such page»</span>, без списка мастеров.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Остановите бэк, откройте
+            <code>localhost:5173/book/yoga-plus-qa</code>.
+          </div>
+          <div class="exp">
+            <span class="ui">«Couldn’t load the booking page.»</span> и кнопка
+            <span class="ui">«Try again»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Запустите бэк, нажмите <span class="ui">«Try again»</span>.
+          </div>
+          <div class="exp">Список мастеров загрузился.</div>
+        </li>
+        <li>
+          <div class="act">
+            Остановите бэк после загрузки страницы и нажмите «Book» на шаге
+            «Your details».
+          </div>
+          <div class="exp">
+            <span class="ui">«Couldn’t book. Try again.»</span>; введённое
+            осталось.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t54">
+      <div class="hd">
+        <h3>
+          54. Страница записи на телефоне 390px, с клавиатурой и по-русски
+        </h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно Б, телефон или эмуляция 390×844,
+          <code>localhost:5173/book/yoga-plus-qa</code>
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Пройдите шаги до «Your details».</div>
+          <div class="exp">
+            Страница не скроллится вбок; ни один экран не прижат к углу —
+            контент по центру ширины; список времён листается, шапка видна.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите в поле <span class="ui">Name</span> (откроется клавиатура).
+          </div>
+          <div class="exp">
+            Кнопка <span class="ui">«Book»</span> поднимается над клавиатурой и
+            остаётся видна.
+          </div>
+        </li>
+        <li>
+          <div class="act">Переключите язык на русский (выбор в шапке).</div>
+          <div class="exp">
+            <span class="ui">«Выберите мастера»</span>,
+            <span class="ui">«Любой свободный мастер»</span>,
+            <span class="ui">«Продолжить»</span>,
+            <span class="ui">«Ваши данные»</span>,
+            <span class="ui">«Записаться»</span>,
+            <span class="ui">«Вы записаны»</span>,
+            <span class="ui">«Ссылка на вашу запись»</span>; у ссылки управления
+            <span class="ui">«Изменить время»</span>,
+            <span class="ui">«Отменить запись»</span>,
+            <span class="ui">«Да, отменить»</span>; статус
+            <span class="ui">«Создана»</span>.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t55">
+      <div class="hd">
+        <h3>55. Установка страницы бизнеса на главный экран</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Сборка, не dev:
+          <code>npm run build &amp;&amp; npx vite preview</code> →
+          <code>localhost:4173</code> (бэк запущен; в dev-режиме ссылки на
+          манифест нет — ничего не подменяется, это ожидаемо). Телефон (iOS
+          Safari или Android Chrome) или Chrome DevTools → Application →
+          Manifest, <code>localhost:4173/book/yoga-plus-qa</code>
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Откройте <code>localhost:4173/book/yoga-plus-qa</code>, затем
+            DevTools → Application → Manifest.
+          </div>
+          <div class="exp">
+            Манифест взят с
+            <code>/api/public/businesses/yoga-plus-qa/manifest.webmanifest</code
+            >, название — «Студия Йога Плюс Центр», <code>start_url</code> ведёт
+            на страницу записи; название вкладки тоже «Студия Йога Плюс Центр».
+          </div>
+        </li>
+        <li>
+          <div class="act">Откройте ссылку управления записью.</div>
+          <div class="exp">Манифест и название те же (бизнеса).</div>
+        </li>
+        <li>
+          <div class="act">Откройте <code>localhost:4173/sign-in</code>.</div>
+          <div class="exp">
+            Манифест снова <code>/manifest.webmanifest</code>, название
+            <span class="ui">«BookedUp»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            iOS: «Поделиться» → «На экран “Домой”»; Android: меню → «Установить
+            приложение».
+          </div>
+          <div class="exp">
+            Под иконкой — название бизнеса; запуск с главного экрана открывает
+            страницу записи без адресной строки.
+          </div>
+        </li>
+      </ol>
+    </article>
+
     <p>
       <b>Вручную не проверить:</b> истечение приглашения через 7 дней (бэк:
       <code>invitations</code> integration-тесты; фронт показывает тот же экран,
@@ -3546,10 +4301,74 @@
       записи графика (integration-тесты BookedUp-back <code>schedule</code>);
       гонки двух одновременных записей на один слот на бэке (integration-тесты
       BookedUp-back <code>appointments</code>; в интерфейсе — сценарий 43);
-      экран «You have no calendar yet…» у мастера без собственного графика
-      (page-тест <code>calendar.test.tsx</code>); переход часов в Europe/Berlin
-      и запись, переходящая за полночь, на сетке (unit-тесты
+      гонки двух записей на последнее место (бэк, integration-тесты
+      <code>public-booking</code>; в интерфейсе — сценарий 51); запись «Any free
+      master» по всем вариантам времени и переносы через полночь
+      (<code>booking.test.tsx</code>, <code>manage.test.tsx</code>,
+      <code>e2e/book.spec.ts</code>); экран «You have no calendar yet…» у
+      мастера без собственного графика (page-тест
+      <code>calendar.test.tsx</code>); переход часов в Europe/Berlin и запись,
+      переходящая за полночь, на сетке (unit-тесты
       <code>toColumns.test.ts</code>).
     </p>
   </section>
 </div>
+
+<script>
+  // A copy button after every value you type or paste: <code> in a step's
+  // action and in the card's preconditions (not in expected results).
+  ;(function () {
+    var ICON =
+      '<svg class="copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>' +
+      '<svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>'
+
+    function fallbackCopy(text) {
+      var ta = document.createElement('textarea')
+      ta.value = text
+      ta.setAttribute('readonly', '')
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.select()
+      var ok = false
+      try {
+        ok = document.execCommand('copy')
+      } catch (e) {}
+      document.body.removeChild(ta)
+      return ok ? Promise.resolve() : Promise.reject()
+    }
+
+    function copy(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).catch(function () {
+          return fallbackCopy(text)
+        })
+      }
+      return fallbackCopy(text)
+    }
+
+    document
+      .querySelectorAll('.act code, .pre dd code, .acc code, .acc-note code')
+      .forEach(function (code) {
+        var text = code.textContent
+        var btn = document.createElement('button')
+        btn.type = 'button'
+        btn.className = 'cp'
+        btn.title = 'Скопировать'
+        btn.setAttribute('aria-label', 'Скопировать «' + text.trim() + '»')
+        btn.innerHTML = ICON
+        btn.addEventListener('click', function () {
+          copy(text).then(function () {
+            btn.classList.add('done')
+            btn.title = 'Скопировано'
+            clearTimeout(btn._t)
+            btn._t = setTimeout(function () {
+              btn.classList.remove('done')
+              btn.title = 'Скопировать'
+            }, 1200)
+          })
+        })
+        code.insertAdjacentElement('afterend', btn)
+      })
+  })()
+</script>

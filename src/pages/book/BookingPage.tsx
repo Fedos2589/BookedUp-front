@@ -23,6 +23,7 @@ import { savedBookingOf, saveBooking } from './savedBooking'
 import { type PickerSlot, pickedSlot } from './slotsForPicker'
 import { TimeStep } from './TimeStep'
 import { useBookingData } from './useBookingData'
+import { useBusinessManifest } from './useBusinessManifest'
 
 // An address naming a master the business doesn't have is the first step.
 const knownStaff = (
@@ -55,6 +56,7 @@ export function BookingPage() {
   // the form away from under them.
   const [chosen, setChosen] = useState<PickerSlot>()
   const now = useNow()
+  useBusinessManifest(business.data?.slug, business.data?.name)
 
   if (business.error instanceof ApiError && business.error.status === 404) {
     return <NoSuchPage />
