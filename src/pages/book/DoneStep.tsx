@@ -35,7 +35,8 @@ export function DoneStep({ booked, business }: Props) {
   const heading = useStepHeading()
   const { booking, manageLink } = booked
   // The token is the link's last segment.
-  const token = manageLink.slice(manageLink.lastIndexOf('/') + 1)
+  const token =
+    new URL(manageLink).pathname.split('/').filter(Boolean).at(-1) ?? ''
   // Never fetched here: NotifyMe asks for the booking after each switch, and
   // this reads what it put in the cache.
   const managed = useQuery({

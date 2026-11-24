@@ -12,15 +12,15 @@ import {
   PushDismissedError,
   pushSupport,
   subscribe,
-  unsubscribe,
 } from '@/pwa/push'
+import type { Language } from '@/language'
 import { ChannelRow } from './ChannelRow'
 import styles from './NotifyMe.module.scss'
 import type { RowMutation } from './rowMutation'
 
 type Props = {
   token: string
-  locale: 'en' | 'ru'
+  locale: Language
   pushKey: string
   // The booking's subscribed endpoints, from every device.
   endpoints: string[]
@@ -43,18 +43,15 @@ export function PushRow({
   const [asking, setAsking] = useState(false)
 
   useEffect(() => {
-    if (support === 'yes') void currentEndpoint().then(setHere)
+    if (support === 'yes')
+      void currentEndpoint().then(setHere, () => setHere(null))
   }, [support])
 
   const pushOn = usePublicBookingControllerPushOn({ mutation })
   const pushOff = usePublicBookingControllerPushOff({
-    mutation: {
-      ...mutation,
-      onSuccess: () => {
-        void unsubscribe()
-        setHere(null)
-      },
-    },
+    // The browser keeps one subscription for all of the client's bookings:
+    // only this booking's row is dropped, the subscription stays.
+    mutation,
   })
 
   if (support === 'no') return null

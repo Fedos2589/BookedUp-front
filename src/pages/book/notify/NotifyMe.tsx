@@ -16,6 +16,7 @@ import {
 } from '@/api/public-booking/public-booking'
 import { ApiError } from '@/apiFetch'
 import { isLanguage } from '@/language'
+import { pushSupport } from '@/pwa/push'
 import { ChannelRow } from './ChannelRow'
 import { EmailRow } from './EmailRow'
 import { PushRow } from './PushRow'
@@ -95,12 +96,9 @@ export function NotifyMe({
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [telegramAsked])
 
-  if (
-    !channels.telegram &&
-    !channels.whatsapp &&
-    !channels.push &&
-    !channels.email
-  )
+  // Push counts only where its row can show: a key and a browser that can.
+  const pushShown = channels.push && pushKey !== null && pushSupport() !== 'no'
+  if (!channels.telegram && !channels.whatsapp && !pushShown && !channels.email)
     return null
 
   return (
@@ -147,7 +145,7 @@ export function NotifyMe({
               onTurnOff={() => whatsappOff.mutate({ token })}
             />
           )}
-          {channels.push && pushKey && (
+          {pushShown && pushKey && (
             <PushRow
               token={token}
               locale={locale}

@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { usePublicBookingControllerEmailOff } from '@/api/public-booking/public-booking'
+import type { Language } from '@/language'
 import { ChannelRow } from './ChannelRow'
 import { EmailForm } from './EmailForm'
 import type { RowMutation } from './rowMutation'
 
 type Props = {
   token: string
-  locale: 'en' | 'ru'
+  locale: Language
   // The booking's address, masked; null while it is off.
   email: string | null
   mutation: RowMutation

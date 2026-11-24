@@ -275,6 +275,16 @@ test('push: no PushManager shows nothing, an iOS tab says to install first', asy
   expect(screen.queryByRole('button', { name: /this device/ })).toBeNull()
 })
 
+test('only push on, and it cannot show: no empty block', () => {
+  const only = { telegram: false, whatsapp: false, push: true, email: false }
+  showPush({ channels: only, pushKey: null })
+  expect(screen.queryByText('Get a reminder')).toBeNull()
+  cleanup()
+  push.pushSupport.mockReturnValue('no')
+  showPush({ channels: only })
+  expect(screen.queryByText('Get a reminder')).toBeNull()
+})
+
 test('push: no key from the back shows no push row', () => {
   showPush({ pushKey: null })
   expect(screen.queryByText(/this device/)).toBeNull()
@@ -296,15 +306,18 @@ test('push: turning on subscribes with the key and sends the subscription', asyn
   })
 })
 
-test('push: «On» when this device is among the booking endpoints; off deletes and unsubscribes', async () => {
+test("push: «On» when this device is among the booking endpoints; off deletes the booking's row and keeps the subscription", async () => {
   push.currentEndpoint.mockResolvedValue(SUB.endpoint)
   const api = fakeApi({ [`DELETE ${PUSH}`]: [204], [MANAGED]: [200, {}] })
   showPush({ notifications: { ...OFF, push: [SUB.endpoint] } })
   fireEvent.click(await screen.findByRole('button', { name: 'Turn off' }))
-  await waitFor(() => expect(push.unsubscribe).toHaveBeenCalled())
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === `DELETE ${PUSH}`)).toBe(true),
+  )
   expect(api.calls.find((c) => c.route === `DELETE ${PUSH}`)?.body).toEqual({
     endpoint: SUB.endpoint,
   })
+  expect(push.unsubscribe).not.toHaveBeenCalled()
 })
 
 test('push: another device on the booking does not make this one «On»', async () => {

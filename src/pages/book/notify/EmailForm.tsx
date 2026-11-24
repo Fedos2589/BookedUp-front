@@ -9,12 +9,13 @@ import { ApiError } from '@/apiFetch'
 import { fieldErrorText } from '@/forms/fieldError'
 import { useUnsavedInput } from '@/pwa/unsavedInput'
 import { type EmailForm as Values, emailSchema } from './emailAddress'
+import type { Language } from '@/language'
 import styles from './NotifyMe.module.scss'
 import type { RowMutation } from './rowMutation'
 
 type Props = {
   token: string
-  locale: 'en' | 'ru'
+  locale: Language
   mutation: RowMutation
   onSaved: () => void
 }
