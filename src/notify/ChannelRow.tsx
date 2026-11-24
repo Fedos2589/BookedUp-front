@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
-import styles from './NotifyMe.module.scss'
+import styles from './ChannelRow.module.scss'
 
 type Props = {
   label: string

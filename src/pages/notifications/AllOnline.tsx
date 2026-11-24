@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Checkbox } from 'ted-ui/Checkbox'
+import { Typography } from 'ted-ui/Typography'
 
 import {
   getMyBusinessNotificationsControllerGetQueryKey,
@@ -28,6 +29,12 @@ export function AllOnline() {
     },
   })
 
+  if (current.isError)
+    return (
+      <Typography variant="t4" color="red-300" role="alert">
+        {t('notifications.loadFailed')}
+      </Typography>
+    )
   if (current.data?.allOnline == null) return null
   const checked = save.isPending
     ? save.variables.data.allOnline
@@ -42,6 +49,11 @@ export function AllOnline() {
           save.mutate({ businessId: business.id, data: { allOnline } })
         }
       />
+      {save.isError && (
+        <Typography variant="t4" color="red-300" role="alert">
+          {t('notify.failed')}
+        </Typography>
+      )}
     </section>
   )
 }

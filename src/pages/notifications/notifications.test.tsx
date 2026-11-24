@@ -180,3 +180,107 @@ test('owner and admin: «All online bookings» saves at once', async () => {
     }),
   )
 })
+
+test('push: a failed turn-off says so, and the next try clears it', async () => {
+  push.currentEndpoint.mockResolvedValue(SUB.endpoint)
+  const api = page({ push: [SUB.endpoint] })
+  api.set('DELETE /api/me/notifications/push', [500])
+  renderApp('/notifications')
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Turn off' }))
+  expect(
+    await screen.findByText("Couldn't change this. Try again."),
+  ).toBeTruthy()
+
+  api.set('DELETE /api/me/notifications/push', [204])
+  fireEvent.click(screen.getByRole('button', { name: 'Turn off' }))
+  await waitFor(() =>
+    expect(screen.queryByText("Couldn't change this. Try again.")).toBeNull(),
+  )
+})
+
+test('push: on iOS outside the installed app, the note replaces the button', async () => {
+  push.pushSupport.mockReturnValue('installFirst')
+  page()
+  renderApp('/notifications')
+
+  expect(
+    await screen.findByText(
+      'Add this page to your home screen to get notifications',
+    ),
+  ).toBeTruthy()
+  expect(
+    screen.queryByRole('button', { name: 'Notifications on this device' }),
+  ).toBeNull()
+})
+
+test('push: a blocked permission says so in the row', async () => {
+  push.subscribe.mockRejectedValue(new push.PushDeniedError())
+  page()
+  renderApp('/notifications')
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Notifications on this device' }),
+  )
+  expect(
+    await screen.findByText(
+      'Notifications are blocked in the browser settings',
+    ),
+  ).toBeTruthy()
+})
+
+test('Telegram: a failed link request says so', async () => {
+  const api = page()
+  api.set('POST /api/me/telegram-link', [500])
+  renderApp('/notifications')
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Telegram' }))
+  expect(
+    await screen.findByText("Couldn't change this. Try again."),
+  ).toBeTruthy()
+})
+
+test('Telegram: disconnecting does not bring the old link back', async () => {
+  const api = page()
+  api.set('POST /api/me/telegram-link', [
+    201,
+    { url: 'https://t.me/bot?start=old' },
+  ])
+  api.set('DELETE /api/me/notifications/telegram', [204])
+  renderApp('/notifications')
+  fireEvent.click(await screen.findByRole('button', { name: 'Telegram' }))
+  await screen.findByRole('link', { name: 'Open Telegram' })
+
+  // Back from the bot the page refetches: it is connected now.
+  api.set(ME, [200, { ...mine, telegram: true }])
+  window.dispatchEvent(new Event('visibilitychange'))
+  fireEvent.click(await screen.findByRole('button', { name: 'Turn off' }))
+  api.set(ME, [200, mine])
+
+  await screen.findByRole('button', { name: 'Telegram' })
+  expect(screen.queryByRole('link', { name: 'Open Telegram' })).toBeNull()
+})
+
+test('the page says when its data could not load', async () => {
+  fakeApi({ 'GET /api/me': [200, account], [ME]: [404], [BUSINESS]: [404] })
+  renderApp('/notifications')
+
+  await waitFor(() =>
+    expect(
+      screen.getAllByText("Couldn't load your notification settings"),
+    ).toHaveLength(2),
+  )
+})
+
+test('«All online bookings»: a failed save says so', async () => {
+  const api = page({}, false)
+  api.set(ALL_ONLINE, [500])
+  renderApp('/notifications')
+
+  fireEvent.click(
+    await screen.findByRole('checkbox', { name: /All online bookings/ }),
+  )
+  expect(
+    await screen.findByText("Couldn't change this. Try again."),
+  ).toBeTruthy()
+})

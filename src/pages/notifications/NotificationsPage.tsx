@@ -25,12 +25,8 @@ export function NotificationsPage() {
           {t('notifications.loadFailed')}
         </Typography>
       )}
-      {mine.data && (
-        <>
-          <MyChannels mine={mine.data} />
-          <AllOnline />
-        </>
-      )}
+      {mine.data && <MyChannels mine={mine.data} />}
+      <AllOnline />
     </main>
   )
 }

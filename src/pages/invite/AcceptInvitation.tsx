@@ -4,12 +4,12 @@ import { ActionBar } from 'ted-ui/ActionBar'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
-import { useSessionControllerSignOut } from '@/api/auth/auth'
 import {
   getInvitationLinkControllerPreviewQueryKey,
   useInvitationLinkControllerAccept,
 } from '@/api/invitations/invitations'
 import { isNoSession, meQueryKey } from '@/auth/session'
+import { useSignOut } from '@/auth/useSignOut'
 import authStyles from '@/pages/auth/AuthLayout.module.scss'
 import { joinErrorText } from './joinErrors'
 import { useOpenCabinet } from './useOpenCabinet'
@@ -39,16 +39,14 @@ export function AcceptInvitation({
     },
   })
   const previewHash = hashKey(getInvitationLinkControllerPreviewQueryKey(token))
-  const signOut = useSessionControllerSignOut({
-    mutation: {
-      // Everything cached belonged to the account that left, except the
-      // invitation itself: it is nobody's. The page asks GET /me again and
-      // shows the guest's form, without loading the invitation anew.
-      onSuccess: () =>
-        queryClient.resetQueries({
-          predicate: (query) => query.queryHash !== previewHash,
-        }),
-    },
+  const signOut = useSignOut({
+    // Everything cached belonged to the account that left, except the
+    // invitation itself: it is nobody's. The page asks GET /me again and
+    // shows the guest's form, without loading the invitation anew.
+    onSuccess: () =>
+      queryClient.resetQueries({
+        predicate: (query) => query.queryHash !== previewHash,
+      }),
   })
 
   return (
@@ -76,7 +74,7 @@ export function AcceptInvitation({
           colorScheme="grey"
           fullWidth
           loading={signOut.isPending}
-          onClick={() => signOut.mutate()}
+          onClick={signOut.leave}
         >
           {t('cabinet.signOut')}
         </Button>

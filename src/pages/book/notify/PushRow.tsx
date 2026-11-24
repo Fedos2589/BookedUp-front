@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
@@ -6,16 +5,10 @@ import {
   usePublicBookingControllerPushOff,
   usePublicBookingControllerPushOn,
 } from '@/api/public-booking/public-booking'
-import {
-  currentEndpoint,
-  PushDeniedError,
-  PushDismissedError,
-  pushSupport,
-  subscribe,
-} from '@/pwa/push'
+import { ChannelRow } from '@/notify/ChannelRow'
+import { PushInstallNote } from '@/notify/PushInstallNote'
+import { usePushDevice } from '@/notify/usePushDevice'
 import type { Language } from '@/language'
-import { ChannelRow } from './ChannelRow'
-import styles from './NotifyMe.module.scss'
 import type { RowMutation } from './rowMutation'
 
 type Props = {
@@ -37,15 +30,7 @@ export function PushRow({
   mutation,
 }: Props) {
   const { t } = useTranslation()
-  const support = pushSupport()
-  const [here, setHere] = useState<string | null>(null)
-  const [denied, setDenied] = useState(false)
-  const [asking, setAsking] = useState(false)
-
-  useEffect(() => {
-    if (support === 'yes')
-      void currentEndpoint().then(setHere, () => setHere(null))
-  }, [support])
+  const { support, here, denied, asking, turnOn } = usePushDevice(pushKey)
 
   const pushOn = usePublicBookingControllerPushOn({ mutation })
   const pushOff = usePublicBookingControllerPushOff({
@@ -55,47 +40,20 @@ export function PushRow({
   })
 
   if (support === 'no') return null
-  if (support === 'installFirst')
-    return (
-      <li className={styles.row}>
-        <Typography variant="t2" color="grey-500">
-          {t('notify.pushInstall')}
-        </Typography>
-      </li>
-    )
-
-  const turnOn = async () => {
-    setDenied(false)
-    setAsking(true)
-    try {
-      const { endpoint, keys } = await subscribe(pushKey)
-      if (!endpoint || !keys?.p256dh || !keys.auth)
-        throw new Error('The browser gave an incomplete subscription')
-      setHere(endpoint)
-      pushOn.mutate({
-        token,
-        data: {
-          subscription: {
-            endpoint,
-            keys: { p256dh: keys.p256dh, auth: keys.auth },
-          },
-          locale,
-        },
-      })
-    } catch (error) {
-      if (error instanceof PushDeniedError) setDenied(true)
-      else if (!(error instanceof PushDismissedError)) mutation.onError(error)
-    } finally {
-      setAsking(false)
-    }
-  }
+  if (support === 'installFirst') return <PushInstallNote />
 
   return (
     <ChannelRow
       label={t('notify.push')}
-      on={here !== null && endpoints.includes(here)}
+      on={!!here && endpoints.includes(here)}
       loading={asking || pushOn.isPending || pushOff.isPending}
-      onTurnOn={() => void turnOn()}
+      onTurnOn={() =>
+        void turnOn(
+          (subscription) =>
+            pushOn.mutate({ token, data: { subscription, locale } }),
+          mutation.onError,
+        )
+      }
       onTurnOff={() =>
         here && pushOff.mutate({ token, data: { endpoint: here } })
       }

@@ -17,7 +17,7 @@ import {
 import { ApiError } from '@/apiFetch'
 import { isLanguage } from '@/language'
 import { pushSupport } from '@/pwa/push'
-import { ChannelRow } from './ChannelRow'
+import { ChannelRow } from '@/notify/ChannelRow'
 import { EmailRow } from './EmailRow'
 import { PushRow } from './PushRow'
 import styles from './NotifyMe.module.scss'

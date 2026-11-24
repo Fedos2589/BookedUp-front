@@ -78,3 +78,47 @@ test('a browser that cannot read its subscription still signs out', async () => 
 
   await waitFor(() => expect(router.state.location.pathname).toBe('/sign-in'))
 })
+
+test('a second click while the push is turned off signs out once', async () => {
+  let release: () => void = () => {}
+  const held = new Promise<void>((resolve) => (release = resolve))
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    [PUSH_OFF]: async () => {
+      await held
+      return [204]
+    },
+    [SIGN_OUT]: [204],
+  })
+  renderApp('/')
+  await screen.findByRole('heading', { name: 'Judo Kids' })
+  const button = screen.getByRole('button', { name: 'Sign out' })
+  fireEvent.click(button)
+  fireEvent.click(button)
+  release()
+
+  await waitFor(() =>
+    expect(api.calls.filter((c) => c.route === SIGN_OUT)).toHaveLength(1),
+  )
+  expect(api.calls.filter((c) => c.route === PUSH_OFF)).toHaveLength(1)
+})
+
+test('signing out from the invitation page also turns the push off', async () => {
+  const api = fakeApi({
+    'GET /api/me': [200, account],
+    'GET /api/invitations/tok': [
+      200,
+      { businessName: 'Judo Kids', email: 'new@example.com', role: 'MASTER' },
+    ],
+    [PUSH_OFF]: [204],
+    [SIGN_OUT]: [204],
+  })
+  renderApp('/invite/tok')
+  fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
+
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === SIGN_OUT)).toBe(true),
+  )
+  const routes = api.calls.map((c) => c.route)
+  expect(routes.indexOf(PUSH_OFF)).toBeLessThan(routes.indexOf(SIGN_OUT))
+})
