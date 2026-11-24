@@ -116,7 +116,7 @@ business).
 turn off → back to the button; Telegram calls `window.open` with the URL; 409 text shown. Commit
 `feat(book): reminders in Telegram and WhatsApp`.
 
-### - [ ] F3: `NotifyMe` — push and email
+### - [x] F3: `NotifyMe` — push and email
 
 **Files:** `src/pages/book/notify/{NotifyMe.tsx,notifyMe.test.tsx}`, create
 `src/pages/book/notify/{PushRow.tsx,EmailRow.tsx}`, locales.
@@ -130,7 +130,7 @@ Push row: `pushSupport()` → button / «Add to the home screen first» / nothin
 **Check:** tests with `push.ts` mocked — each support state; on / off; denied text; email saved shows the
 masked address; 400 shows the error. Commit `feat(book): reminders by push and email`.
 
-### - [ ] F4: on the done screen and the manage page
+### - [x] F4: on the done screen and the manage page
 
 **Files:** `src/pages/book/{DoneStep.tsx,ManagePage.tsx}`, their tests, locales.
 

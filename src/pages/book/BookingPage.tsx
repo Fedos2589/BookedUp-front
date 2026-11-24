@@ -97,11 +97,7 @@ export function BookingPage() {
         {business.data.name}
       </Typography>
       {booked && search.done ? (
-        <DoneStep
-          booked={booked}
-          businessName={business.data.name}
-          timeZone={business.data.timeZone}
-        />
+        <DoneStep booked={booked} business={business.data} />
       ) : contacts ? (
         <ContactsStep
           slug={businessSlug}

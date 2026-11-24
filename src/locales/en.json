@@ -51,11 +51,17 @@
     "telegram": "Telegram",
     "openTelegram": "Open Telegram",
     "whatsapp": "WhatsApp to {{phone}}",
+    "whatsappPlain": "WhatsApp",
     "whatsappNote": "Covers all your bookings with this business.",
     "on": "On",
     "turnOff": "Turn off",
     "locked": "This booking can't change any more.",
-    "failed": "Couldn't change this. Try again."
+    "failed": "Couldn't change this. Try again.",
+    "push": "Notifications on this device",
+    "pushInstall": "Add this page to your home screen to get notifications",
+    "pushDenied": "Notifications are blocked in the browser settings",
+    "email": "Email",
+    "save": "Save"
   },
   "auth": {
     "email": "Email",

@@ -19,6 +19,16 @@ afterEach(() => {
 })
 
 const MANAGED = 'GET /api/public/bookings/secret-token'
+const BUSINESS = 'GET /api/public/businesses/judo'
+
+const judo = {
+  name: 'Judo Kids',
+  slug: 'judo',
+  timeZone: 'Europe/Berlin',
+  channels: { telegram: false, whatsapp: true, push: false, email: false },
+  pushKey: null,
+  masters: [],
+}
 
 const managed = (over = {}, canChange = true) => ({
   business: { name: 'Judo Kids', slug: 'judo', timeZone: 'Europe/Berlin' },
@@ -34,6 +44,7 @@ const managed = (over = {}, canChange = true) => ({
     ...over,
   },
   canChange,
+  notifications: { telegram: false, whatsapp: false, push: [], email: null },
 })
 
 test('shows the booking in the business time zone', async () => {
@@ -113,15 +124,12 @@ test('a refused cancel (already started) falls back to read-only', async () => {
 })
 
 const ANNA = '11111111-1111-4111-8111-111111111111'
-const BUSINESS = 'GET /api/public/businesses/judo'
 const SLOTS =
   'GET /api/public/businesses/judo/slots?from=2026-11-23&to=2026-12-06'
 const MOVE = 'PATCH /api/public/bookings/secret-token'
 
 const business = {
-  name: 'Judo Kids',
-  slug: 'judo',
-  timeZone: 'Europe/Berlin',
+  ...judo,
   masters: [
     { id: ANNA, name: 'Anna', scheduleMode: 'HOURS' },
     {
@@ -339,4 +347,25 @@ test('cancelling another booking leaves the remembered one (finding 7)', async (
 
   await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
   expect(localStorage.getItem('booking:judo')).toBe(saved)
+})
+
+test('a booking that can change offers reminders in the business channels', async () => {
+  fakeApi({ [MANAGED]: [200, managed()], [BUSINESS]: [200, judo] })
+  renderApp('/book/judo/manage/secret-token')
+
+  expect(
+    await screen.findByRole('heading', { name: 'Get a reminder' }),
+  ).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'WhatsApp' })).toBeTruthy()
+})
+
+test('a cancelled or started booking offers no reminders', async () => {
+  fakeApi({
+    [MANAGED]: [200, managed({ status: 'CANCELLED' }, false)],
+    [BUSINESS]: [200, judo],
+  })
+  renderApp('/book/judo/manage/secret-token')
+
+  await screen.findByText('Cancelled')
+  expect(screen.queryByText('Get a reminder')).toBeNull()
 })

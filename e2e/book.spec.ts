@@ -52,6 +52,13 @@ async function openBusiness(page: Page) {
         name: 'Judo Kids',
         slug: 'judo',
         timeZone: 'Europe/Berlin',
+        channels: {
+          telegram: false,
+          whatsapp: true,
+          push: false,
+          email: false,
+        },
+        pushKey: null,
         masters: [
           { id: ANNA, name: 'Anna', scheduleMode: 'HOURS' },
           { id: BORIS, name: 'Boris', scheduleMode: 'HOURS' },
@@ -108,6 +115,12 @@ async function openBusiness(page: Page) {
           oneOffSessionId: null,
         },
         canChange: current.status === 'BOOKED',
+        notifications: {
+          telegram: false,
+          whatsapp: false,
+          push: [],
+          email: null,
+        },
       }),
     )
   })
