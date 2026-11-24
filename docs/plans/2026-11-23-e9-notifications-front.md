@@ -101,7 +101,7 @@ permission; `denied` → throws a typed error), `currentEndpoint(): Promise<stri
 key as a `Uint8Array`; denied → the typed error. `npm run test:pwa` green and the built `sw.js` contains
 `importScripts("push-sw.js")`. Commit `feat(pwa): push in the service worker`.
 
-### - [ ] F2: `NotifyMe` — Telegram and WhatsApp
+### - [x] F2: `NotifyMe` — Telegram and WhatsApp
 
 **Files:** create `src/pages/book/notify/{NotifyMe.tsx,NotifyMe.module.scss,ChannelRow.tsx,notifyMe.test.tsx}`,
 locales.
