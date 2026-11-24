@@ -67,6 +67,7 @@ export type SignUpControllerSignUp201Business = {
   name: string;
   slug: string;
   timeZone: string;
+  reminderOffsets: number[];
 };
 
 export type SignUpControllerSignUp201 = {
@@ -155,6 +156,7 @@ export type SessionControllerSignIn200BusinessesItem = {
   name: string;
   slug: string;
   timeZone: string;
+  reminderOffsets: number[];
   role: SessionControllerSignIn200BusinessesItemRole;
 };
 
@@ -208,6 +210,7 @@ export type MeControllerMe200BusinessesItem = {
   name: string;
   slug: string;
   timeZone: string;
+  reminderOffsets: number[];
   role: MeControllerMe200BusinessesItemRole;
 };
 
@@ -256,7 +259,56 @@ export type BusinessControllerDescribe200 = {
   name: string;
   slug: string;
   timeZone: string;
+  reminderOffsets: number[];
   role: BusinessControllerDescribe200Role;
+};
+
+export type BusinessControllerSetRemindersBodyOffsetsItem = typeof BusinessControllerSetRemindersBodyOffsetsItem[keyof typeof BusinessControllerSetRemindersBodyOffsetsItem];
+
+
+export const BusinessControllerSetRemindersBodyOffsetsItem = {
+  NUMBER_60: 60,
+  NUMBER_120: 120,
+  NUMBER_180: 180,
+  NUMBER_1440: 1440,
+  NUMBER_2880: 2880,
+} as const;
+
+export type BusinessControllerSetRemindersBody = {
+  /** @maxItems 3 */
+  offsets: BusinessControllerSetRemindersBodyOffsetsItem[];
+};
+
+export type BusinessControllerSetReminders200Role = typeof BusinessControllerSetReminders200Role[keyof typeof BusinessControllerSetReminders200Role];
+
+
+export const BusinessControllerSetReminders200Role = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MASTER: 'MASTER',
+} as const;
+
+export type BusinessControllerSetReminders200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  name: string;
+  slug: string;
+  timeZone: string;
+  reminderOffsets: number[];
+  role: BusinessControllerSetReminders200Role;
+};
+
+export type BusinessControllerSetReminders400StatusCode = typeof BusinessControllerSetReminders400StatusCode[keyof typeof BusinessControllerSetReminders400StatusCode];
+
+
+export const BusinessControllerSetReminders400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type BusinessControllerSetReminders400 = {
+  statusCode: BusinessControllerSetReminders400StatusCode;
+  error: string;
+  message: string[];
 };
 
 /**
@@ -2647,6 +2699,7 @@ export type InvitationLinkControllerAccept200 = {
   name: string;
   slug: string;
   timeZone: string;
+  reminderOffsets: number[];
   role: InvitationLinkControllerAccept200Role;
 };
 
@@ -2706,6 +2759,7 @@ export type InvitationLinkControllerSignUp201Business = {
   name: string;
   slug: string;
   timeZone: string;
+  reminderOffsets: number[];
   role: InvitationLinkControllerSignUp201BusinessRole;
 };
 
@@ -2755,6 +2809,16 @@ export type InvitationLinkControllerSignUp409 = {
   field: InvitationLinkControllerSignUp409Field;
 };
 
+/**
+ * Which channels the booker may turn on for a booking
+ */
+export type PublicBookingControllerBusiness200Channels = {
+  telegram: boolean;
+  whatsapp: boolean;
+  push: boolean;
+  email: boolean;
+};
+
 export type PublicBookingControllerBusiness200MastersItemScheduleMode = typeof PublicBookingControllerBusiness200MastersItemScheduleMode[keyof typeof PublicBookingControllerBusiness200MastersItemScheduleMode];
 
 
@@ -2774,6 +2838,13 @@ export type PublicBookingControllerBusiness200 = {
   name: string;
   slug: string;
   timeZone: string;
+  /** Which channels the booker may turn on for a booking */
+  channels: PublicBookingControllerBusiness200Channels;
+  /**
+     * The VAPID public key a browser subscribes with; null when push is off
+     * @nullable
+     */
+  pushKey: string | null;
   masters: PublicBookingControllerBusiness200MastersItem[];
 };
 
@@ -3055,11 +3126,25 @@ export type PublicBookingControllerManaged200Booking = {
   oneOffSessionId: string | null;
 };
 
+export type PublicBookingControllerManaged200Notifications = {
+  telegram: boolean;
+  /** The card’s number (or the guardian’s), so every booking of that phone has it */
+  whatsapp: boolean;
+  /** The endpoints on, so a browser knows whether it is one of them */
+  push: string[];
+  /**
+     * Masked: `m***@example.com`
+     * @nullable
+     */
+  email: string | null;
+};
+
 export type PublicBookingControllerManaged200 = {
   business: PublicBookingControllerManaged200Business;
   booking: PublicBookingControllerManaged200Booking;
   /** BOOKED or CONFIRMED and not started: it can be cancelled or moved */
   canChange: boolean;
+  notifications: PublicBookingControllerManaged200Notifications;
 };
 
 export type PublicBookingControllerManaged400StatusCode = typeof PublicBookingControllerManaged400StatusCode[keyof typeof PublicBookingControllerManaged400StatusCode];
@@ -3140,11 +3225,25 @@ export type PublicBookingControllerMove200Booking = {
   oneOffSessionId: string | null;
 };
 
+export type PublicBookingControllerMove200Notifications = {
+  telegram: boolean;
+  /** The card’s number (or the guardian’s), so every booking of that phone has it */
+  whatsapp: boolean;
+  /** The endpoints on, so a browser knows whether it is one of them */
+  push: string[];
+  /**
+     * Masked: `m***@example.com`
+     * @nullable
+     */
+  email: string | null;
+};
+
 export type PublicBookingControllerMove200 = {
   business: PublicBookingControllerMove200Business;
   booking: PublicBookingControllerMove200Booking;
   /** BOOKED or CONFIRMED and not started: it can be cancelled or moved */
   canChange: boolean;
+  notifications: PublicBookingControllerMove200Notifications;
 };
 
 export type PublicBookingControllerMove400StatusCode = typeof PublicBookingControllerMove400StatusCode[keyof typeof PublicBookingControllerMove400StatusCode];
@@ -3238,11 +3337,25 @@ export type PublicBookingControllerCancel201Booking = {
   oneOffSessionId: string | null;
 };
 
+export type PublicBookingControllerCancel201Notifications = {
+  telegram: boolean;
+  /** The card’s number (or the guardian’s), so every booking of that phone has it */
+  whatsapp: boolean;
+  /** The endpoints on, so a browser knows whether it is one of them */
+  push: string[];
+  /**
+     * Masked: `m***@example.com`
+     * @nullable
+     */
+  email: string | null;
+};
+
 export type PublicBookingControllerCancel201 = {
   business: PublicBookingControllerCancel201Business;
   booking: PublicBookingControllerCancel201Booking;
   /** BOOKED or CONFIRMED and not started: it can be cancelled or moved */
   canChange: boolean;
+  notifications: PublicBookingControllerCancel201Notifications;
 };
 
 export type PublicBookingControllerCancel400StatusCode = typeof PublicBookingControllerCancel400StatusCode[keyof typeof PublicBookingControllerCancel400StatusCode];
@@ -3293,5 +3406,572 @@ export type PublicBookingControllerCancel409 = {
   clientId?: string;
   /** The booking has started or is not BOOKED / CONFIRMED any more */
   code: PublicBookingControllerCancel409Code;
+};
+
+export type PublicBookingControllerTelegramLinkBodyLocale = typeof PublicBookingControllerTelegramLinkBodyLocale[keyof typeof PublicBookingControllerTelegramLinkBodyLocale];
+
+
+export const PublicBookingControllerTelegramLinkBodyLocale = {
+  en: 'en',
+  ru: 'ru',
+} as const;
+
+export type PublicBookingControllerTelegramLinkBody = {
+  locale: PublicBookingControllerTelegramLinkBodyLocale;
+};
+
+export type PublicBookingControllerTelegramLink201 = {
+  url: string;
+};
+
+export type PublicBookingControllerTelegramLink400StatusCode = typeof PublicBookingControllerTelegramLink400StatusCode[keyof typeof PublicBookingControllerTelegramLink400StatusCode];
+
+
+export const PublicBookingControllerTelegramLink400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerTelegramLink400 = {
+  statusCode: PublicBookingControllerTelegramLink400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerTelegramLink404 = {
+  statusCode: 404;
+  error: 'Not Found';
+  message: string;
+  code: 'channelOff';
+} | {
+  statusCode: 404;
+  message: string;
+  error?: string;
+};
+
+export type PublicBookingControllerTelegramLink409StatusCode = typeof PublicBookingControllerTelegramLink409StatusCode[keyof typeof PublicBookingControllerTelegramLink409StatusCode];
+
+
+export const PublicBookingControllerTelegramLink409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type PublicBookingControllerTelegramLink409Error = typeof PublicBookingControllerTelegramLink409Error[keyof typeof PublicBookingControllerTelegramLink409Error];
+
+
+export const PublicBookingControllerTelegramLink409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+/**
+ * The booking has started or is not BOOKED / CONFIRMED any more
+ */
+export type PublicBookingControllerTelegramLink409Code = typeof PublicBookingControllerTelegramLink409Code[keyof typeof PublicBookingControllerTelegramLink409Code];
+
+
+export const PublicBookingControllerTelegramLink409Code = {
+  badTransition: 'badTransition',
+} as const;
+
+export type PublicBookingControllerTelegramLink409 = {
+  statusCode: PublicBookingControllerTelegramLink409StatusCode;
+  error: PublicBookingControllerTelegramLink409Error;
+  message: string;
+  /**
+     * With phoneTaken: the holder of the phone
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  clientId?: string;
+  /** The booking has started or is not BOOKED / CONFIRMED any more */
+  code: PublicBookingControllerTelegramLink409Code;
+};
+
+export type PublicBookingControllerPushOnBodySubscriptionKeys = {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  p256dh: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  auth: string;
+};
+
+export type PublicBookingControllerPushOnBodySubscription = {
+  /** @maxLength 1000 */
+  endpoint: string;
+  keys: PublicBookingControllerPushOnBodySubscriptionKeys;
+};
+
+export type PublicBookingControllerPushOnBodyLocale = typeof PublicBookingControllerPushOnBodyLocale[keyof typeof PublicBookingControllerPushOnBodyLocale];
+
+
+export const PublicBookingControllerPushOnBodyLocale = {
+  en: 'en',
+  ru: 'ru',
+} as const;
+
+export type PublicBookingControllerPushOnBody = {
+  subscription: PublicBookingControllerPushOnBodySubscription;
+  locale: PublicBookingControllerPushOnBodyLocale;
+};
+
+export type PublicBookingControllerPushOn400StatusCode = typeof PublicBookingControllerPushOn400StatusCode[keyof typeof PublicBookingControllerPushOn400StatusCode];
+
+
+export const PublicBookingControllerPushOn400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerPushOn400 = {
+  statusCode: PublicBookingControllerPushOn400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerPushOn404 = {
+  statusCode: 404;
+  error: 'Not Found';
+  message: string;
+  code: 'channelOff';
+} | {
+  statusCode: 404;
+  message: string;
+  error?: string;
+};
+
+export type PublicBookingControllerPushOn409StatusCode = typeof PublicBookingControllerPushOn409StatusCode[keyof typeof PublicBookingControllerPushOn409StatusCode];
+
+
+export const PublicBookingControllerPushOn409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type PublicBookingControllerPushOn409Error = typeof PublicBookingControllerPushOn409Error[keyof typeof PublicBookingControllerPushOn409Error];
+
+
+export const PublicBookingControllerPushOn409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+/**
+ * The booking has started or is not BOOKED / CONFIRMED any more
+ */
+export type PublicBookingControllerPushOn409Code = typeof PublicBookingControllerPushOn409Code[keyof typeof PublicBookingControllerPushOn409Code];
+
+
+export const PublicBookingControllerPushOn409Code = {
+  badTransition: 'badTransition',
+} as const;
+
+export type PublicBookingControllerPushOn409 = {
+  statusCode: PublicBookingControllerPushOn409StatusCode;
+  error: PublicBookingControllerPushOn409Error;
+  message: string;
+  /**
+     * With phoneTaken: the holder of the phone
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  clientId?: string;
+  /** The booking has started or is not BOOKED / CONFIRMED any more */
+  code: PublicBookingControllerPushOn409Code;
+};
+
+export type PublicBookingControllerPushOffBody = {
+  /**
+     * @minLength 1
+     * @maxLength 1000
+     */
+  endpoint: string;
+};
+
+export type PublicBookingControllerPushOff400StatusCode = typeof PublicBookingControllerPushOff400StatusCode[keyof typeof PublicBookingControllerPushOff400StatusCode];
+
+
+export const PublicBookingControllerPushOff400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerPushOff400 = {
+  statusCode: PublicBookingControllerPushOff400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerWhatsappOnBodyLocale = typeof PublicBookingControllerWhatsappOnBodyLocale[keyof typeof PublicBookingControllerWhatsappOnBodyLocale];
+
+
+export const PublicBookingControllerWhatsappOnBodyLocale = {
+  en: 'en',
+  ru: 'ru',
+} as const;
+
+export type PublicBookingControllerWhatsappOnBody = {
+  locale: PublicBookingControllerWhatsappOnBodyLocale;
+};
+
+export type PublicBookingControllerWhatsappOn400StatusCode = typeof PublicBookingControllerWhatsappOn400StatusCode[keyof typeof PublicBookingControllerWhatsappOn400StatusCode];
+
+
+export const PublicBookingControllerWhatsappOn400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerWhatsappOn400 = {
+  statusCode: PublicBookingControllerWhatsappOn400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerWhatsappOn404 = {
+  statusCode: 404;
+  error: 'Not Found';
+  message: string;
+  code: 'channelOff';
+} | {
+  statusCode: 404;
+  message: string;
+  error?: string;
+};
+
+export type PublicBookingControllerWhatsappOn409StatusCode = typeof PublicBookingControllerWhatsappOn409StatusCode[keyof typeof PublicBookingControllerWhatsappOn409StatusCode];
+
+
+export const PublicBookingControllerWhatsappOn409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type PublicBookingControllerWhatsappOn409Error = typeof PublicBookingControllerWhatsappOn409Error[keyof typeof PublicBookingControllerWhatsappOn409Error];
+
+
+export const PublicBookingControllerWhatsappOn409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+/**
+ * The booking has started or is not BOOKED / CONFIRMED any more
+ */
+export type PublicBookingControllerWhatsappOn409Code = typeof PublicBookingControllerWhatsappOn409Code[keyof typeof PublicBookingControllerWhatsappOn409Code];
+
+
+export const PublicBookingControllerWhatsappOn409Code = {
+  badTransition: 'badTransition',
+} as const;
+
+export type PublicBookingControllerWhatsappOn409 = {
+  statusCode: PublicBookingControllerWhatsappOn409StatusCode;
+  error: PublicBookingControllerWhatsappOn409Error;
+  message: string;
+  /**
+     * With phoneTaken: the holder of the phone
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  clientId?: string;
+  /** The booking has started or is not BOOKED / CONFIRMED any more */
+  code: PublicBookingControllerWhatsappOn409Code;
+};
+
+export type PublicBookingControllerWhatsappOff400StatusCode = typeof PublicBookingControllerWhatsappOff400StatusCode[keyof typeof PublicBookingControllerWhatsappOff400StatusCode];
+
+
+export const PublicBookingControllerWhatsappOff400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerWhatsappOff400 = {
+  statusCode: PublicBookingControllerWhatsappOff400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerEmailOnBodyLocale = typeof PublicBookingControllerEmailOnBodyLocale[keyof typeof PublicBookingControllerEmailOnBodyLocale];
+
+
+export const PublicBookingControllerEmailOnBodyLocale = {
+  en: 'en',
+  ru: 'ru',
+} as const;
+
+export type PublicBookingControllerEmailOnBody = {
+  /**
+     * @maxLength 254
+     * @pattern ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+     */
+  email: string;
+  locale: PublicBookingControllerEmailOnBodyLocale;
+};
+
+export type PublicBookingControllerEmailOn400StatusCode = typeof PublicBookingControllerEmailOn400StatusCode[keyof typeof PublicBookingControllerEmailOn400StatusCode];
+
+
+export const PublicBookingControllerEmailOn400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerEmailOn400 = {
+  statusCode: PublicBookingControllerEmailOn400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type PublicBookingControllerEmailOn404 = {
+  statusCode: 404;
+  error: 'Not Found';
+  message: string;
+  code: 'channelOff';
+} | {
+  statusCode: 404;
+  message: string;
+  error?: string;
+};
+
+export type PublicBookingControllerEmailOn409StatusCode = typeof PublicBookingControllerEmailOn409StatusCode[keyof typeof PublicBookingControllerEmailOn409StatusCode];
+
+
+export const PublicBookingControllerEmailOn409StatusCode = {
+  NUMBER_409: 409,
+} as const;
+
+export type PublicBookingControllerEmailOn409Error = typeof PublicBookingControllerEmailOn409Error[keyof typeof PublicBookingControllerEmailOn409Error];
+
+
+export const PublicBookingControllerEmailOn409Error = {
+  Conflict: 'Conflict',
+} as const;
+
+/**
+ * The booking has started or is not BOOKED / CONFIRMED any more
+ */
+export type PublicBookingControllerEmailOn409Code = typeof PublicBookingControllerEmailOn409Code[keyof typeof PublicBookingControllerEmailOn409Code];
+
+
+export const PublicBookingControllerEmailOn409Code = {
+  badTransition: 'badTransition',
+} as const;
+
+export type PublicBookingControllerEmailOn409 = {
+  statusCode: PublicBookingControllerEmailOn409StatusCode;
+  error: PublicBookingControllerEmailOn409Error;
+  message: string;
+  /**
+     * With phoneTaken: the holder of the phone
+     * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+     */
+  clientId?: string;
+  /** The booking has started or is not BOOKED / CONFIRMED any more */
+  code: PublicBookingControllerEmailOn409Code;
+};
+
+export type PublicBookingControllerEmailOff400StatusCode = typeof PublicBookingControllerEmailOff400StatusCode[keyof typeof PublicBookingControllerEmailOff400StatusCode];
+
+
+export const PublicBookingControllerEmailOff400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type PublicBookingControllerEmailOff400 = {
+  statusCode: PublicBookingControllerEmailOff400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type MyNotificationsControllerGet200Available = {
+  telegram: boolean;
+  push: boolean;
+  email: boolean;
+};
+
+export type MyNotificationsControllerGet200 = {
+  email: boolean;
+  available: MyNotificationsControllerGet200Available;
+  /**
+     * The VAPID public key a browser subscribes with; null when push is off
+     * @nullable
+     */
+  pushKey: string | null;
+  telegram: boolean;
+  /** The endpoints of my devices, so a browser knows whether it is one of them */
+  push: string[];
+};
+
+export type MyNotificationsControllerSetBody = {
+  email: boolean;
+};
+
+export type MyNotificationsControllerSet200Available = {
+  telegram: boolean;
+  push: boolean;
+  email: boolean;
+};
+
+export type MyNotificationsControllerSet200 = {
+  email: boolean;
+  available: MyNotificationsControllerSet200Available;
+  /**
+     * The VAPID public key a browser subscribes with; null when push is off
+     * @nullable
+     */
+  pushKey: string | null;
+  telegram: boolean;
+  /** The endpoints of my devices, so a browser knows whether it is one of them */
+  push: string[];
+};
+
+export type MyNotificationsControllerSet400StatusCode = typeof MyNotificationsControllerSet400StatusCode[keyof typeof MyNotificationsControllerSet400StatusCode];
+
+
+export const MyNotificationsControllerSet400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type MyNotificationsControllerSet400 = {
+  statusCode: MyNotificationsControllerSet400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type MyNotificationsControllerPushOnBodySubscriptionKeys = {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  p256dh: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  auth: string;
+};
+
+export type MyNotificationsControllerPushOnBodySubscription = {
+  /** @maxLength 1000 */
+  endpoint: string;
+  keys: MyNotificationsControllerPushOnBodySubscriptionKeys;
+};
+
+export type MyNotificationsControllerPushOnBody = {
+  subscription: MyNotificationsControllerPushOnBodySubscription;
+};
+
+export type MyNotificationsControllerPushOn400StatusCode = typeof MyNotificationsControllerPushOn400StatusCode[keyof typeof MyNotificationsControllerPushOn400StatusCode];
+
+
+export const MyNotificationsControllerPushOn400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type MyNotificationsControllerPushOn400 = {
+  statusCode: MyNotificationsControllerPushOn400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type MyNotificationsControllerPushOn404StatusCode = typeof MyNotificationsControllerPushOn404StatusCode[keyof typeof MyNotificationsControllerPushOn404StatusCode];
+
+
+export const MyNotificationsControllerPushOn404StatusCode = {
+  NUMBER_404: 404,
+} as const;
+
+export type MyNotificationsControllerPushOn404Error = typeof MyNotificationsControllerPushOn404Error[keyof typeof MyNotificationsControllerPushOn404Error];
+
+
+export const MyNotificationsControllerPushOn404Error = {
+  Not_Found: 'Not Found',
+} as const;
+
+export type MyNotificationsControllerPushOn404Code = typeof MyNotificationsControllerPushOn404Code[keyof typeof MyNotificationsControllerPushOn404Code];
+
+
+export const MyNotificationsControllerPushOn404Code = {
+  channelOff: 'channelOff',
+} as const;
+
+export type MyNotificationsControllerPushOn404 = {
+  statusCode: MyNotificationsControllerPushOn404StatusCode;
+  error: MyNotificationsControllerPushOn404Error;
+  message: string;
+  code: MyNotificationsControllerPushOn404Code;
+};
+
+export type MyNotificationsControllerPushOffBody = {
+  /**
+     * @minLength 1
+     * @maxLength 1000
+     */
+  endpoint: string;
+};
+
+export type MyNotificationsControllerPushOff400StatusCode = typeof MyNotificationsControllerPushOff400StatusCode[keyof typeof MyNotificationsControllerPushOff400StatusCode];
+
+
+export const MyNotificationsControllerPushOff400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type MyNotificationsControllerPushOff400 = {
+  statusCode: MyNotificationsControllerPushOff400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type MyBusinessNotificationsControllerGet200 = {
+  /** @nullable */
+  allOnline: boolean | null;
+};
+
+export type MyBusinessNotificationsControllerSetBody = {
+  allOnline: boolean;
+};
+
+export type MyBusinessNotificationsControllerSet200 = {
+  /** @nullable */
+  allOnline: boolean | null;
+};
+
+export type MyBusinessNotificationsControllerSet400StatusCode = typeof MyBusinessNotificationsControllerSet400StatusCode[keyof typeof MyBusinessNotificationsControllerSet400StatusCode];
+
+
+export const MyBusinessNotificationsControllerSet400StatusCode = {
+  NUMBER_400: 400,
+} as const;
+
+export type MyBusinessNotificationsControllerSet400 = {
+  statusCode: MyBusinessNotificationsControllerSet400StatusCode;
+  error: string;
+  message: string[];
+};
+
+export type TelegramLinkControllerLink201 = {
+  url: string;
+};
+
+export type TelegramLinkControllerLink404StatusCode = typeof TelegramLinkControllerLink404StatusCode[keyof typeof TelegramLinkControllerLink404StatusCode];
+
+
+export const TelegramLinkControllerLink404StatusCode = {
+  NUMBER_404: 404,
+} as const;
+
+export type TelegramLinkControllerLink404Error = typeof TelegramLinkControllerLink404Error[keyof typeof TelegramLinkControllerLink404Error];
+
+
+export const TelegramLinkControllerLink404Error = {
+  Not_Found: 'Not Found',
+} as const;
+
+export type TelegramLinkControllerLink404Code = typeof TelegramLinkControllerLink404Code[keyof typeof TelegramLinkControllerLink404Code];
+
+
+export const TelegramLinkControllerLink404Code = {
+  channelOff: 'channelOff',
+} as const;
+
+export type TelegramLinkControllerLink404 = {
+  statusCode: TelegramLinkControllerLink404StatusCode;
+  error: TelegramLinkControllerLink404Error;
+  message: string;
+  code: TelegramLinkControllerLink404Code;
 };
 

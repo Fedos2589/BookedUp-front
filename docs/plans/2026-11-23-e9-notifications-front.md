@@ -84,7 +84,7 @@ pushKey, email: boolean, telegram: boolean, push: string[] }`; `PUT /me/notifica
 
 ---
 
-### - [ ] F1: API and push in the service worker
+### - [x] F1: API and push in the service worker
 
 **Files:** `src/api/*` (regenerated), `vite.config.ts`, create `public/push-sw.js`, create
 `src/pwa/{push.ts,push.test.ts}`.

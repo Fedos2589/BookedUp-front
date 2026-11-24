@@ -6,6 +6,7 @@ export * from './clients/clients';
 export * from './health/health';
 export * from './invitations/invitations';
 export * from './members/members';
+export * from './notifications/notifications';
 export * from './public-booking/public-booking';
 export * from './schedule/schedule';
 export * from './staff/staff';
