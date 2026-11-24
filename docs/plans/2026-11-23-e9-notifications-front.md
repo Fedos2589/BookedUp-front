@@ -34,11 +34,12 @@ string[] (endpoints), email: string | null (masked) }` — for this booking; Wha
   `PUT|DELETE …/:token/whatsapp { locale }`; `PUT …/:token/push { subscription, locale }`, `DELETE
 { endpoint }`; `PUT …/:token/email { email, locale }`, `DELETE`. A channel that's off → 404
   `channelOff`; a booking that can't change any more → 409.
-- Staff, the account's: `GET /me/notifications` → `{ available: { telegram, whatsapp, push, email },
-pushKey, email: boolean, telegram: boolean, whatsapp: string | null, push: string[] }`; `PUT
-/me/notifications { email }`; `POST /me/telegram-link` → `{ url }`; `DELETE /me/notifications/telegram`;
-  `PUT|DELETE /me/notifications/whatsapp { phone }`; `PUT /me/notifications/push { subscription }`,
-  `DELETE { endpoint }`.
+- Staff, the account's: `GET /me/notifications` → `{ available: { telegram, push, email },
+pushKey, email: boolean, telegram: boolean, push: string[] }`; `PUT /me/notifications { email }`;
+  `POST /me/telegram-link` → `{ url }`; `DELETE /me/notifications/telegram`; `PUT
+/me/notifications/push { subscription }`, `DELETE { endpoint }`. **No WhatsApp for a member** (review of
+  back #51): WhatsApp sends client templates only, so the route is gone until there is a staff template.
+  A push endpoint belongs to the account that subscribed last (the back drops the others' rows of it).
 - Per business: `GET|PUT /businesses/:id/me/notifications { allOnline: boolean | null }` (`null` for a
   master — don't show it); `GET /businesses/:id` → `reminderOffsets: number[]`; `PUT
 /businesses/:id/reminders { offsets }` — owner / admin, 0–3 of 60, 120, 180, 1440, 2880.
@@ -57,7 +58,11 @@ pushKey, email: boolean, telegram: boolean, whatsapp: string | null, push: strin
   instead of the button (iOS gives push to installed web apps only).
 - **Language** sent with every turn-on: the app's current i18n language (`en`/`ru`).
 - **Cabinet:** a «Notifications» section in Settings, for every member: email switch, Telegram
-  connect / disconnect, WhatsApp phone, push on this device; «All online bookings» for owner / admin.
+  connect / disconnect, push on this device; «All online bookings» for owner / admin. No WhatsApp here.
+- **Signing out** turns this device's push off first: `DELETE /me/notifications/push { endpoint }` with the
+  endpoint of the browser's own subscription, before the session ends; a failure doesn't stop signing out.
+  Otherwise the next person on a shared computer would hear the previous account's bookings until they
+  subscribe themselves.
   Under it, for owner / admin, «Reminders to clients»: 5 checkboxes (1 h, 2 h, 3 h, 24 h, 48 h), at most
   3, saved with a button.
 
@@ -139,18 +144,19 @@ hides it for a cancelled booking. Commit `feat(book): get reminders after bookin
 ### - [ ] F5: my notifications in the cabinet
 
 **Files:** create `src/pages/settings/notifications/{MyNotifications.tsx,MyNotifications.module.scss,myNotifications.test.tsx}`,
-`src/pages/settings/SettingsPage.tsx`, locales.
+`src/pages/settings/SettingsPage.tsx`, `src/app/SignOut.tsx` (+ its test), locales.
 
 A section «Notifications» for every member, from `GET /me/notifications` and
 `GET /businesses/:id/me/notifications`: email `Checkbox` (saves at once); Telegram «Connect» → POST link
-→ open, refetch on visible / «Connected · Disconnect»; WhatsApp: «Add phone» → `PhoneNumberField` +
-Save / the phone + «Remove»; push: «Turn on for this device» (same `push.ts`, `pushSupport`, the
+→ open, refetch on visible / «Connected · Disconnect»; push: «Turn on for this device» (same `push.ts`, `pushSupport`, the
 cabinet's `pushKey`) / «On for this device · Turn off», and «also on N other devices» when other
 endpoints exist; owner / admin: «All online bookings of this business» `Checkbox`. A channel the back
-doesn't have on is not shown.
+doesn't have on is not shown. `SignOut` first calls `DELETE /me/notifications/push` with this browser's
+own endpoint (when it has a subscription), then signs out; the call's failure is ignored.
 
 **Check:** `myNotifications.test.tsx` — a master sees no «all online»; Telegram connect opens the URL;
-WhatsApp saved shows the phone; push on for this device vs another; email unchecked sends `{ email:
+no WhatsApp row; push on for this device vs another; sign-out sends the DELETE with the device's endpoint
+first, and still signs out when it fails; email unchecked sends `{ email:
 false }`. Commit `feat(settings): my notifications`.
 
 ### - [ ] F6: reminder times
