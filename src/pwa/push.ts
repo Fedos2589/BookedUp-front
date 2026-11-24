@@ -8,6 +8,14 @@ export class PushDeniedError extends Error {
   }
 }
 
+// The prompt was closed without a choice: asking again can still work.
+export class PushDismissedError extends Error {
+  constructor() {
+    super('The notification prompt was closed')
+    this.name = 'PushDismissedError'
+  }
+}
+
 // 'installFirst': iOS gives push to installed web apps only.
 export type PushSupport = 'yes' | 'installFirst' | 'no'
 
@@ -31,6 +39,9 @@ function keyToBytes(key: string): Uint8Array<ArrayBuffer> {
   return Uint8Array.from(binary, (char) => char.charCodeAt(0))
 }
 
+const sameBytes = (a: Uint8Array, b: Uint8Array) =>
+  a.length === b.length && a.every((byte, i) => byte === b[i])
+
 // getRegistration, not `ready`: with no worker (dev, a failed registration)
 // `ready` never settles and a sign-out waiting on it would hang.
 const registration = () => navigator.serviceWorker.getRegistration()
@@ -39,12 +50,19 @@ export async function subscribe(
   pushKey: string,
 ): Promise<PushSubscriptionJSON> {
   const permission = await Notification.requestPermission()
-  if (permission !== 'granted') throw new PushDeniedError()
+  if (permission === 'denied') throw new PushDeniedError()
+  if (permission !== 'granted') throw new PushDismissedError()
   const worker = await registration()
   if (!worker) throw new Error('No service worker to subscribe through')
+  const key = keyToBytes(pushKey)
+  // A subscription made with another key makes subscribe() throw for good.
+  const existing = await worker.pushManager.getSubscription()
+  const old = existing?.options?.applicationServerKey
+  if (existing && !(old && sameBytes(new Uint8Array(old), key)))
+    await existing.unsubscribe()
   const subscription = await worker.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: keyToBytes(pushKey),
+    applicationServerKey: key,
   })
   return subscription.toJSON()
 }

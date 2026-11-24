@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import {
   PushDeniedError,
+  PushDismissedError,
   currentEndpoint,
   pushSupport,
   subscribe,
@@ -125,6 +126,52 @@ test('a denied permission throws the typed error and does not subscribe', async 
 
   await expect(subscribe('AQID')).rejects.toBeInstanceOf(PushDeniedError)
   expect(pushManager.subscribe).not.toHaveBeenCalled()
+})
+
+test('a closed permission prompt is not «blocked»: another tap may work', async () => {
+  const { pushManager } = fakeBrowser({
+    userAgent: ANDROID,
+    permission: 'default',
+  })
+
+  const result = await subscribe('AQID').catch((error: unknown) => error)
+
+  expect(result).toBeInstanceOf(PushDismissedError)
+  expect(result).not.toBeInstanceOf(PushDeniedError)
+  expect(pushManager.subscribe).not.toHaveBeenCalled()
+})
+
+test('a subscription made with another server key is dropped before subscribing', async () => {
+  const stale = {
+    ...subscription,
+    options: { applicationServerKey: new Uint8Array([9, 9]).buffer },
+    unsubscribe: vi.fn(() => Promise.resolve(true)),
+  }
+  const { pushManager } = fakeBrowser({
+    userAgent: ANDROID,
+    existing: stale as unknown as typeof subscription,
+  })
+
+  await subscribe('AQID')
+
+  expect(stale.unsubscribe).toHaveBeenCalledOnce()
+  expect(pushManager.subscribe).toHaveBeenCalledOnce()
+})
+
+test('a subscription made with the same key is kept', async () => {
+  const same = {
+    ...subscription,
+    options: { applicationServerKey: new Uint8Array([1, 2, 3]).buffer },
+    unsubscribe: vi.fn(() => Promise.resolve(true)),
+  }
+  fakeBrowser({
+    userAgent: ANDROID,
+    existing: same as unknown as typeof subscription,
+  })
+
+  await subscribe('AQID')
+
+  expect(same.unsubscribe).not.toHaveBeenCalled()
 })
 
 test('currentEndpoint is this browser’s subscription, or null', async () => {
