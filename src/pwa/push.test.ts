@@ -10,6 +10,8 @@ import {
 
 const IPHONE =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15'
+const IPAD_SAFARI =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/605.1.15'
 const ANDROID =
   'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/120'
 
@@ -28,6 +30,9 @@ function fakeBrowser(options: {
   standalone?: boolean
   permission?: NotificationPermission
   existing?: typeof subscription | null
+  touch?: boolean
+  // false: no service worker registered (dev, or registration failed)
+  worker?: boolean
 }) {
   const pushManager = {
     subscribe: vi.fn((_options: PushSubscriptionOptionsInit) =>
@@ -37,7 +42,11 @@ function fakeBrowser(options: {
   }
   vi.stubGlobal('navigator', {
     userAgent: options.userAgent,
-    serviceWorker: { ready: Promise.resolve({ pushManager }) },
+    maxTouchPoints: options.touch ? 5 : 0,
+    serviceWorker: {
+      getRegistration: () =>
+        Promise.resolve(options.worker === false ? undefined : { pushManager }),
+    },
   })
   if (options.pushManager === false) {
     Reflect.deleteProperty(window, 'PushManager')
@@ -73,6 +82,16 @@ test('Android Chrome can push', () => {
 test('iPhone Safari outside the installed app must install first', () => {
   fakeBrowser({ userAgent: IPHONE })
   expect(pushSupport()).toBe('installFirst')
+})
+
+test('iPad Safari poses as a Mac; touch gives it away', () => {
+  fakeBrowser({ userAgent: IPAD_SAFARI, touch: true })
+  expect(pushSupport()).toBe('installFirst')
+})
+
+test('a Mac with no touch screen can push', () => {
+  fakeBrowser({ userAgent: IPAD_SAFARI })
+  expect(pushSupport()).toBe('yes')
 })
 
 test('the installed iPhone app can push', () => {
@@ -120,4 +139,10 @@ test('unsubscribe drops this browser’s subscription', async () => {
   fakeBrowser({ userAgent: ANDROID, existing: subscription })
   await unsubscribe()
   expect(subscription.unsubscribe).toHaveBeenCalledOnce()
+})
+
+test('without a registered worker there is no subscription and nothing hangs', async () => {
+  fakeBrowser({ userAgent: ANDROID, worker: false })
+  expect(await currentEndpoint()).toBeNull()
+  await expect(unsubscribe()).resolves.toBeUndefined()
 })

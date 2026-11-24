@@ -2,7 +2,15 @@
 // vite.config.ts). Shows what the back pushes and opens its link on a tap.
 
 self.addEventListener('push', (event) => {
-  const { title, body, url } = event.data?.json() ?? {}
+  // A body that is not JSON (a test push from DevTools) still shows a title:
+  // a push that shows nothing can get the subscription revoked.
+  let message = {}
+  try {
+    message = event.data?.json() ?? {}
+  } catch {
+    message = {}
+  }
+  const { title, body, url } = message
   event.waitUntil(
     self.registration.showNotification(title ?? 'BookedUp', {
       body,

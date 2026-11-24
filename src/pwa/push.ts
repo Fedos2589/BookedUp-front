@@ -11,7 +11,10 @@ export class PushDeniedError extends Error {
 // 'installFirst': iOS gives push to installed web apps only.
 export type PushSupport = 'yes' | 'installFirst' | 'no'
 
-const isIos = () => /iPad|iPhone|iPod/.test(navigator.userAgent)
+// iPadOS 13+ Safari calls itself a Mac; only a touch screen gives it away.
+const isIos = () =>
+  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1)
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches
 
@@ -28,17 +31,18 @@ function keyToBytes(key: string): Uint8Array<ArrayBuffer> {
   return Uint8Array.from(binary, (char) => char.charCodeAt(0))
 }
 
-const pushManager = async () =>
-  (await navigator.serviceWorker.ready).pushManager
+// getRegistration, not `ready`: with no worker (dev, a failed registration)
+// `ready` never settles and a sign-out waiting on it would hang.
+const registration = () => navigator.serviceWorker.getRegistration()
 
 export async function subscribe(
   pushKey: string,
 ): Promise<PushSubscriptionJSON> {
   const permission = await Notification.requestPermission()
   if (permission !== 'granted') throw new PushDeniedError()
-  const subscription = await (
-    await pushManager()
-  ).subscribe({
+  const worker = await registration()
+  if (!worker) throw new Error('No service worker to subscribe through')
+  const subscription = await worker.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: keyToBytes(pushKey),
   })
@@ -46,11 +50,15 @@ export async function subscribe(
 }
 
 export async function currentEndpoint(): Promise<string | null> {
-  const subscription = await (await pushManager()).getSubscription()
+  const subscription = await (
+    await registration()
+  )?.pushManager.getSubscription()
   return subscription?.endpoint ?? null
 }
 
 export async function unsubscribe(): Promise<void> {
-  const subscription = await (await pushManager()).getSubscription()
+  const subscription = await (
+    await registration()
+  )?.pushManager.getSubscription()
   await subscription?.unsubscribe()
 }

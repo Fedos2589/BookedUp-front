@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
@@ -12,6 +13,8 @@ type Props = {
   onTurnOn: () => void
   // Absent where the back has no way to turn the channel off.
   onTurnOff?: () => void
+  // Shown under the row while the channel is off (e.g. a link to follow).
+  children?: ReactNode
 }
 
 // One channel: a button while it is off, «On» and «Turn off» once it is on.
@@ -22,6 +25,7 @@ export function ChannelRow({
   loading,
   onTurnOn,
   onTurnOff,
+  children,
 }: Props) {
   const { t } = useTranslation()
   return (
@@ -53,6 +57,7 @@ export function ChannelRow({
           {label}
         </Button>
       )}
+      {!on && children}
       {note && (
         <Typography variant="t4" color="grey-500">
           {note}

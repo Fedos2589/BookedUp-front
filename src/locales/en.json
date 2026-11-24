@@ -49,6 +49,7 @@
   "notify": {
     "title": "Get a reminder",
     "telegram": "Telegram",
+    "openTelegram": "Open Telegram",
     "whatsapp": "WhatsApp to {{phone}}",
     "whatsappNote": "Covers all your bookings with this business.",
     "on": "On",

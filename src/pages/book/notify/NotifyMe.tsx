@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
 
@@ -15,6 +15,7 @@ import {
   usePublicBookingControllerWhatsappOn,
 } from '@/api/public-booking/public-booking'
 import { ApiError } from '@/apiFetch'
+import { isLanguage } from '@/language'
 import { ChannelRow } from './ChannelRow'
 import styles from './NotifyMe.module.scss'
 
@@ -39,34 +40,48 @@ export function NotifyMe({
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const [locked, setLocked] = useState(false)
-  const locale = i18n.language.startsWith('ru') ? 'ru' : 'en'
+  const [failed, setFailed] = useState(false)
+  const locale = isLanguage(i18n.language) ? i18n.language : 'en'
 
+  // refetch, not invalidate: invalidate skips a query nobody is watching.
   const refetchBooking = () =>
-    queryClient.invalidateQueries({
+    queryClient.refetchQueries({
       queryKey: getPublicBookingControllerManagedQueryKey(token),
     })
 
   // Back from Telegram (the tab is visible again): the bot may have connected.
+  const onVisible = useEffectEvent(() => {
+    if (document.visibilityState === 'visible') void refetchBooking()
+  })
   useEffect(() => {
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') void refetchBooking()
-    }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
-  })
+  }, [])
 
   // 409: the booking can't change any more; 404 channelOff: the business
   // turned the channel off since the page was loaded, so ask for it again.
+  // Anything else (no network, 5xx, another 404) is a plain failure.
   const onError = (error: unknown) => {
-    if (!(error instanceof ApiError)) return
-    if (error.status === 409) setLocked(true)
-    if (error.status === 404)
+    const body =
+      error instanceof ApiError ? (error.body as { code?: string }) : null
+    if (error instanceof ApiError && error.status === 409) setLocked(true)
+    else if (
+      error instanceof ApiError &&
+      error.status === 404 &&
+      body?.code === 'channelOff'
+    )
       void queryClient.refetchQueries({
         queryKey: getPublicBookingControllerBusinessQueryKey(slug),
       })
+    else setFailed(true)
   }
-  const options = { mutation: { onError, onSettled: refetchBooking } }
-
+  const options = {
+    mutation: {
+      onMutate: () => setFailed(false),
+      onError,
+      onSettled: refetchBooking,
+    },
+  }
   const telegram = usePublicBookingControllerTelegramLink(options)
   const whatsappOn = usePublicBookingControllerWhatsappOn(options)
   const whatsappOff = usePublicBookingControllerWhatsappOff(options)
@@ -84,16 +99,21 @@ export function NotifyMe({
             label={t('notify.telegram')}
             on={notifications.telegram}
             loading={telegram.isPending}
-            onTurnOn={() =>
-              telegram.mutate(
-                { token, data: { locale } },
-                {
-                  onSuccess: ({ url }) =>
-                    window.open(url, '_blank', 'noopener'),
-                },
-              )
-            }
-          />
+            onTurnOn={() => telegram.mutate({ token, data: { locale } })}
+          >
+            {/* A link the client taps: window.open after the answer is blocked
+                by iOS Safari, which only allows it inside the tap itself. */}
+            {telegram.data && (
+              <a
+                className={styles.link}
+                href={telegram.data.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('notify.openTelegram')}
+              </a>
+            )}
+          </ChannelRow>
         )}
         {channels.whatsapp && (
           <ChannelRow
@@ -106,6 +126,11 @@ export function NotifyMe({
           />
         )}
       </ul>
+      {failed && (
+        <Typography variant="t4" color="red-300" role="alert">
+          {t('notify.failed')}
+        </Typography>
+      )}
       {locked && (
         <Typography variant="t4" color="red-300" role="alert">
           {t('notify.locked')}

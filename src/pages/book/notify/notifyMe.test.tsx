@@ -10,7 +10,10 @@ import {
 import { afterEach, expect, test, vi } from 'vitest'
 
 import '@/i18n'
-import { getPublicBookingControllerBusinessQueryOptions } from '@/api/public-booking/public-booking'
+import {
+  getPublicBookingControllerBusinessQueryOptions,
+  getPublicBookingControllerManagedQueryOptions,
+} from '@/api/public-booking/public-booking'
 import { fakeApi } from '@/test/fakeApi'
 import { NotifyMe } from './NotifyMe'
 
@@ -50,25 +53,56 @@ test('shows a row only for the channels the business has on', () => {
   expect(screen.queryByText(/WhatsApp/)).toBeNull()
 })
 
-test('Telegram: asks for the link and opens it in a new tab', async () => {
+test('Telegram: asks for the link and offers it as a link to tap', async () => {
   const api = fakeApi({
     [TELEGRAM]: [201, { url: 'https://t.me/bot?start=abc' }],
     [MANAGED]: [200, {}],
   })
-  const open = vi.fn()
-  vi.stubGlobal('open', open)
   show()
   fireEvent.click(screen.getByRole('button', { name: 'Telegram' }))
-  await waitFor(() =>
-    expect(open).toHaveBeenCalledWith(
-      'https://t.me/bot?start=abc',
-      '_blank',
-      'noopener',
-    ),
-  )
+  const link = await screen.findByRole('link', { name: 'Open Telegram' })
+  expect(link.getAttribute('href')).toBe('https://t.me/bot?start=abc')
+  expect(link.getAttribute('target')).toBe('_blank')
   expect(api.calls.find((c) => c.route === TELEGRAM)?.body).toEqual({
     locale: 'en',
   })
+})
+
+test('a turn-on asks for the booking again, so the row can switch', async () => {
+  const api = fakeApi({ [`PUT ${WHATSAPP}`]: [204], [MANAGED]: [200, {}] })
+  const queryClient = show()
+  await queryClient.prefetchQuery(
+    getPublicBookingControllerManagedQueryOptions('tok'),
+  )
+  api.calls.length = 0
+  fireEvent.click(screen.getByRole('button', { name: /WhatsApp to/ }))
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === MANAGED)).toBe(true),
+  )
+})
+
+test('a failure other than 409 and channelOff is said under the block', async () => {
+  fakeApi({ [`PUT ${WHATSAPP}`]: [500], [MANAGED]: [200, {}] })
+  show()
+  fireEvent.click(screen.getByRole('button', { name: /WhatsApp to/ }))
+  expect(
+    await screen.findByText("Couldn't change this. Try again."),
+  ).toBeTruthy()
+})
+
+test('a 404 that is not channelOff is a failure, not a vanished channel', async () => {
+  const api = fakeApi({
+    [`PUT ${WHATSAPP}`]: [404, { code: 'notFound' }],
+    [MANAGED]: [200, {}],
+  })
+  show()
+  fireEvent.click(screen.getByRole('button', { name: /WhatsApp to/ }))
+  expect(
+    await screen.findByText("Couldn't change this. Try again."),
+  ).toBeTruthy()
+  expect(
+    api.calls.some((c) => c.route === 'GET /api/public/businesses/judo'),
+  ).toBe(false)
 })
 
 test('WhatsApp: turns on, shows «On», turns off', async () => {
