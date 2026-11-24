@@ -9,7 +9,7 @@ import type {
 } from '@/api/generated.schemas'
 import {
   getPublicBookingControllerBusinessQueryKey,
-  getPublicBookingControllerManagedQueryKey,
+  getPublicBookingControllerManagedQueryOptions,
   usePublicBookingControllerTelegramLink,
   usePublicBookingControllerWhatsappOff,
   usePublicBookingControllerWhatsappOn,
@@ -43,20 +43,15 @@ export function NotifyMe({
   const [failed, setFailed] = useState(false)
   const locale = isLanguage(i18n.language) ? i18n.language : 'en'
 
-  // refetch, not invalidate: invalidate skips a query nobody is watching.
+  // fetchQuery, not refetch/invalidate: those skip a query nobody watches or
+  // one that is disabled, and the parent may keep it so until the first switch.
   const refetchBooking = () =>
-    queryClient.refetchQueries({
-      queryKey: getPublicBookingControllerManagedQueryKey(token),
-    })
-
-  // Back from Telegram (the tab is visible again): the bot may have connected.
-  const onVisible = useEffectEvent(() => {
-    if (document.visibilityState === 'visible') void refetchBooking()
-  })
-  useEffect(() => {
-    document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [])
+    queryClient
+      .fetchQuery({
+        ...getPublicBookingControllerManagedQueryOptions(token),
+        staleTime: 0,
+      })
+      .catch(() => undefined)
 
   // 409: the booking can't change any more; 404 channelOff: the business
   // turned the channel off since the page was loaded, so ask for it again.
@@ -75,16 +70,26 @@ export function NotifyMe({
       })
     else setFailed(true)
   }
-  const options = {
-    mutation: {
-      onMutate: () => setFailed(false),
-      onError,
-      onSettled: refetchBooking,
-    },
+  const mutation = { onMutate: () => setFailed(false), onError }
+  // A telegram-link answer changes nothing on the booking: no refetch after it.
+  const telegram = usePublicBookingControllerTelegramLink({ mutation })
+  const whatsappOptions = {
+    mutation: { ...mutation, onSettled: refetchBooking },
   }
-  const telegram = usePublicBookingControllerTelegramLink(options)
-  const whatsappOn = usePublicBookingControllerWhatsappOn(options)
-  const whatsappOff = usePublicBookingControllerWhatsappOff(options)
+  const whatsappOn = usePublicBookingControllerWhatsappOn(whatsappOptions)
+  const whatsappOff = usePublicBookingControllerWhatsappOff(whatsappOptions)
+
+  // Back from Telegram (the tab is visible again): the bot may have connected.
+  // Only once a link was given out; window focus covers the rest.
+  const onVisible = useEffectEvent(() => {
+    if (document.visibilityState === 'visible') void refetchBooking()
+  })
+  const telegramAsked = telegram.data !== undefined
+  useEffect(() => {
+    if (!telegramAsked) return
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [telegramAsked])
 
   if (!channels.telegram && !channels.whatsapp) return null
 
@@ -93,39 +98,43 @@ export function NotifyMe({
       <Typography variant="h5" component="h2">
         {t('notify.title')}
       </Typography>
-      <ul className={styles.list}>
-        {channels.telegram && (
-          <ChannelRow
-            label={t('notify.telegram')}
-            on={notifications.telegram}
-            loading={telegram.isPending}
-            onTurnOn={() => telegram.mutate({ token, data: { locale } })}
-          >
-            {/* A link the client taps: window.open after the answer is blocked
+      {!locked && (
+        <ul className={styles.list}>
+          {channels.telegram && (
+            <ChannelRow
+              label={t('notify.telegram')}
+              on={notifications.telegram}
+              loading={telegram.isPending}
+              onTurnOn={() => telegram.mutate({ token, data: { locale } })}
+            >
+              {/* A link the client taps: window.open after the answer is blocked
                 by iOS Safari, which only allows it inside the tap itself. */}
-            {telegram.data && (
-              <a
-                className={styles.link}
-                href={telegram.data.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t('notify.openTelegram')}
-              </a>
-            )}
-          </ChannelRow>
-        )}
-        {channels.whatsapp && (
-          <ChannelRow
-            label={t('notify.whatsapp', { phone })}
-            note={t('notify.whatsappNote')}
-            on={notifications.whatsapp}
-            loading={whatsappOn.isPending || whatsappOff.isPending}
-            onTurnOn={() => whatsappOn.mutate({ token, data: { locale } })}
-            onTurnOff={() => whatsappOff.mutate({ token })}
-          />
-        )}
-      </ul>
+              {telegram.data && (
+                <Typography variant="t2">
+                  <a
+                    className={styles.link}
+                    href={telegram.data.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t('notify.openTelegram')}
+                  </a>
+                </Typography>
+              )}
+            </ChannelRow>
+          )}
+          {channels.whatsapp && (
+            <ChannelRow
+              label={t('notify.whatsapp', { phone })}
+              note={t('notify.whatsappNote')}
+              on={notifications.whatsapp}
+              loading={whatsappOn.isPending || whatsappOff.isPending}
+              onTurnOn={() => whatsappOn.mutate({ token, data: { locale } })}
+              onTurnOff={() => whatsappOff.mutate({ token })}
+            />
+          )}
+        </ul>
+      )}
       {failed && (
         <Typography variant="t4" color="red-300" role="alert">
           {t('notify.failed')}

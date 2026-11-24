@@ -1,5 +1,9 @@
 // @vitest-environment happy-dom
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query'
 import {
   cleanup,
   fireEvent,
@@ -105,12 +109,8 @@ test('a 404 that is not channelOff is a failure, not a vanished channel', async 
   ).toBe(false)
 })
 
-test('WhatsApp: turns on, shows «On», turns off', async () => {
-  const api = fakeApi({
-    [`PUT ${WHATSAPP}`]: [204],
-    [`DELETE ${WHATSAPP}`]: [204],
-    [MANAGED]: [200, {}],
-  })
+test('WhatsApp: turning on sends PUT with the locale', async () => {
+  const api = fakeApi({ [`PUT ${WHATSAPP}`]: [204], [MANAGED]: [200, {}] })
   show()
   fireEvent.click(screen.getByRole('button', { name: /WhatsApp to \+7/ }))
   await waitFor(() =>
@@ -119,6 +119,55 @@ test('WhatsApp: turns on, shows «On», turns off', async () => {
   expect(api.calls.find((c) => c.route === `PUT ${WHATSAPP}`)?.body).toEqual({
     locale: 'en',
   })
+})
+
+// The booking is read like the parent does: the row follows its answers.
+function WithBooking() {
+  const booking = useQuery({
+    ...getPublicBookingControllerManagedQueryOptions('tok'),
+    enabled: false,
+  })
+  const notifications =
+    (booking.data as { notifications?: typeof OFF } | undefined)
+      ?.notifications ?? OFF
+  return (
+    <NotifyMe
+      slug="judo"
+      token="tok"
+      channels={ALL}
+      notifications={notifications}
+      phone="+7 *** ***-12-34"
+    />
+  )
+}
+
+test('WhatsApp: the row shows «On» after turning on and the button again after turning off', async () => {
+  let on = false
+  fakeApi({
+    [`PUT ${WHATSAPP}`]: () => {
+      on = true
+      return [204]
+    },
+    [`DELETE ${WHATSAPP}`]: () => {
+      on = false
+      return [204]
+    },
+    [MANAGED]: () => [200, { notifications: { ...OFF, whatsapp: on } }],
+  })
+  render(
+    <QueryClientProvider
+      client={
+        new QueryClient({ defaultOptions: { queries: { retry: false } } })
+      }
+    >
+      <WithBooking />
+    </QueryClientProvider>,
+  )
+  fireEvent.click(screen.getByRole('button', { name: /WhatsApp to/ }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Turn off' }))
+  expect(
+    await screen.findByRole('button', { name: /WhatsApp to/ }),
+  ).toBeTruthy()
 })
 
 test('on: shows «On» and turning off sends DELETE', async () => {
@@ -144,6 +193,7 @@ test('409 says the booking can not change any more', async () => {
   expect(
     await screen.findByText("This booking can't change any more."),
   ).toBeTruthy()
+  expect(screen.queryByRole('button', { name: /WhatsApp to/ })).toBeNull()
 })
 
 test('404 channelOff asks for the business again, so its channels are fresh', async () => {
