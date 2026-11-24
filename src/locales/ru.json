@@ -46,6 +46,17 @@
     "changeFailed": "Не удалось сохранить изменение. Попробуйте ещё раз.",
     "back": "Назад"
   },
+  "notify": {
+    "title": "Напоминание о записи",
+    "telegram": "Telegram",
+    "openTelegram": "Открыть Telegram",
+    "whatsapp": "WhatsApp на {{phone}}",
+    "whatsappNote": "Действует для всех ваших записей в этом бизнесе.",
+    "on": "Включено",
+    "turnOff": "Отключить",
+    "locked": "Эту запись уже нельзя изменить.",
+    "failed": "Не удалось изменить. Попробуйте ещё раз."
+  },
   "auth": {
     "email": "Email",
     "password": "Пароль",

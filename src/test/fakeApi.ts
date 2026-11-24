@@ -67,6 +67,7 @@ export const account = {
       slug: 'judo-kids',
       timeZone: 'Asia/Bangkok',
       role: 'OWNER',
+      reminderOffsets: [1440],
     },
   ],
 }

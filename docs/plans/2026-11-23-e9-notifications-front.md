@@ -84,7 +84,7 @@ pushKey, email: boolean, telegram: boolean, push: string[] }`; `PUT /me/notifica
 
 ---
 
-### - [ ] F1: API and push in the service worker
+### - [x] F1: API and push in the service worker
 
 **Files:** `src/api/*` (regenerated), `vite.config.ts`, create `public/push-sw.js`, create
 `src/pwa/{push.ts,push.test.ts}`.
@@ -101,7 +101,7 @@ permission; `denied` → throws a typed error), `currentEndpoint(): Promise<stri
 key as a `Uint8Array`; denied → the typed error. `npm run test:pwa` green and the built `sw.js` contains
 `importScripts("push-sw.js")`. Commit `feat(pwa): push in the service worker`.
 
-### - [ ] F2: `NotifyMe` — Telegram and WhatsApp
+### - [x] F2: `NotifyMe` — Telegram and WhatsApp
 
 **Files:** create `src/pages/book/notify/{NotifyMe.tsx,NotifyMe.module.scss,ChannelRow.tsx,notifyMe.test.tsx}`,
 locales.
@@ -135,7 +135,9 @@ masked address; 400 shows the error. Commit `feat(book): reminders by push and e
 **Files:** `src/pages/book/{DoneStep.tsx,ManagePage.tsx}`, their tests, locales.
 
 `DoneStep`: under the link, `NotifyMe` (the token is the last segment of `manageLink`; the booking's
-`notifications` start all off — no fetch until the first turn-on). `ManagePage`: `NotifyMe` while
+`notifications` start all off — no fetch until the first turn-on). `NotifyMe` re-asks the booking after every turn-on, so
+`DoneStep` must hold that query in the cache (`useQuery` with `getPublicBookingControllerManagedQueryOptions`,
+`enabled` after the first turn-on), or the row never switches to «On». `ManagePage`: `NotifyMe` while
 `canChange`; hidden once the booking has started or was cancelled.
 
 **Check:** the booking test reaches step 4 and turns on WhatsApp; the manage test shows the block and

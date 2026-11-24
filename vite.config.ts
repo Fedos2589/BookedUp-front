@@ -92,6 +92,9 @@ export default defineConfig(({ mode }) => {
           navigateFallback: '/index.html',
           // Never the API: its answers are per account and must be fresh.
           navigateFallbackDenylist: [/^\/api(\/|$)/],
+          // Web Push handlers (public/push-sw.js), imported by the worker; the glob
+          // above precaches the file too, which is harmless.
+          importScripts: ['push-sw.js'],
         },
       }),
     ],

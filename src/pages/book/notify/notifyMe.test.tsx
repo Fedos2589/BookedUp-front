@@ -1,0 +1,222 @@
+// @vitest-environment happy-dom
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react'
+import { afterEach, expect, test, vi } from 'vitest'
+
+import '@/i18n'
+import {
+  getPublicBookingControllerBusinessQueryOptions,
+  getPublicBookingControllerManagedQueryOptions,
+} from '@/api/public-booking/public-booking'
+import { fakeApi } from '@/test/fakeApi'
+import { NotifyMe } from './NotifyMe'
+
+afterEach(() => {
+  cleanup()
+  vi.unstubAllGlobals()
+})
+
+const ALL = { telegram: true, whatsapp: true, push: false, email: false }
+const OFF = { telegram: false, whatsapp: false, push: [], email: null }
+const TELEGRAM = 'POST /api/public/bookings/tok/telegram-link'
+const WHATSAPP = '/api/public/bookings/tok/whatsapp'
+const MANAGED = 'GET /api/public/bookings/tok'
+
+function show(over: Partial<React.ComponentProps<typeof NotifyMe>> = {}) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  render(
+    <QueryClientProvider client={queryClient}>
+      <NotifyMe
+        slug="judo"
+        token="tok"
+        channels={ALL}
+        notifications={OFF}
+        phone="+7 *** ***-12-34"
+        {...over}
+      />
+    </QueryClientProvider>,
+  )
+  return queryClient
+}
+
+test('shows a row only for the channels the business has on', () => {
+  show({ channels: { ...ALL, whatsapp: false } })
+  expect(screen.getByRole('button', { name: 'Telegram' })).toBeTruthy()
+  expect(screen.queryByText(/WhatsApp/)).toBeNull()
+})
+
+test('Telegram: asks for the link and offers it as a link to tap', async () => {
+  const api = fakeApi({
+    [TELEGRAM]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [MANAGED]: [200, {}],
+  })
+  show()
+  fireEvent.click(screen.getByRole('button', { name: 'Telegram' }))
+  const link = await screen.findByRole('link', { name: 'Open Telegram' })
+  expect(link.getAttribute('href')).toBe('https://t.me/bot?start=abc')
+  expect(link.getAttribute('target')).toBe('_blank')
+  expect(api.calls.find((c) => c.route === TELEGRAM)?.body).toEqual({
+    locale: 'en',
+  })
+})
+
+test('a turn-on asks for the booking again, so the row can switch', async () => {
+  const api = fakeApi({ [`PUT ${WHATSAPP}`]: [204], [MANAGED]: [200, {}] })
+  const queryClient = show()
+  await queryClient.prefetchQuery(
+    getPublicBookingControllerManagedQueryOptions('tok'),
+  )
+  api.calls.length = 0
+  fireEvent.click(screen.getByRole('button', { name: /WhatsApp to/ }))
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === MANAGED)).toBe(true),
+  )
+})
+
+test('a failure other than 409 and channelOff is said under the block', async () => {
+  fakeApi({ [`PUT ${WHATSAPP}`]: [500], [MANAGED]: [200, {}] })
+  show()
+  fireEvent.click(screen.getByRole('button', { name: /WhatsApp to/ }))
+  expect(
+    await screen.findByText("Couldn't change this. Try again."),
+  ).toBeTruthy()
+})
+
+test('a 404 that is not channelOff is a failure, not a vanished channel', async () => {
+  const api = fakeApi({
+    [`PUT ${WHATSAPP}`]: [404, { code: 'notFound' }],
+    [MANAGED]: [200, {}],
+  })
+  show()
+  fireEvent.click(screen.getByRole('button', { name: /WhatsApp to/ }))
+  expect(
+    await screen.findByText("Couldn't change this. Try again."),
+  ).toBeTruthy()
+  expect(
+    api.calls.some((c) => c.route === 'GET /api/public/businesses/judo'),
+  ).toBe(false)
+})
+
+test('WhatsApp: turning on sends PUT with the locale', async () => {
+  const api = fakeApi({ [`PUT ${WHATSAPP}`]: [204], [MANAGED]: [200, {}] })
+  show()
+  fireEvent.click(screen.getByRole('button', { name: /WhatsApp to \+7/ }))
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === `PUT ${WHATSAPP}`)).toBe(true),
+  )
+  expect(api.calls.find((c) => c.route === `PUT ${WHATSAPP}`)?.body).toEqual({
+    locale: 'en',
+  })
+})
+
+// The booking is read like the parent does: the row follows its answers.
+function WithBooking() {
+  const booking = useQuery({
+    ...getPublicBookingControllerManagedQueryOptions('tok'),
+    enabled: false,
+  })
+  const notifications =
+    (booking.data as { notifications?: typeof OFF } | undefined)
+      ?.notifications ?? OFF
+  return (
+    <NotifyMe
+      slug="judo"
+      token="tok"
+      channels={ALL}
+      notifications={notifications}
+      phone="+7 *** ***-12-34"
+    />
+  )
+}
+
+test('WhatsApp: the row shows «On» after turning on and the button again after turning off', async () => {
+  let on = false
+  fakeApi({
+    [`PUT ${WHATSAPP}`]: () => {
+      on = true
+      return [204]
+    },
+    [`DELETE ${WHATSAPP}`]: () => {
+      on = false
+      return [204]
+    },
+    [MANAGED]: () => [200, { notifications: { ...OFF, whatsapp: on } }],
+  })
+  render(
+    <QueryClientProvider
+      client={
+        new QueryClient({ defaultOptions: { queries: { retry: false } } })
+      }
+    >
+      <WithBooking />
+    </QueryClientProvider>,
+  )
+  fireEvent.click(screen.getByRole('button', { name: /WhatsApp to/ }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Turn off' }))
+  expect(
+    await screen.findByRole('button', { name: /WhatsApp to/ }),
+  ).toBeTruthy()
+})
+
+test('on: shows «On» and turning off sends DELETE', async () => {
+  const api = fakeApi({
+    [`DELETE ${WHATSAPP}`]: [204],
+    [MANAGED]: [200, {}],
+  })
+  show({ notifications: { ...OFF, whatsapp: true } })
+  expect(screen.getByText('On')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Turn off' }))
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === `DELETE ${WHATSAPP}`)).toBe(true),
+  )
+})
+
+test('409 says the booking can not change any more', async () => {
+  fakeApi({
+    [`PUT ${WHATSAPP}`]: [409, { code: 'locked' }],
+    [MANAGED]: [200, {}],
+  })
+  show()
+  fireEvent.click(screen.getByRole('button', { name: /WhatsApp to/ }))
+  expect(
+    await screen.findByText("This booking can't change any more."),
+  ).toBeTruthy()
+  expect(screen.queryByRole('button', { name: /WhatsApp to/ })).toBeNull()
+})
+
+test('404 channelOff asks for the business again, so its channels are fresh', async () => {
+  const api = fakeApi({
+    [`PUT ${WHATSAPP}`]: [404, { code: 'channelOff' }],
+    [MANAGED]: [200, {}],
+    'GET /api/public/businesses/judo': [200, {}],
+  })
+  const queryClient = show()
+  await queryClient.prefetchQuery(
+    getPublicBookingControllerBusinessQueryOptions('judo'),
+  )
+  api.calls.length = 0
+  fireEvent.click(screen.getByRole('button', { name: /WhatsApp to/ }))
+  await waitFor(() =>
+    expect(
+      api.calls.some((c) => c.route === 'GET /api/public/businesses/judo'),
+    ).toBe(true),
+  )
+})
+
+test('Telegram connected shows «On» and no way to turn it off', () => {
+  show({ notifications: { ...OFF, telegram: true } })
+  expect(screen.getByText('On')).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Turn off' })).toBeNull()
+})

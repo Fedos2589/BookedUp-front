@@ -37,6 +37,11 @@ import type {
   PublicBookingControllerCancel201,
   PublicBookingControllerCancel400,
   PublicBookingControllerCancel409,
+  PublicBookingControllerEmailOff400,
+  PublicBookingControllerEmailOn400,
+  PublicBookingControllerEmailOn404,
+  PublicBookingControllerEmailOn409,
+  PublicBookingControllerEmailOnBody,
   PublicBookingControllerManaged200,
   PublicBookingControllerManaged400,
   PublicBookingControllerManifest200,
@@ -45,9 +50,25 @@ import type {
   PublicBookingControllerMove400,
   PublicBookingControllerMove409,
   PublicBookingControllerMoveBody,
+  PublicBookingControllerPushOff400,
+  PublicBookingControllerPushOffBody,
+  PublicBookingControllerPushOn400,
+  PublicBookingControllerPushOn404,
+  PublicBookingControllerPushOn409,
+  PublicBookingControllerPushOnBody,
   PublicBookingControllerSlots200Item,
   PublicBookingControllerSlots400,
-  PublicBookingControllerSlotsParams
+  PublicBookingControllerSlotsParams,
+  PublicBookingControllerTelegramLink201,
+  PublicBookingControllerTelegramLink400,
+  PublicBookingControllerTelegramLink404,
+  PublicBookingControllerTelegramLink409,
+  PublicBookingControllerTelegramLinkBody,
+  PublicBookingControllerWhatsappOff400,
+  PublicBookingControllerWhatsappOn400,
+  PublicBookingControllerWhatsappOn404,
+  PublicBookingControllerWhatsappOn409,
+  PublicBookingControllerWhatsappOnBody
 } from '../generated.schemas';
 
 import { apiFetch } from '../../apiFetch';
@@ -899,4 +920,548 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getPublicBookingControllerCancelMutationOptions(options), queryClient);
+    }
+    export const getPublicBookingControllerTelegramLinkUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/bookings/${token}/telegram-link`
+}
+
+export const publicBookingControllerTelegramLink = async (token: string,
+    publicBookingControllerTelegramLinkBody: PublicBookingControllerTelegramLinkBody, options?: Parameters<typeof apiFetch>[1]): Promise<PublicBookingControllerTelegramLink201> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return apiFetch<PublicBookingControllerTelegramLink201>(getPublicBookingControllerTelegramLinkUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(publicBookingControllerTelegramLinkBody)
+  }
+);}
+
+
+
+
+
+export const getPublicBookingControllerTelegramLinkMutationKey = () => ['publicBookingControllerTelegramLink'] as const;
+
+export const getPublicBookingControllerTelegramLinkMutationOptions = <TError = ErrorType<PublicBookingControllerTelegramLink400 | PublicBookingControllerTelegramLink404 | PublicBookingControllerTelegramLink409>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerTelegramLink>>, TError,PublicBookingControllerTelegramLinkMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerTelegramLink>>, TError,PublicBookingControllerTelegramLinkMutationVariables, TContext> => {
+
+const mutationKey = getPublicBookingControllerTelegramLinkMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publicBookingControllerTelegramLink>>, PublicBookingControllerTelegramLinkMutationVariables> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  publicBookingControllerTelegramLink(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublicBookingControllerTelegramLinkMutationResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerTelegramLink>>>
+    export type PublicBookingControllerTelegramLinkMutationBody = PublicBookingControllerTelegramLinkBody
+    export type PublicBookingControllerTelegramLinkMutationError = ErrorType<PublicBookingControllerTelegramLink400 | PublicBookingControllerTelegramLink404 | PublicBookingControllerTelegramLink409>
+    export type PublicBookingControllerTelegramLinkMutationVariables = {token: string;data: PublicBookingControllerTelegramLinkBody}
+
+    export const usePublicBookingControllerTelegramLink = <TError = ErrorType<PublicBookingControllerTelegramLink400 | PublicBookingControllerTelegramLink404 | PublicBookingControllerTelegramLink409>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerTelegramLink>>, TError,PublicBookingControllerTelegramLinkMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof publicBookingControllerTelegramLink>>,
+        TError,
+        PublicBookingControllerTelegramLinkMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPublicBookingControllerTelegramLinkMutationOptions(options), queryClient);
+    }
+    export const getPublicBookingControllerPushOnUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/bookings/${token}/push`
+}
+
+export const publicBookingControllerPushOn = async (token: string,
+    publicBookingControllerPushOnBody: PublicBookingControllerPushOnBody, options?: Parameters<typeof apiFetch>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return apiFetch<void>(getPublicBookingControllerPushOnUrl(token),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(publicBookingControllerPushOnBody)
+  }
+);}
+
+
+
+
+
+export const getPublicBookingControllerPushOnMutationKey = () => ['publicBookingControllerPushOn'] as const;
+
+export const getPublicBookingControllerPushOnMutationOptions = <TError = ErrorType<PublicBookingControllerPushOn400 | PublicBookingControllerPushOn404 | PublicBookingControllerPushOn409 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerPushOn>>, TError,PublicBookingControllerPushOnMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerPushOn>>, TError,PublicBookingControllerPushOnMutationVariables, TContext> => {
+
+const mutationKey = getPublicBookingControllerPushOnMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publicBookingControllerPushOn>>, PublicBookingControllerPushOnMutationVariables> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  publicBookingControllerPushOn(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublicBookingControllerPushOnMutationResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerPushOn>>>
+    export type PublicBookingControllerPushOnMutationBody = PublicBookingControllerPushOnBody
+    export type PublicBookingControllerPushOnMutationError = ErrorType<PublicBookingControllerPushOn400 | PublicBookingControllerPushOn404 | PublicBookingControllerPushOn409 | void>
+    export type PublicBookingControllerPushOnMutationVariables = {token: string;data: PublicBookingControllerPushOnBody}
+
+    export const usePublicBookingControllerPushOn = <TError = ErrorType<PublicBookingControllerPushOn400 | PublicBookingControllerPushOn404 | PublicBookingControllerPushOn409 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerPushOn>>, TError,PublicBookingControllerPushOnMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof publicBookingControllerPushOn>>,
+        TError,
+        PublicBookingControllerPushOnMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPublicBookingControllerPushOnMutationOptions(options), queryClient);
+    }
+    export const getPublicBookingControllerPushOffUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/bookings/${token}/push`
+}
+
+export const publicBookingControllerPushOff = async (token: string,
+    publicBookingControllerPushOffBody: PublicBookingControllerPushOffBody, options?: Parameters<typeof apiFetch>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return apiFetch<void>(getPublicBookingControllerPushOffUrl(token),
+  {
+    ...options,
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(publicBookingControllerPushOffBody)
+  }
+);}
+
+
+
+
+
+export const getPublicBookingControllerPushOffMutationKey = () => ['publicBookingControllerPushOff'] as const;
+
+export const getPublicBookingControllerPushOffMutationOptions = <TError = ErrorType<PublicBookingControllerPushOff400 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerPushOff>>, TError,PublicBookingControllerPushOffMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerPushOff>>, TError,PublicBookingControllerPushOffMutationVariables, TContext> => {
+
+const mutationKey = getPublicBookingControllerPushOffMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publicBookingControllerPushOff>>, PublicBookingControllerPushOffMutationVariables> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  publicBookingControllerPushOff(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublicBookingControllerPushOffMutationResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerPushOff>>>
+    export type PublicBookingControllerPushOffMutationBody = PublicBookingControllerPushOffBody
+    export type PublicBookingControllerPushOffMutationError = ErrorType<PublicBookingControllerPushOff400 | void>
+    export type PublicBookingControllerPushOffMutationVariables = {token: string;data: PublicBookingControllerPushOffBody}
+
+    export const usePublicBookingControllerPushOff = <TError = ErrorType<PublicBookingControllerPushOff400 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerPushOff>>, TError,PublicBookingControllerPushOffMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof publicBookingControllerPushOff>>,
+        TError,
+        PublicBookingControllerPushOffMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPublicBookingControllerPushOffMutationOptions(options), queryClient);
+    }
+    export const getPublicBookingControllerWhatsappOnUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/bookings/${token}/whatsapp`
+}
+
+export const publicBookingControllerWhatsappOn = async (token: string,
+    publicBookingControllerWhatsappOnBody: PublicBookingControllerWhatsappOnBody, options?: Parameters<typeof apiFetch>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return apiFetch<void>(getPublicBookingControllerWhatsappOnUrl(token),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(publicBookingControllerWhatsappOnBody)
+  }
+);}
+
+
+
+
+
+export const getPublicBookingControllerWhatsappOnMutationKey = () => ['publicBookingControllerWhatsappOn'] as const;
+
+export const getPublicBookingControllerWhatsappOnMutationOptions = <TError = ErrorType<PublicBookingControllerWhatsappOn400 | PublicBookingControllerWhatsappOn404 | PublicBookingControllerWhatsappOn409 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerWhatsappOn>>, TError,PublicBookingControllerWhatsappOnMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerWhatsappOn>>, TError,PublicBookingControllerWhatsappOnMutationVariables, TContext> => {
+
+const mutationKey = getPublicBookingControllerWhatsappOnMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publicBookingControllerWhatsappOn>>, PublicBookingControllerWhatsappOnMutationVariables> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  publicBookingControllerWhatsappOn(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublicBookingControllerWhatsappOnMutationResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerWhatsappOn>>>
+    export type PublicBookingControllerWhatsappOnMutationBody = PublicBookingControllerWhatsappOnBody
+    export type PublicBookingControllerWhatsappOnMutationError = ErrorType<PublicBookingControllerWhatsappOn400 | PublicBookingControllerWhatsappOn404 | PublicBookingControllerWhatsappOn409 | void>
+    export type PublicBookingControllerWhatsappOnMutationVariables = {token: string;data: PublicBookingControllerWhatsappOnBody}
+
+    export const usePublicBookingControllerWhatsappOn = <TError = ErrorType<PublicBookingControllerWhatsappOn400 | PublicBookingControllerWhatsappOn404 | PublicBookingControllerWhatsappOn409 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerWhatsappOn>>, TError,PublicBookingControllerWhatsappOnMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof publicBookingControllerWhatsappOn>>,
+        TError,
+        PublicBookingControllerWhatsappOnMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPublicBookingControllerWhatsappOnMutationOptions(options), queryClient);
+    }
+    export const getPublicBookingControllerWhatsappOffUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/bookings/${token}/whatsapp`
+}
+
+export const publicBookingControllerWhatsappOff = async (token: string, options?: Parameters<typeof apiFetch>[1]): Promise<void> => {
+
+  return apiFetch<void>(getPublicBookingControllerWhatsappOffUrl(token),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getPublicBookingControllerWhatsappOffMutationKey = () => ['publicBookingControllerWhatsappOff'] as const;
+
+export const getPublicBookingControllerWhatsappOffMutationOptions = <TError = ErrorType<PublicBookingControllerWhatsappOff400 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerWhatsappOff>>, TError,PublicBookingControllerWhatsappOffMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerWhatsappOff>>, TError,PublicBookingControllerWhatsappOffMutationVariables, TContext> => {
+
+const mutationKey = getPublicBookingControllerWhatsappOffMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publicBookingControllerWhatsappOff>>, PublicBookingControllerWhatsappOffMutationVariables> = (props) => {
+          const {token} = props ?? {};
+
+          return  publicBookingControllerWhatsappOff(token,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublicBookingControllerWhatsappOffMutationResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerWhatsappOff>>>
+
+    export type PublicBookingControllerWhatsappOffMutationError = ErrorType<PublicBookingControllerWhatsappOff400 | void>
+    export type PublicBookingControllerWhatsappOffMutationVariables = {token: string}
+
+    export const usePublicBookingControllerWhatsappOff = <TError = ErrorType<PublicBookingControllerWhatsappOff400 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerWhatsappOff>>, TError,PublicBookingControllerWhatsappOffMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof publicBookingControllerWhatsappOff>>,
+        TError,
+        PublicBookingControllerWhatsappOffMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPublicBookingControllerWhatsappOffMutationOptions(options), queryClient);
+    }
+    export const getPublicBookingControllerEmailOnUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/bookings/${token}/email`
+}
+
+export const publicBookingControllerEmailOn = async (token: string,
+    publicBookingControllerEmailOnBody: PublicBookingControllerEmailOnBody, options?: Parameters<typeof apiFetch>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return apiFetch<void>(getPublicBookingControllerEmailOnUrl(token),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(publicBookingControllerEmailOnBody)
+  }
+);}
+
+
+
+
+
+export const getPublicBookingControllerEmailOnMutationKey = () => ['publicBookingControllerEmailOn'] as const;
+
+export const getPublicBookingControllerEmailOnMutationOptions = <TError = ErrorType<PublicBookingControllerEmailOn400 | PublicBookingControllerEmailOn404 | PublicBookingControllerEmailOn409 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerEmailOn>>, TError,PublicBookingControllerEmailOnMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerEmailOn>>, TError,PublicBookingControllerEmailOnMutationVariables, TContext> => {
+
+const mutationKey = getPublicBookingControllerEmailOnMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publicBookingControllerEmailOn>>, PublicBookingControllerEmailOnMutationVariables> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  publicBookingControllerEmailOn(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublicBookingControllerEmailOnMutationResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerEmailOn>>>
+    export type PublicBookingControllerEmailOnMutationBody = PublicBookingControllerEmailOnBody
+    export type PublicBookingControllerEmailOnMutationError = ErrorType<PublicBookingControllerEmailOn400 | PublicBookingControllerEmailOn404 | PublicBookingControllerEmailOn409 | void>
+    export type PublicBookingControllerEmailOnMutationVariables = {token: string;data: PublicBookingControllerEmailOnBody}
+
+    export const usePublicBookingControllerEmailOn = <TError = ErrorType<PublicBookingControllerEmailOn400 | PublicBookingControllerEmailOn404 | PublicBookingControllerEmailOn409 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerEmailOn>>, TError,PublicBookingControllerEmailOnMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof publicBookingControllerEmailOn>>,
+        TError,
+        PublicBookingControllerEmailOnMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPublicBookingControllerEmailOnMutationOptions(options), queryClient);
+    }
+    export const getPublicBookingControllerEmailOffUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/bookings/${token}/email`
+}
+
+export const publicBookingControllerEmailOff = async (token: string, options?: Parameters<typeof apiFetch>[1]): Promise<void> => {
+
+  return apiFetch<void>(getPublicBookingControllerEmailOffUrl(token),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getPublicBookingControllerEmailOffMutationKey = () => ['publicBookingControllerEmailOff'] as const;
+
+export const getPublicBookingControllerEmailOffMutationOptions = <TError = ErrorType<PublicBookingControllerEmailOff400 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerEmailOff>>, TError,PublicBookingControllerEmailOffMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerEmailOff>>, TError,PublicBookingControllerEmailOffMutationVariables, TContext> => {
+
+const mutationKey = getPublicBookingControllerEmailOffMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publicBookingControllerEmailOff>>, PublicBookingControllerEmailOffMutationVariables> = (props) => {
+          const {token} = props ?? {};
+
+          return  publicBookingControllerEmailOff(token,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublicBookingControllerEmailOffMutationResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerEmailOff>>>
+
+    export type PublicBookingControllerEmailOffMutationError = ErrorType<PublicBookingControllerEmailOff400 | void>
+    export type PublicBookingControllerEmailOffMutationVariables = {token: string}
+
+    export const usePublicBookingControllerEmailOff = <TError = ErrorType<PublicBookingControllerEmailOff400 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerEmailOff>>, TError,PublicBookingControllerEmailOffMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof publicBookingControllerEmailOff>>,
+        TError,
+        PublicBookingControllerEmailOffMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPublicBookingControllerEmailOffMutationOptions(options), queryClient);
     }

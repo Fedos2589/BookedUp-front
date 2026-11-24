@@ -46,6 +46,17 @@
     "changeFailed": "Couldn't save the change. Try again.",
     "back": "Back"
   },
+  "notify": {
+    "title": "Get a reminder",
+    "telegram": "Telegram",
+    "openTelegram": "Open Telegram",
+    "whatsapp": "WhatsApp to {{phone}}",
+    "whatsappNote": "Covers all your bookings with this business.",
+    "on": "On",
+    "turnOff": "Turn off",
+    "locked": "This booking can't change any more.",
+    "failed": "Couldn't change this. Try again."
+  },
   "auth": {
     "email": "Email",
     "password": "Password",

@@ -6,6 +6,7 @@
  */
 import {
   queryOptions as queryOptionsBuilder,
+  useMutation,
   useQuery,
   useSuspenseQuery
 } from '@tanstack/react-query';
@@ -13,10 +14,13 @@ import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
   UseSuspenseQueryOptions,
@@ -24,7 +28,10 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BusinessControllerDescribe200
+  BusinessControllerDescribe200,
+  BusinessControllerSetReminders200,
+  BusinessControllerSetReminders400,
+  BusinessControllerSetRemindersBody
 } from '../generated.schemas';
 
 import { apiFetch } from '../../apiFetch';
@@ -194,3 +201,85 @@ export function useBusinessControllerDescribeSuspense<TData = Awaited<ReturnType
 
 
 
+export const getBusinessControllerSetRemindersUrl = (businessId: string,) => {
+
+
+
+
+  return `/api/businesses/${businessId}/reminders`
+}
+
+export const businessControllerSetReminders = async (businessId: string,
+    businessControllerSetRemindersBody: BusinessControllerSetRemindersBody, options?: Parameters<typeof apiFetch>[1]): Promise<BusinessControllerSetReminders200> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return apiFetch<BusinessControllerSetReminders200>(getBusinessControllerSetRemindersUrl(businessId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(businessControllerSetRemindersBody)
+  }
+);}
+
+
+
+
+
+export const getBusinessControllerSetRemindersMutationKey = () => ['businessControllerSetReminders'] as const;
+
+export const getBusinessControllerSetRemindersMutationOptions = <TError = ErrorType<BusinessControllerSetReminders400 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof businessControllerSetReminders>>, TError,BusinessControllerSetRemindersMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof businessControllerSetReminders>>, TError,BusinessControllerSetRemindersMutationVariables, TContext> => {
+
+const mutationKey = getBusinessControllerSetRemindersMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof businessControllerSetReminders>>, BusinessControllerSetRemindersMutationVariables> = (props) => {
+          const {businessId,data} = props ?? {};
+
+          return  businessControllerSetReminders(businessId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BusinessControllerSetRemindersMutationResult = NonNullable<Awaited<ReturnType<typeof businessControllerSetReminders>>>
+    export type BusinessControllerSetRemindersMutationBody = BusinessControllerSetRemindersBody
+    export type BusinessControllerSetRemindersMutationError = ErrorType<BusinessControllerSetReminders400 | void>
+    export type BusinessControllerSetRemindersMutationVariables = {businessId: string;data: BusinessControllerSetRemindersBody}
+
+    export const useBusinessControllerSetReminders = <TError = ErrorType<BusinessControllerSetReminders400 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof businessControllerSetReminders>>, TError,BusinessControllerSetRemindersMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof businessControllerSetReminders>>,
+        TError,
+        BusinessControllerSetRemindersMutationVariables,
+        TContext
+      > => {
+      return useMutation(getBusinessControllerSetRemindersMutationOptions(options), queryClient);
+    }
