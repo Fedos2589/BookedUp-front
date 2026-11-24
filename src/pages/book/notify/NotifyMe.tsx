@@ -29,7 +29,8 @@ type Props = {
   // The VAPID key push subscribes with; null when the back has push off.
   pushKey: string | null
   // The client card's number, masked: the label of the WhatsApp button.
-  phone: string
+  // The back doesn't send it to the booking pages yet: then just «WhatsApp».
+  phone?: string
 }
 
 // «Get a reminder»: a row per channel the business has on, for this booking.
@@ -134,7 +135,11 @@ export function NotifyMe({
           )}
           {channels.whatsapp && (
             <ChannelRow
-              label={t('notify.whatsapp', { phone })}
+              label={
+                phone
+                  ? t('notify.whatsapp', { phone })
+                  : t('notify.whatsappPlain')
+              }
               note={t('notify.whatsappNote')}
               on={notifications.whatsapp}
               loading={whatsappOn.isPending || whatsappOff.isPending}

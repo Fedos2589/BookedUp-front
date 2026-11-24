@@ -130,7 +130,7 @@ Push row: `pushSupport()` → button / «Add to the home screen first» / nothin
 **Check:** tests with `push.ts` mocked — each support state; on / off; denied text; email saved shows the
 masked address; 400 shows the error. Commit `feat(book): reminders by push and email`.
 
-### - [ ] F4: on the done screen and the manage page
+### - [x] F4: on the done screen and the manage page
 
 **Files:** `src/pages/book/{DoneStep.tsx,ManagePage.tsx}`, their tests, locales.
 

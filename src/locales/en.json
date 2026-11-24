@@ -51,6 +51,7 @@
     "telegram": "Telegram",
     "openTelegram": "Open Telegram",
     "whatsapp": "WhatsApp to {{phone}}",
+    "whatsappPlain": "WhatsApp",
     "whatsappNote": "Covers all your bookings with this business.",
     "on": "On",
     "turnOff": "Turn off",

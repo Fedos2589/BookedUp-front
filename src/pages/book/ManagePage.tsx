@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
-import { usePublicBookingControllerManaged } from '@/api/public-booking/public-booking'
+import {
+  usePublicBookingControllerBusiness,
+  usePublicBookingControllerManaged,
+} from '@/api/public-booking/public-booking'
 import { ApiError } from '@/apiFetch'
 import { dateTimeIn, timeIn } from '@/dates'
 import { PagePending } from '@/pages/PagePending'
@@ -12,6 +15,7 @@ import styles from './BookingPage.module.scss'
 import { CancelBooking } from './CancelBooking'
 import { LoadFailed } from './LoadFailed'
 import { MoveBooking } from './MoveBooking'
+import { NotifyMe } from '@/pages/book/notify/NotifyMe'
 import { useBusinessManifest } from './useBusinessManifest'
 
 const route = getRouteApi('/book/$businessSlug/manage/$token')
@@ -22,6 +26,11 @@ export function ManagePage() {
   const { t, i18n } = useTranslation()
   const managed = usePublicBookingControllerManaged(token)
   const [moving, setMoving] = useState(false)
+  // Which channels the business has on; asked once the booking names it.
+  const channels = usePublicBookingControllerBusiness(
+    managed.data?.business.slug ?? '',
+    { query: { enabled: Boolean(managed.data) } },
+  )
   useBusinessManifest(managed.data?.business.slug, managed.data?.business.name)
 
   // 400 is a token of the wrong shape, 404 one nobody holds: both are a dead link.
@@ -79,6 +88,15 @@ export function ManagePage() {
               {t('booking.changeTime')}
             </Button>
             <CancelBooking token={token} slug={business.slug} />
+            {channels.data && (
+              <NotifyMe
+                slug={business.slug}
+                token={token}
+                channels={channels.data.channels}
+                notifications={managed.data.notifications}
+                pushKey={channels.data.pushKey}
+              />
+            )}
           </>
         ))}
     </main>

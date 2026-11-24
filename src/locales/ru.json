@@ -51,6 +51,7 @@
     "telegram": "Telegram",
     "openTelegram": "Открыть Telegram",
     "whatsapp": "WhatsApp на {{phone}}",
+    "whatsappPlain": "WhatsApp",
     "whatsappNote": "Действует для всех ваших записей в этом бизнесе.",
     "on": "Включено",
     "turnOff": "Отключить",

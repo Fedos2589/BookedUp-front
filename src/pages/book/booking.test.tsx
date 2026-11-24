@@ -30,6 +30,8 @@ const business = {
   name: 'Judo Kids',
   slug: 'judo',
   timeZone: 'Europe/Berlin',
+  channels: { telegram: false, whatsapp: true, push: false, email: false },
+  pushKey: null,
   masters: [
     { id: HOURS_ANNA, name: 'Anna', scheduleMode: 'HOURS' },
     { id: HOURS_BORIS, name: 'Boris', scheduleMode: 'HOURS' },
@@ -685,4 +687,38 @@ test('a full meeting named in the address is not bookable: step 2', async () => 
 
   expect(await screen.findByText('Choose a day and a time')).toBeTruthy()
   expect(screen.queryByText('Your details')).toBeNull()
+})
+
+test('step 4: turning on WhatsApp for the new booking switches the row to «On»', async () => {
+  let on = false
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: booked(HOURS_ANNA),
+    'PUT /api/public/bookings/abc/whatsapp': () => {
+      on = true
+      return [204]
+    },
+    'GET /api/public/bookings/abc': () => [
+      200,
+      {
+        notifications: {
+          telegram: false,
+          whatsapp: on,
+          push: [],
+          email: null,
+        },
+      },
+    ],
+  })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  // Nothing is fetched until the first switch.
+  fireEvent.click(await screen.findByRole('button', { name: 'WhatsApp' }))
+  expect(await screen.findByText('On')).toBeTruthy()
+  expect(
+    api.calls.find((c) => c.route === 'PUT /api/public/bookings/abc/whatsapp')
+      ?.body,
+  ).toEqual({ locale: 'en' })
 })
