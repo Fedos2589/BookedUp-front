@@ -17,6 +17,8 @@ import {
 import { ApiError } from '@/apiFetch'
 import { isLanguage } from '@/language'
 import { ChannelRow } from './ChannelRow'
+import { EmailRow } from './EmailRow'
+import { PushRow } from './PushRow'
 import styles from './NotifyMe.module.scss'
 
 type Props = {
@@ -24,17 +26,19 @@ type Props = {
   token: string
   channels: PublicBookingControllerBusiness200Channels
   notifications: PublicBookingControllerManaged200Notifications
+  // The VAPID key push subscribes with; null when the back has push off.
+  pushKey: string | null
   // The client card's number, masked: the label of the WhatsApp button.
   phone: string
 }
 
 // «Get a reminder»: a row per channel the business has on, for this booking.
-// Telegram and WhatsApp here; push and email come next to them.
 export function NotifyMe({
   slug,
   token,
   channels,
   notifications,
+  pushKey,
   phone,
 }: Props) {
   const { t, i18n } = useTranslation()
@@ -73,9 +77,8 @@ export function NotifyMe({
   const mutation = { onMutate: () => setFailed(false), onError }
   // A telegram-link answer changes nothing on the booking: no refetch after it.
   const telegram = usePublicBookingControllerTelegramLink({ mutation })
-  const whatsappOptions = {
-    mutation: { ...mutation, onSettled: refetchBooking },
-  }
+  const rowMutation = { ...mutation, onSettled: refetchBooking }
+  const whatsappOptions = { mutation: rowMutation }
   const whatsappOn = usePublicBookingControllerWhatsappOn(whatsappOptions)
   const whatsappOff = usePublicBookingControllerWhatsappOff(whatsappOptions)
 
@@ -91,7 +94,13 @@ export function NotifyMe({
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [telegramAsked])
 
-  if (!channels.telegram && !channels.whatsapp) return null
+  if (
+    !channels.telegram &&
+    !channels.whatsapp &&
+    !channels.push &&
+    !channels.email
+  )
+    return null
 
   return (
     <section className={styles.block}>
@@ -131,6 +140,23 @@ export function NotifyMe({
               loading={whatsappOn.isPending || whatsappOff.isPending}
               onTurnOn={() => whatsappOn.mutate({ token, data: { locale } })}
               onTurnOff={() => whatsappOff.mutate({ token })}
+            />
+          )}
+          {channels.push && pushKey && (
+            <PushRow
+              token={token}
+              locale={locale}
+              pushKey={pushKey}
+              endpoints={notifications.push}
+              mutation={rowMutation}
+            />
+          )}
+          {channels.email && (
+            <EmailRow
+              token={token}
+              locale={locale}
+              email={notifications.email}
+              mutation={rowMutation}
             />
           )}
         </ul>

@@ -116,7 +116,7 @@ business).
 turn off → back to the button; Telegram calls `window.open` with the URL; 409 text shown. Commit
 `feat(book): reminders in Telegram and WhatsApp`.
 
-### - [ ] F3: `NotifyMe` — push and email
+### - [x] F3: `NotifyMe` — push and email
 
 **Files:** `src/pages/book/notify/{NotifyMe.tsx,notifyMe.test.tsx}`, create
 `src/pages/book/notify/{PushRow.tsx,EmailRow.tsx}`, locales.

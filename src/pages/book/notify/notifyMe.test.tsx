@@ -11,7 +11,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react'
-import { afterEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import '@/i18n'
 import {
@@ -43,6 +43,7 @@ function show(over: Partial<React.ComponentProps<typeof NotifyMe>> = {}) {
         token="tok"
         channels={ALL}
         notifications={OFF}
+        pushKey={null}
         phone="+7 *** ***-12-34"
         {...over}
       />
@@ -136,6 +137,7 @@ function WithBooking() {
       token="tok"
       channels={ALL}
       notifications={notifications}
+      pushKey={null}
       phone="+7 *** ***-12-34"
     />
   )
@@ -219,4 +221,161 @@ test('Telegram connected shows «On» and no way to turn it off', () => {
   show({ notifications: { ...OFF, telegram: true } })
   expect(screen.getByText('On')).toBeTruthy()
   expect(screen.queryByRole('button', { name: 'Turn off' })).toBeNull()
+})
+
+// Push and email (the page's side of push is mocked at its module).
+const push = vi.hoisted(() => ({
+  pushSupport: vi.fn(() => 'yes'),
+  subscribe: vi.fn(),
+  currentEndpoint: vi.fn(),
+  unsubscribe: vi.fn(),
+  PushDeniedError: class PushDeniedError extends Error {},
+  PushDismissedError: class PushDismissedError extends Error {},
+}))
+vi.mock('@/pwa/push', () => push)
+
+const PUSH = '/api/public/bookings/tok/push'
+const EMAIL = '/api/public/bookings/tok/email'
+const SUB = { endpoint: 'https://push/me', keys: { p256dh: 'p', auth: 'a' } }
+const WITH_PUSH = { ...ALL, push: true, email: true }
+
+function showPush(over: Partial<React.ComponentProps<typeof NotifyMe>> = {}) {
+  return show({
+    channels: WITH_PUSH,
+    pushKey: 'KEY',
+    ...over,
+  })
+}
+
+beforeEach(() => {
+  push.pushSupport.mockReturnValue('yes')
+  push.currentEndpoint.mockResolvedValue(null)
+  push.subscribe.mockResolvedValue(SUB)
+  push.unsubscribe.mockResolvedValue(undefined)
+})
+
+test('push: a browser that can shows the button', async () => {
+  showPush()
+  expect(
+    await screen.findByRole('button', { name: 'Notifications on this device' }),
+  ).toBeTruthy()
+})
+
+test('push: no PushManager shows nothing, an iOS tab says to install first', async () => {
+  push.pushSupport.mockReturnValue('no')
+  showPush()
+  await screen.findByRole('button', { name: 'Email' })
+  expect(screen.queryByText(/this device/)).toBeNull()
+  cleanup()
+  push.pushSupport.mockReturnValue('installFirst')
+  showPush()
+  expect(
+    screen.getByText('Add this page to your home screen to get notifications'),
+  ).toBeTruthy()
+  expect(screen.queryByRole('button', { name: /this device/ })).toBeNull()
+})
+
+test('push: no key from the back shows no push row', () => {
+  showPush({ pushKey: null })
+  expect(screen.queryByText(/this device/)).toBeNull()
+})
+
+test('push: turning on subscribes with the key and sends the subscription', async () => {
+  const api = fakeApi({ [`PUT ${PUSH}`]: [204], [MANAGED]: [200, {}] })
+  showPush()
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Notifications on this device' }),
+  )
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === `PUT ${PUSH}`)).toBe(true),
+  )
+  expect(push.subscribe).toHaveBeenCalledWith('KEY')
+  expect(api.calls.find((c) => c.route === `PUT ${PUSH}`)?.body).toEqual({
+    subscription: SUB,
+    locale: 'en',
+  })
+})
+
+test('push: «On» when this device is among the booking endpoints; off deletes and unsubscribes', async () => {
+  push.currentEndpoint.mockResolvedValue(SUB.endpoint)
+  const api = fakeApi({ [`DELETE ${PUSH}`]: [204], [MANAGED]: [200, {}] })
+  showPush({ notifications: { ...OFF, push: [SUB.endpoint] } })
+  fireEvent.click(await screen.findByRole('button', { name: 'Turn off' }))
+  await waitFor(() => expect(push.unsubscribe).toHaveBeenCalled())
+  expect(api.calls.find((c) => c.route === `DELETE ${PUSH}`)?.body).toEqual({
+    endpoint: SUB.endpoint,
+  })
+})
+
+test('push: another device on the booking does not make this one «On»', async () => {
+  push.currentEndpoint.mockResolvedValue('https://push/other-browser')
+  showPush({ notifications: { ...OFF, push: [SUB.endpoint] } })
+  expect(
+    await screen.findByRole('button', { name: 'Notifications on this device' }),
+  ).toBeTruthy()
+})
+
+test('push: a denied permission says so and leaves no request', async () => {
+  push.subscribe.mockRejectedValue(new push.PushDeniedError())
+  const api = fakeApi({ [`PUT ${PUSH}`]: [204], [MANAGED]: [200, {}] })
+  showPush()
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Notifications on this device' }),
+  )
+  expect(
+    await screen.findByText(
+      'Notifications are blocked in the browser settings',
+    ),
+  ).toBeTruthy()
+  expect(api.calls.some((c) => c.route === `PUT ${PUSH}`)).toBe(false)
+})
+
+test('email: the button opens a field, saving sends the address', async () => {
+  const api = fakeApi({ [`PUT ${EMAIL}`]: [204], [MANAGED]: [200, {}] })
+  showPush()
+  fireEvent.click(await screen.findByRole('button', { name: 'Email' }))
+  fireEvent.change(screen.getByLabelText('Email'), {
+    target: { value: 'ann@example.com' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === `PUT ${EMAIL}`)).toBe(true),
+  )
+  expect(api.calls.find((c) => c.route === `PUT ${EMAIL}`)?.body).toEqual({
+    email: 'ann@example.com',
+    locale: 'en',
+  })
+})
+
+test('email: on shows the masked address and turning off sends DELETE', async () => {
+  const api = fakeApi({ [`DELETE ${EMAIL}`]: [204], [MANAGED]: [200, {}] })
+  showPush({ notifications: { ...OFF, email: 'a***@example.com' } })
+  expect(await screen.findByText(/a\*\*\*@example\.com/)).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Turn off' }))
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === `DELETE ${EMAIL}`)).toBe(true),
+  )
+})
+
+test('email: a bad address is refused on the page, a 400 shows the field error', async () => {
+  const api = fakeApi({
+    [`PUT ${EMAIL}`]: [400, { message: ['email must be an email'] }],
+    [MANAGED]: [200, {}],
+  })
+  showPush()
+  fireEvent.click(await screen.findByRole('button', { name: 'Email' }))
+  fireEvent.change(screen.getByLabelText('Email'), {
+    target: { value: 'nope' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  expect(await screen.findByText('Enter a valid email')).toBeTruthy()
+  expect(api.calls.some((c) => c.route === `PUT ${EMAIL}`)).toBe(false)
+  fireEvent.change(screen.getByLabelText('Email'), {
+    target: { value: 'ann@example.com' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === `PUT ${EMAIL}`)).toBe(true),
+  )
+  expect(await screen.findByText('Enter a valid email')).toBeTruthy()
 })
