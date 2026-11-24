@@ -133,6 +133,16 @@
     "copied": "Скопировано",
     "copyFailed": "Не удалось скопировать. Выделите ссылку и скопируйте её."
   },
+  "notifications": {
+    "title": "Уведомления",
+    "loadFailed": "Не удалось загрузить настройки уведомлений",
+    "channels": "Как со мной связаться",
+    "allOnline": "Все онлайн-записи этого бизнеса",
+    "otherDevices_one": "Ещё на {{count}} устройстве",
+    "otherDevices_few": "Ещё на {{count}} устройствах",
+    "otherDevices_many": "Ещё на {{count}} устройствах",
+    "otherDevices_other": "Ещё на {{count}} устройствах"
+  },
   "settings": {
     "title": "Настройки бизнеса",
     "name": "Название",
@@ -146,6 +156,7 @@
     "calendar": "Календарь",
     "schedule": "График",
     "settings": "Настройки",
+    "notifications": "Уведомления",
     "team": "Команда",
     "signOut": "Выйти",
     "noBusiness": {

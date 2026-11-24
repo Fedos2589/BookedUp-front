@@ -5,7 +5,21 @@ import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
 import { useSessionControllerSignOut } from '@/api/auth/auth'
+import { myNotificationsControllerPushOff } from '@/api/notifications/notifications'
+import { currentEndpoint } from '@/pwa/push'
 import styles from './SignOut.module.scss'
+
+// This device stops getting the leaving account's pushes: on a shared
+// computer the next person would otherwise hear its bookings. A failure
+// (no subscription, no service worker, the back down) never blocks signing out.
+async function turnThisDevicePushOff() {
+  try {
+    const endpoint = await currentEndpoint()
+    if (endpoint) await myNotificationsControllerPushOff({ endpoint })
+  } catch {
+    // Ignored on purpose.
+  }
+}
 
 // The header's «Sign out» (the cabinet only): ends the session and goes to sign in.
 export function SignOut() {
@@ -21,6 +35,10 @@ export function SignOut() {
       },
     },
   })
+  const leave = async () => {
+    await turnThisDevicePushOff()
+    signOut.mutate()
+  }
 
   return (
     <div className={styles.signOut}>
@@ -28,7 +46,7 @@ export function SignOut() {
         variant="ghost"
         colorScheme="grey"
         loading={signOut.isPending}
-        onClick={() => signOut.mutate()}
+        onClick={() => void leave()}
       >
         {t('cabinet.signOut')}
       </Button>
