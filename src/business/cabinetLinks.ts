@@ -7,6 +7,7 @@ const links = [
   { to: '/calendar', label: 'cabinet.calendar' },
   { to: '/clients', label: 'cabinet.clients' },
   { to: '/schedule', label: 'cabinet.schedule' },
+  { to: '/notifications', label: 'cabinet.notifications' },
   { to: '/settings', label: 'cabinet.settings', needs: 'viewSettings' },
   { to: '/team', label: 'cabinet.team', needs: 'viewTeam' },
 ] as const satisfies readonly {

@@ -60,6 +60,16 @@ const settingsRoute = createRoute({
   ),
 })
 
+// The member's own notification channels: every role.
+const notificationsRoute = createRoute({
+  getParentRoute: () => cabinetRoute,
+  path: '/notifications',
+  component: lazyRouteComponent(
+    () => import('@/pages/notifications/NotificationsPage'),
+    'NotificationsPage',
+  ),
+})
+
 // Who works in the business, and the invitations to it.
 const teamRoute = createRoute({
   getParentRoute: () => cabinetRoute,
@@ -185,6 +195,7 @@ export const routeTree = rootRoute.addChildren([
     clientRoute,
     scheduleRoute,
     settingsRoute,
+    notificationsRoute,
     teamRoute,
   ]),
   signInRoute,

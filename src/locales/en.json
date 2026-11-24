@@ -133,6 +133,14 @@
     "copied": "Copied",
     "copyFailed": "Couldn’t copy. Select the link and copy it."
   },
+  "notifications": {
+    "title": "Notifications",
+    "loadFailed": "Couldn't load your notification settings",
+    "channels": "Where to reach me",
+    "allOnline": "All online bookings of this business",
+    "otherDevices_one": "Also on {{count}} other device",
+    "otherDevices_other": "Also on {{count}} other devices"
+  },
   "settings": {
     "title": "Business settings",
     "name": "Name",
@@ -146,6 +154,7 @@
     "calendar": "Calendar",
     "schedule": "Schedule",
     "settings": "Settings",
+    "notifications": "Notifications",
     "team": "Team",
     "signOut": "Sign out",
     "noBusiness": {

@@ -143,7 +143,11 @@ masked address; 400 shows the error. Commit `feat(book): reminders by push and e
 **Check:** the booking test reaches step 4 and turns on WhatsApp; the manage test shows the block and
 hides it for a cancelled booking. Commit `feat(book): get reminders after booking`.
 
-### - [ ] F5: my notifications in the cabinet
+### - [x] F5: my notifications in the cabinet
+
+> **Done differently:** a master can't open Settings (`viewSettings`), so the section is its own page
+> `/notifications` for every role (`src/pages/notifications/`, a link in the cabinet nav), not a part of
+> `SettingsPage`. F6's reminder times stay in Settings.
 
 **Files:** create `src/pages/settings/notifications/{MyNotifications.tsx,MyNotifications.module.scss,myNotifications.test.tsx}`,
 `src/pages/settings/SettingsPage.tsx`, `src/app/SignOut.tsx` (+ its test), locales.

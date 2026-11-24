@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
-import { useSessionControllerSignOut } from '@/api/auth/auth'
+import { useSignOut } from '@/auth/useSignOut'
 import styles from './SignOut.module.scss'
 
 // The header's «Sign out» (the cabinet only): ends the session and goes to sign in.
@@ -12,13 +12,11 @@ export function SignOut() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const signOut = useSessionControllerSignOut({
-    mutation: {
-      // Everything cached belongs to the account that just left.
-      onSuccess: async () => {
-        queryClient.clear()
-        await navigate({ to: '/sign-in' })
-      },
+  const signOut = useSignOut({
+    // Everything cached belongs to the account that just left.
+    onSuccess: async () => {
+      queryClient.clear()
+      await navigate({ to: '/sign-in' })
     },
   })
 
@@ -28,7 +26,7 @@ export function SignOut() {
         variant="ghost"
         colorScheme="grey"
         loading={signOut.isPending}
-        onClick={() => signOut.mutate()}
+        onClick={signOut.leave}
       >
         {t('cabinet.signOut')}
       </Button>

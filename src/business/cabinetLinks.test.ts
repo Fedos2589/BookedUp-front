@@ -11,6 +11,7 @@ test('the owner sees every link, in the navigation order', () => {
     '/calendar',
     '/clients',
     '/schedule',
+    '/notifications',
     '/settings',
     '/team',
   ])
@@ -22,11 +23,18 @@ test('an admin sees settings and the team', () => {
     '/calendar',
     '/clients',
     '/schedule',
+    '/notifications',
     '/settings',
     '/team',
   ])
 })
 
-test('a master sees neither settings nor the team', () => {
-  expect(targets('MASTER')).toEqual(['/', '/calendar', '/clients', '/schedule'])
+test('a master sees their notifications, but neither settings nor the team', () => {
+  expect(targets('MASTER')).toEqual([
+    '/',
+    '/calendar',
+    '/clients',
+    '/schedule',
+    '/notifications',
+  ])
 })

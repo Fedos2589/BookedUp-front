@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { usePublicBookingControllerEmailOff } from '@/api/public-booking/public-booking'
 import type { Language } from '@/language'
-import { ChannelRow } from './ChannelRow'
+import { ChannelRow } from '@/notify/ChannelRow'
 import { EmailForm } from './EmailForm'
 import type { RowMutation } from './rowMutation'
 
