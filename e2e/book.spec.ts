@@ -59,6 +59,7 @@ async function openBusiness(page: Page) {
           email: false,
         },
         pushKey: null,
+        clientSignIn: true,
         masters: [
           { id: ANNA, name: 'Anna', scheduleMode: 'HOURS' },
           { id: BORIS, name: 'Boris', scheduleMode: 'HOURS' },

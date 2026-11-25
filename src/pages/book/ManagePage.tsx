@@ -87,7 +87,7 @@ export function ManagePage() {
             >
               {t('booking.changeTime')}
             </Button>
-            <CancelBooking token={token} slug={business.slug} />
+            <CancelBooking token={token} />
             {channels.data && (
               <NotifyMe
                 slug={business.slug}

@@ -6,18 +6,16 @@ import type {
   PublicBookingControllerBusiness200,
   PublicBookingControllerSlots200Item,
 } from '@/api/generated.schemas'
-import { dateTimeIn } from '@/dates'
 import { anyMasterOffered } from './anyMasterOffered'
 import { ANY_MASTER } from './bookingSearch'
 import styles from './BookingPage.module.scss'
-import type { SavedBooking } from './savedBooking'
+import { MyBookings } from './MyBookings'
 import { useStepHeading } from './useStepHeading'
 
 type Props = {
   business: PublicBookingControllerBusiness200
   slots: PublicBookingControllerSlots200Item[]
-  // The client's own coming booking at this business, if the browser kept one.
-  saved: SavedBooking | null
+  slug: string
   timeZone: string
   onPick: (staff: string) => void
 }
@@ -28,11 +26,11 @@ type Props = {
 export function MastersStep({
   business,
   slots,
-  saved,
+  slug,
   timeZone,
   onPick,
 }: Props) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const heading = useStepHeading()
   const free = slots.filter((slot) => !slot.full)
   const anyFree = anyMasterOffered(business.masters, slots)
@@ -42,13 +40,7 @@ export function MastersStep({
       <Typography variant="t2" component="h2" tabIndex={-1} ref={heading}>
         {t('booking.chooseMaster')}
       </Typography>
-      {saved && (
-        <a className={styles.saved} href={saved.manageLink}>
-          {t('booking.yourBooking', {
-            when: dateTimeIn(new Date(saved.startsAt), timeZone, i18n.language),
-          })}
-        </a>
-      )}
+      <MyBookings slug={slug} timeZone={timeZone} />
       <div className={styles.masters}>
         {anyFree && (
           <Button

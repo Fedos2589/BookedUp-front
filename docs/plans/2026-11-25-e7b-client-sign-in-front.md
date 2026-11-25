@@ -131,7 +131,7 @@ Commit `feat(book): confirm the phone in Telegram`.
 session: the phone is shown, booking in one tap; 401 → confirmation shown; the done screen shows the phone.
 Commit `feat(book): book with the phone confirmed in Telegram`.
 
-### - [ ] T4: no online booking without Telegram
+### - [x] T4: no online booking without Telegram
 
 **Files:** `src/pages/book/{BookingPage.tsx,MastersStep.tsx}`, `src/pages/book/booking.test.tsx`,
 `src/locales/{en,ru}.json`.
@@ -141,7 +141,7 @@ links to later steps land on step 1.
 
 **Check:** test — false → the text, no master buttons; true → as before. Commit `feat(book): say when online booking is off`.
 
-### - [ ] T5: my bookings on step 1, no saved booking
+### - [x] T5: my bookings on step 1, no saved booking
 
 **Files:** create `src/pages/book/MyBookings.tsx`; `src/pages/book/{MastersStep.tsx,BookingPage.tsx,CancelBooking.tsx,MoveBooking.tsx}`;
 delete `src/pages/book/savedBooking.ts` (+ `savedBooking.test.ts`); `src/pages/book/{booking.test.tsx,manage.test.tsx}`;

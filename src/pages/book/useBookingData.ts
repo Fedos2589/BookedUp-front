@@ -10,7 +10,8 @@ import { DAYS_AHEAD } from './slotsForPicker'
 
 // The business and the free times of all its masters for the next two weeks;
 // steps 1 and 2 share the one slots request. "Today" is on the business's
-// clock; the slots wait for the business to say what it is.
+// clock; the slots wait for the business to say what it is, and are not asked at all
+// when nobody can book (no Telegram).
 export function useBookingData(slug: string) {
   const business = usePublicBookingControllerBusiness(slug)
   const now = useNow()
@@ -22,7 +23,7 @@ export function useBookingData(slug: string) {
     { from: today, to: addDays(today, DAYS_AHEAD - 1) },
     {
       query: {
-        enabled: Boolean(business.data),
+        enabled: Boolean(business.data?.clientSignIn),
         // The window moves at midnight: the old times stay until the new come.
         placeholderData: keepPreviousData,
       },

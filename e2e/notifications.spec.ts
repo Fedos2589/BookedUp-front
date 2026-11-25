@@ -45,6 +45,7 @@ async function openBusiness(page: Page) {
           email: true,
         },
         pushKey: null,
+        clientSignIn: true,
         masters: [{ id: ANNA, name: 'Anna', scheduleMode: 'HOURS' }],
       }),
     ),
@@ -216,6 +217,7 @@ test('an owner sets the reminder times and turns their email off', async ({
       json({
         available: { telegram: false, push: false, email: true },
         pushKey: null,
+        clientSignIn: true,
         email,
         telegram: false,
         push: [],

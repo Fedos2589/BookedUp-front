@@ -1,4 +1,5 @@
 import { getRouteApi, useRouter } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
@@ -8,9 +9,9 @@ import type {
   PublicBookingControllerBusiness200,
   PublicBookingControllerSlots200Item,
 } from '@/api/generated.schemas'
+import { getPublicBookingControllerMyBookingsQueryKey } from '@/api/public-booking/public-booking'
 import { ApiError } from '@/apiFetch'
 import { PagePending } from '@/pages/PagePending'
-import { useNow } from '@/useNow'
 import { anyMasterOffered } from './anyMasterOffered'
 import { ANY_MASTER } from './bookingSearch'
 import styles from './BookingPage.module.scss'
@@ -19,7 +20,7 @@ import { LoadFailed } from './LoadFailed'
 import { ContactsStep } from './ContactsStep'
 import { MastersStep } from './MastersStep'
 import { NoSuchPage } from './NoSuchPage'
-import { savedBookingOf, saveBooking } from './savedBooking'
+import { OnlineBookingOff } from './OnlineBookingOff'
 import { type PickerSlot, pickedSlot } from './slotsForPicker'
 import { TimeStep } from './TimeStep'
 import { useBookingData } from './useBookingData'
@@ -45,6 +46,7 @@ export function BookingPage() {
   const { businessSlug } = route.useParams()
   const navigate = route.useNavigate()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const search = route.useSearch()
   const { i18n } = useTranslation()
   const { business, slots, today } = useBookingData(businessSlug)
@@ -55,11 +57,21 @@ export function BookingPage() {
   // a refetch of the times (the booking itself takes its seat) must not take
   // the form away from under them.
   const [chosen, setChosen] = useState<PickerSlot>()
-  const now = useNow()
   useBusinessManifest(business.data?.slug, business.data?.name)
 
   if (business.error instanceof ApiError && business.error.status === 404) {
     return <NoSuchPage />
+  }
+  // No Telegram: nobody can book, so the times are not even asked for.
+  if (business.data && !business.data.clientSignIn) {
+    return (
+      <main className={styles.page}>
+        <Typography variant="h3" component="h1">
+          {business.data.name}
+        </Typography>
+        <OnlineBookingOff />
+      </main>
+    )
   }
   // A failed refetch keeps what is already on screen (the old data stays).
   if ((business.isError && !business.data) || (slots.isError && !slots.data)) {
@@ -116,12 +128,12 @@ export function BookingPage() {
               void navigate({ search: { staff: search.staff }, replace: true })
           }}
           onBooked={(result) => {
-            saveBooking(businessSlug, {
-              manageLink: result.manageLink,
-              startsAt: result.booking.startsAt,
-            })
             setBooked(result)
             void slots.refetch()
+            void queryClient.invalidateQueries({
+              queryKey:
+                getPublicBookingControllerMyBookingsQueryKey(businessSlug),
+            })
             void navigate({
               search: { staff: search.staff, done: true },
               replace: true,
@@ -155,7 +167,7 @@ export function BookingPage() {
         />
       ) : (
         <MastersStep
-          saved={savedBookingOf(businessSlug, now)}
+          slug={businessSlug}
           timeZone={business.data.timeZone}
           business={business.data}
           slots={slots.data}

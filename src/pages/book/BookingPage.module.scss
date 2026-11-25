@@ -36,7 +36,16 @@
   gap: var(--spacing-12);
 }
 
-.saved {
+.myBooking {
   margin-top: var(--spacing-12);
   color: var(--color-blue-300);
+}
+
+.mine {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
 }

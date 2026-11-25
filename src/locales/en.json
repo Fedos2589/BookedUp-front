@@ -4,6 +4,8 @@
     "loadFailed": "Couldn't load your account"
   },
   "booking": {
+    "offTitle": "Online booking isn't available",
+    "offText": "Call the business to book.",
     "chooseMaster": "Choose a master",
     "anyMaster": "Any free master",
     "noFreeTime": "No free time in the next two weeks",
@@ -29,7 +31,7 @@
     "doneTitle": "You are booked",
     "linkLabel": "Your booking link",
     "saveLink": "Save this link: it is the only way to cancel or move your booking.",
-    "yourBooking": "Your booking on {{when}}",
+    "myBookings": "My bookings",
     "badLink": "This link doesn't work",
     "manageStatus": {
       "BOOKED": "Booked",

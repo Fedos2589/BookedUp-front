@@ -11,14 +11,13 @@ import {
 } from '@/api/public-booking/public-booking'
 import styles from './BookingPage.module.scss'
 import { changeFailureKey } from './bookRefusal'
-import { updateSavedBooking } from './savedBooking'
 
-type Props = { token: string; slug: string }
+type Props = { token: string }
 
 // «Cancel booking» behind a confirmation. Whatever the answer, the booking is
 // asked for again: a cancel refused because the time has passed must show the
 // booking as it is now (read-only). Any other failure is said under the button.
-export function CancelBooking({ token, slug }: Props) {
+export function CancelBooking({ token }: Props) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [asking, setAsking] = useState(false)
@@ -27,7 +26,6 @@ export function CancelBooking({ token, slug }: Props) {
   // client has left the page by the time the back answers.
   const cancel = usePublicBookingControllerCancel({
     mutation: {
-      onSuccess: () => updateSavedBooking(slug, token, null),
       onSettled: () =>
         queryClient.invalidateQueries({
           queryKey: getPublicBookingControllerManagedQueryKey(token),
