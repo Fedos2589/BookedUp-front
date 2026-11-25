@@ -12,6 +12,7 @@ import { dateTimeIn, timeIn } from '@/dates'
 import { CopyLink } from '@/forms/CopyLink'
 import styles from './BookingPage.module.scss'
 import { NotifyMe } from '@/pages/book/notify/NotifyMe'
+import { formatPhone } from './formatPhone'
 import { useStepHeading } from './useStepHeading'
 
 type Props = {
@@ -58,6 +59,9 @@ export function DoneStep({ booked, business }: Props) {
       </Typography>
       <Typography variant="t2" color="grey-500">
         {businessName}
+      </Typography>
+      <Typography variant="t2" color="grey-500">
+        {t('booking.bookedOn', { phone: formatPhone(booked.phone) })}
       </Typography>
       <CopyLink url={manageLink} label={t('booking.linkLabel')} />
       <Typography variant="t3" color="grey-500">

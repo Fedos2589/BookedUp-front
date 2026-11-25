@@ -9,7 +9,7 @@ import styles from './LanguageSelect.module.scss'
 import { useLocaleControllerChoose } from '@/api/account/account'
 import { type Account, meQueryKey } from '@/auth/session'
 import {
-  isLanguage,
+  currentLanguage,
   LANGUAGE_NAMES,
   LANGUAGES,
   type Language,
@@ -46,7 +46,7 @@ export function LanguageSelect() {
       },
     },
   })
-  const current = isLanguage(i18n.language) ? i18n.language : 'en'
+  const current = currentLanguage(i18n.language)
 
   // The interface answers at once; if the back refuses, it goes back, so the
   // screen never says a language the cookie does not hold.

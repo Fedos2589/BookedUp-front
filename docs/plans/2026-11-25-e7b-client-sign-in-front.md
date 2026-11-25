@@ -83,7 +83,7 @@ startsAt, endsAt, title, status, groupId, oneOffSessionId, canChange }[] }`; 401
 
 ---
 
-### - [ ] T1: the new client, and 401 on public routes
+### - [x] T1: the new client, and 401 on public routes
 
 **Files:** `src/api/**` (generated), `src/app/createApp.ts` (+ its test), whatever fails typecheck after
 generation (expect `src/pages/book/contactsForm.ts`: drop `phone` from `bookBody` for now, the form
@@ -96,7 +96,7 @@ public queries' 401 as expected another way and say which).
 **Check:** typecheck and tests green; a new test — signed-in cabinet cache, a public query answers 401 →
 no redirect, cache kept. Commit `chore(api): client sign-in routes`.
 
-### - [ ] T2: confirm the phone
+### - [x] T2: confirm the phone
 
 **Files:** create `src/pages/book/useClientSession.ts`, `src/pages/book/ConfirmPhone.tsx`,
 `src/pages/book/confirmPhone.test.tsx`; `src/locales/{en,ru}.json`.
@@ -112,7 +112,7 @@ signOut }` (`signOut` = `DELETE` then refetch). Loading only until the first ans
 `onConfirmed` and stops polling; hidden page → no requests; expired → «Try again» starts a new login.
 Commit `feat(book): confirm the phone in Telegram`.
 
-### - [ ] T3: the contacts step uses the confirmed phone
+### - [x] T3: the contacts step uses the confirmed phone
 
 **Files:** `src/pages/book/{ContactsStep.tsx,contactsForm.ts,DoneStep.tsx,bookRefusal.ts}` (+
 `bookRefusal.test.ts`), `src/pages/book/booking.test.tsx`, `src/locales/{en,ru}.json`.

@@ -15,7 +15,7 @@ import {
   usePublicBookingControllerWhatsappOn,
 } from '@/api/public-booking/public-booking'
 import { ApiError } from '@/apiFetch'
-import { isLanguage } from '@/language'
+import { currentLanguage } from '@/language'
 import { pushSupport } from '@/pwa/push'
 import { ChannelRow } from '@/notify/ChannelRow'
 import { EmailRow } from './EmailRow'
@@ -47,7 +47,7 @@ export function NotifyMe({
   const queryClient = useQueryClient()
   const [locked, setLocked] = useState(false)
   const [failed, setFailed] = useState(false)
-  const locale = isLanguage(i18n.language) ? i18n.language : 'en'
+  const locale = currentLanguage(i18n.language)
 
   // fetchQuery, not refetch/invalidate: those skip a query nobody watches or
   // one that is disabled, and the parent may keep it so until the first switch.

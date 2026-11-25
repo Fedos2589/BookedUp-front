@@ -66,6 +66,10 @@ async function openBusiness(page: Page) {
       }),
     ),
   )
+  // Signed in: the phone is the one confirmed in Telegram (the sign-in itself is T8).
+  await page.route('**/api/public/client-session', (route) =>
+    route.fulfill(json({ phone: '+4915112345678' })),
+  )
   await page.route('**/api/public/businesses/judo/slots?*', (route) =>
     route.fulfill(json([slot(ANNA, 9), slot(ANNA, 11), slot(BORIS, 9)])),
   )
@@ -84,6 +88,7 @@ async function openBusiness(page: Page) {
             groupId: null,
             oneOffSessionId: null,
           },
+          phone: '+4915112345678',
           manageLink: `http://localhost:5180/book/judo/manage/${TOKEN}`,
         },
         201,
@@ -156,7 +161,6 @@ test('book with «any master», then move and cancel by the private link', async
   await (await times(page)).first().click()
   await page.getByRole('button', { name: 'Continue' }).click()
   await page.getByLabel('Name').fill('Ira')
-  await page.getByLabel('Phone').fill('+4915112345678')
   await page.getByRole('button', { name: 'Book' }).click()
   await expect(
     page.getByRole('heading', { name: 'You are booked' }),

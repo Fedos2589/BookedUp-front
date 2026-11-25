@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-import { deferredAnswer, fakeApi } from '@/test/fakeApi'
+import { deferredAnswer, fakeApi as stubApi } from '@/test/fakeApi'
 import { renderApp } from '@/test/renderApp'
 
 beforeEach(() => {
@@ -23,6 +23,13 @@ const HOURS_BORIS = '22222222-2222-4222-8222-222222222222'
 const GROUPS_CARA = '33333333-3333-4333-8333-333333333333'
 
 const BUSINESS = 'GET /api/public/businesses/judo'
+const SESSION = 'GET /api/public/client-session'
+const PHONE = '+66812345678'
+const PHONE_SHOWN = '+66 81 234 5678'
+
+// The client is signed in unless a test says otherwise.
+const fakeApi = (routes: Parameters<typeof stubApi>[0]) =>
+  stubApi({ [SESSION]: [200, { phone: PHONE }], ...routes })
 const SLOTS =
   'GET /api/public/businesses/judo/slots?from=2026-11-23&to=2026-12-06'
 
@@ -269,6 +276,7 @@ const booked = (staffId: string) =>
         groupId: null,
         oneOffSessionId: null,
       },
+      phone: PHONE,
       manageLink: 'https://x.test/manage/abc',
     },
   ] as [number, unknown]
@@ -292,7 +300,7 @@ const toContacts = async (staff: string) => {
   return rendered
 }
 
-test('step 3: name and phone book the chosen master and time', async () => {
+test('step 3: the name books the chosen master and time on the confirmed phone', async () => {
   const api = fakeApi({
     [BUSINESS]: [200, business],
     [SLOTS]: [200, [slot(HOURS_ANNA)]],
@@ -304,9 +312,9 @@ test('step 3: name and phone book the chosen master and time', async () => {
   expect(document.activeElement).toBe(heading)
   expect(screen.getByText(/10:00–11:00/)).toBeTruthy()
   expect(screen.getByText(/Anna/)).toBeTruthy()
+  expect(await screen.findByText(PHONE_SHOWN)).toBeTruthy()
 
   typeInto('Name', 'Ira')
-  typeInto('Phone', '+66 81 234 5678')
   fireEvent.click(screen.getByRole('button', { name: 'Book' }))
 
   await waitFor(() =>
@@ -315,7 +323,6 @@ test('step 3: name and phone book the chosen master and time', async () => {
       startsAt: '2026-11-24T09:00:00.000Z',
       endsAt: '2026-11-24T10:00:00.000Z',
       name: 'Ira',
-      phone: '+66812345678',
     }),
   )
 })
@@ -330,7 +337,6 @@ test('booking an "any master" time sends no master; a note goes along', async ()
 
   await screen.findByRole('heading', { name: 'Your details' })
   typeInto('Name', 'Ira')
-  typeInto('Phone', '+66 81 234 5678')
   typeInto('Note (optional)', 'First time')
   fireEvent.click(screen.getByRole('button', { name: 'Book' }))
 
@@ -339,13 +345,12 @@ test('booking an "any master" time sends no master; a note goes along', async ()
       startsAt: '2026-11-24T09:00:00.000Z',
       endsAt: '2026-11-24T10:00:00.000Z',
       name: 'Ira',
-      phone: '+66812345678',
       note: 'First time',
     }),
   )
 })
 
-test('step 3 refuses an empty name and a bad phone without asking the back', async () => {
+test('step 3 refuses an empty name without asking the back', async () => {
   const api = fakeApi({
     [BUSINESS]: [200, business],
     [SLOTS]: [200, [slot(HOURS_ANNA)]],
@@ -353,11 +358,9 @@ test('step 3 refuses an empty name and a bad phone without asking the back', asy
   await toContacts(HOURS_ANNA)
 
   await screen.findByRole('heading', { name: 'Your details' })
-  typeInto('Phone', '12')
-  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Book' }))
 
   expect(await screen.findByText('Required')).toBeTruthy()
-  expect(screen.getByText('Enter a valid phone number')).toBeTruthy()
   expect(api.calls.some((c) => c.route === BOOK)).toBe(false)
 })
 
@@ -375,8 +378,7 @@ test('the contacts step without a chosen time is step 2', async () => {
 const fillAndBook = async () => {
   await screen.findByRole('heading', { name: 'Your details' })
   typeInto('Name', 'Ira')
-  typeInto('Phone', '+66 81 234 5678')
-  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Book' }))
 }
 
 test.each(['notFree', 'full'])(
@@ -444,7 +446,7 @@ test('a 400 naming a field marks that field', async () => {
       {
         statusCode: 400,
         error: 'Bad Request',
-        message: ['phone: Not a phone number'],
+        message: ['name: must be shorter than or equal to 100 characters'],
       },
     ],
   })
@@ -632,21 +634,6 @@ test('the "just taken" note does not follow the client to another master', async
   expect(screen.queryByText(/That time was just taken/)).toBeNull()
 })
 
-test('a bad phone puts focus on the phone field', async () => {
-  fakeApi({
-    [BUSINESS]: [200, business],
-    [SLOTS]: [200, [slot(HOURS_ANNA)]],
-  })
-  await toContacts(HOURS_ANNA)
-  await screen.findByRole('heading', { name: 'Your details' })
-  typeInto('Name', 'Ira')
-  typeInto('Phone', '12')
-  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
-
-  await screen.findByText('Enter a valid phone number')
-  expect(document.activeElement).toBe(screen.getByLabelText('Phone'))
-})
-
 test('a field the back refused is focused, and clears when the client edits it', async () => {
   fakeApi({
     [BUSINESS]: [200, business],
@@ -656,7 +643,7 @@ test('a field the back refused is focused, and clears when the client edits it',
       {
         statusCode: 400,
         error: 'Bad Request',
-        message: ['phone: Not a phone number'],
+        message: ['name: must be shorter than or equal to 100 characters'],
       },
     ],
   })
@@ -664,8 +651,8 @@ test('a field the back refused is focused, and clears when the client edits it',
   await fillAndBook()
 
   expect(await screen.findByText('Check this field')).toBeTruthy()
-  expect(document.activeElement).toBe(screen.getByLabelText('Phone'))
-  typeInto('Phone', '+66 81 234 5679')
+  expect(document.activeElement).toBe(screen.getByLabelText('Name'))
+  typeInto('Name', 'Irina')
   await waitFor(() => expect(screen.queryByText('Check this field')).toBeNull())
 })
 
@@ -697,7 +684,7 @@ test('step 4: turning on WhatsApp for the new booking switches the row to «On»
     [BOOK]: booked(HOURS_ANNA),
     'PUT /api/public/bookings/abc/whatsapp': () => {
       on = true
-      return [204]
+      return [204, undefined]
     },
     'GET /api/public/bookings/abc': () => [
       200,
@@ -721,4 +708,216 @@ test('step 4: turning on WhatsApp for the new booking switches the row to «On»
     api.calls.find((c) => c.route === 'PUT /api/public/bookings/abc/whatsapp')
       ?.body,
   ).toEqual({ locale: 'en' })
+})
+
+// The button is there while the session loads, but only works once it has.
+const confirmButton = async () => {
+  const button = await screen.findByRole('button', {
+    name: 'Confirm phone in Telegram',
+  })
+  await waitFor(() => expect(button.hasAttribute('disabled')).toBe(false))
+  return button
+}
+
+const LOGIN = 'POST /api/public/client-login'
+const LOGIN_STATUS = 'GET /api/public/client-login'
+const SIGN_OUT = 'DELETE /api/public/client-session'
+
+test('without a session the phone is confirmed in Telegram, then one tap books; the name stays', async () => {
+  const api: ReturnType<typeof fakeApi> = fakeApi({
+    [SESSION]: [200, { phone: null }],
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [LOGIN]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [LOGIN_STATUS]: (): [number, unknown] => {
+      api.set(SESSION, [200, { phone: PHONE }])
+      return [200, { status: 'confirmed' }]
+    },
+    [BOOK]: booked(HOURS_ANNA),
+  })
+  await toContacts(HOURS_ANNA)
+  await screen.findByRole('heading', { name: 'Your details' })
+  expect(screen.queryByRole('button', { name: 'Book' })).toBeNull()
+  typeInto('Name', 'Ira')
+
+  fireEvent.click(await confirmButton())
+  expect(await screen.findByText(PHONE_SHOWN)).toBeTruthy()
+  expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('Ira')
+
+  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+  await waitFor(() =>
+    expect(api.calls.find((c) => c.route === BOOK)?.body).toEqual({
+      staffId: HOURS_ANNA,
+      startsAt: '2026-11-24T09:00:00.000Z',
+      endsAt: '2026-11-24T10:00:00.000Z',
+      name: 'Ira',
+    }),
+  )
+})
+
+test('"Not your number?" signs the client out and asks to confirm again', async () => {
+  const api: ReturnType<typeof fakeApi> = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [SIGN_OUT]: (): [number, unknown] => {
+      api.set(SESSION, [200, { phone: null }])
+      return [204, undefined]
+    },
+  })
+  await toContacts(HOURS_ANNA)
+  await screen.findByText(PHONE_SHOWN)
+
+  fireEvent.click(screen.getByRole('button', { name: 'Not your number?' }))
+
+  expect(
+    await screen.findByRole('button', { name: 'Confirm phone in Telegram' }),
+  ).toBeTruthy()
+  expect(screen.queryByText(PHONE_SHOWN)).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Book' })).toBeNull()
+})
+
+test('a session that ran out meanwhile asks to confirm again instead of failing', async () => {
+  const api: ReturnType<typeof fakeApi> = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [LOGIN]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [LOGIN_STATUS]: [200, { status: 'pending' }],
+    [BOOK]: (): [number, unknown] => {
+      api.set(SESSION, [200, { phone: null }])
+      return [401, { statusCode: 401, code: 'clientSignIn' }]
+    },
+  })
+  await toContacts(HOURS_ANNA)
+  await screen.findByText(PHONE_SHOWN)
+  typeInto('Name', 'Ira')
+  fireEvent.click(screen.getByRole('button', { name: 'Book' }))
+
+  expect(await screen.findByText('Waiting for confirmation…')).toBeTruthy()
+  expect(screen.queryByText("Couldn't book. Try again.")).toBeNull()
+  expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('Ira')
+})
+
+test('the done screen says which phone was booked', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [BOOK]: booked(HOURS_ANNA),
+  })
+  await toContacts(HOURS_ANNA)
+  await fillAndBook()
+
+  expect(await screen.findByText(`Booked on ${PHONE_SHOWN}`)).toBeTruthy()
+})
+
+test('after "Not your number?" the next confirmation starts a fresh login, not the old answer', async () => {
+  const api: ReturnType<typeof fakeApi> = fakeApi({
+    [SESSION]: [200, { phone: null }],
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [LOGIN]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [LOGIN_STATUS]: (): [number, unknown] => {
+      api.set(SESSION, [200, { phone: PHONE }])
+      return [200, { status: 'confirmed' }]
+    },
+    [SIGN_OUT]: (): [number, unknown] => {
+      api.set(SESSION, [200, { phone: null }])
+      api.set(LOGIN_STATUS, [200, { status: 'pending' }])
+      return [204, undefined]
+    },
+  })
+  await toContacts(HOURS_ANNA)
+  fireEvent.click(await confirmButton())
+  await screen.findByText(PHONE_SHOWN)
+  fireEvent.click(screen.getByRole('button', { name: 'Not your number?' }))
+  fireEvent.click(await confirmButton())
+
+  expect(
+    await screen.findByRole('link', { name: 'Open Telegram' }),
+  ).toBeTruthy()
+  expect(screen.queryByText(PHONE_SHOWN)).toBeNull()
+  expect(api.calls.filter((c) => c.route === LOGIN).length).toBe(2)
+})
+
+test('the old number cannot be booked while "Not your number?" is on its way', async () => {
+  const later = deferredAnswer()
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [SIGN_OUT]: later.answer,
+  })
+  await toContacts(HOURS_ANNA)
+  await screen.findByText(PHONE_SHOWN)
+  typeInto('Name', 'Ira')
+  fireEvent.click(screen.getByRole('button', { name: 'Not your number?' }))
+
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === SIGN_OUT)).toBe(true),
+  )
+  expect(
+    screen.getByRole('button', { name: 'Book' }).hasAttribute('disabled'),
+  ).toBe(true)
+})
+
+test('a failed sign-out says so and keeps the phone', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [SIGN_OUT]: [500, { statusCode: 500 }],
+  })
+  await toContacts(HOURS_ANNA)
+  await screen.findByText(PHONE_SHOWN)
+  fireEvent.click(screen.getByRole('button', { name: 'Not your number?' }))
+
+  expect(await screen.findByText("Couldn't sign out. Try again.")).toBeTruthy()
+  expect(screen.getByText(PHONE_SHOWN)).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Book' })).toBeTruthy()
+})
+
+test('Enter in the name without a session opens the confirmation and books nothing', async () => {
+  const api = fakeApi({
+    [SESSION]: [200, { phone: null }],
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [LOGIN]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [LOGIN_STATUS]: [200, { status: 'pending' }],
+  })
+  await toContacts(HOURS_ANNA)
+  await screen.findByRole('button', { name: 'Confirm phone in Telegram' })
+  typeInto('Name', 'Ira')
+  fireEvent.submit(screen.getByLabelText('Name').closest('form')!)
+
+  expect(await screen.findByText('Waiting for confirmation…')).toBeTruthy()
+  expect(api.calls.some((c) => c.route === BOOK)).toBe(false)
+})
+
+test('focus follows the client from the button they pressed', async () => {
+  const api: ReturnType<typeof fakeApi> = fakeApi({
+    [SESSION]: [200, { phone: null }],
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [LOGIN]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [LOGIN_STATUS]: (): [number, unknown] => {
+      api.set(SESSION, [200, { phone: PHONE }])
+      return [200, { status: 'confirmed' }]
+    },
+    [SIGN_OUT]: (): [number, unknown] => {
+      api.set(SESSION, [200, { phone: null }])
+      return [204, undefined]
+    },
+  })
+  await toContacts(HOURS_ANNA)
+  fireEvent.click(await confirmButton())
+  await screen.findByText(PHONE_SHOWN)
+  await waitFor(() =>
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Book' }),
+    ),
+  )
+
+  fireEvent.click(screen.getByRole('button', { name: 'Not your number?' }))
+  await waitFor(() =>
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Confirm phone in Telegram' }),
+    ),
+  )
 })

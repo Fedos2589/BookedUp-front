@@ -44,7 +44,17 @@
     "changeTime": "Change time",
     "move": "Move",
     "changeFailed": "Couldn't save the change. Try again.",
-    "back": "Back"
+    "back": "Back",
+    "confirm": {
+      "channelOff": "Online booking isn't available — call the business",
+      "expired": "The link expired",
+      "failed": "Couldn't confirm the phone. Try again.",
+      "waiting": "Waiting for confirmation…"
+    },
+    "confirmPhone": "Confirm phone in Telegram",
+    "notYourNumber": "Not your number?",
+    "bookedOn": "Booked on {{phone}}",
+    "signOutFailed": "Couldn't sign out. Try again."
   },
   "notify": {
     "title": "Get a reminder",

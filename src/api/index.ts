@@ -2,6 +2,7 @@ export * from './account/account';
 export * from './appointments/appointments';
 export * from './auth/auth';
 export * from './businesses/businesses';
+export * from './client-session/client-session';
 export * from './clients/clients';
 export * from './health/health';
 export * from './invitations/invitations';
