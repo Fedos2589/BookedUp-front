@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -5,8 +6,11 @@ import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
 
 import {
+  getPublicBookingControllerManagedQueryKey,
   usePublicBookingControllerBusiness,
+  usePublicBookingControllerCancel,
   usePublicBookingControllerManaged,
+  usePublicBookingControllerMove,
 } from '@/api/public-booking/public-booking'
 import { ApiError } from '@/apiFetch'
 import { dateTimeIn, timeIn } from '@/dates'
@@ -26,6 +30,23 @@ export function ManagePage() {
   const { t, i18n } = useTranslation()
   const managed = usePublicBookingControllerManaged(token)
   const [moving, setMoving] = useState(false)
+  const queryClient = useQueryClient()
+  // Whatever the answer, the booking is asked for again: a change refused
+  // because the time has passed must show it as it is now (read-only). The
+  // callbacks sit on the hooks: they still run if the client has gone back.
+  const invalidate = () =>
+    queryClient.invalidateQueries({
+      queryKey: getPublicBookingControllerManagedQueryKey(token),
+    })
+  const cancel = usePublicBookingControllerCancel({
+    mutation: { onSettled: invalidate },
+  })
+  const move = usePublicBookingControllerMove({
+    mutation: {
+      onSuccess: () => setMoving(false),
+      onSettled: invalidate,
+    },
+  })
   // Which channels the business has on; asked once the booking names it.
   const channels = usePublicBookingControllerBusiness(
     managed.data?.business.slug ?? '',
@@ -71,10 +92,10 @@ export function ManagePage() {
       {managed.data.canChange &&
         (moving ? (
           <MoveBooking
-            token={token}
             slug={business.slug}
             booking={booking}
-            onMoved={() => setMoving(false)}
+            onMove={(data) => move.mutateAsync({ token, data })}
+            isPending={move.isPending}
             onBack={() => setMoving(false)}
           />
         ) : (
@@ -87,7 +108,10 @@ export function ManagePage() {
             >
               {t('booking.changeTime')}
             </Button>
-            <CancelBooking token={token} />
+            <CancelBooking
+              onCancel={() => cancel.mutateAsync({ token })}
+              isPending={cancel.isPending}
+            />
             {channels.data && (
               <NotifyMe
                 slug={business.slug}

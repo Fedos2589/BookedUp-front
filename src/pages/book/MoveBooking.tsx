@@ -1,15 +1,13 @@
-import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Spinner } from 'ted-ui/Spinner/Spinner'
 import { Typography } from 'ted-ui/Typography'
 
-import type { PublicBookingControllerManaged200Booking } from '@/api/generated.schemas'
-import {
-  getPublicBookingControllerManagedQueryKey,
-  usePublicBookingControllerMove,
-} from '@/api/public-booking/public-booking'
+import type {
+  PublicBookingControllerManaged200Booking,
+  PublicBookingControllerMoveBody,
+} from '@/api/generated.schemas'
 import styles from './BookingPage.module.scss'
 import { changeFailureKey, refusalOf } from './bookRefusal'
 import { movableSlots } from './movableSlots'
@@ -18,44 +16,30 @@ import { TimeStep } from './TimeStep'
 import { useBookingData } from './useBookingData'
 
 type Props = {
-  token: string
   slug: string
   booking: PublicBookingControllerManaged200Booking
-  onMoved: () => void
+  // Moves the booking; rejects with the refusal. The parent owns the mutation
+  // (and what is refetched after it, and leaving this screen on success).
+  onMove: (data: PublicBookingControllerMoveBody) => Promise<unknown>
+  isPending: boolean
   onBack: () => void
 }
 
 // «Change time»: the times of the booking's own master and kind (a move never
-// goes to «any» or from hours to a group), then PATCH. A time taken meanwhile is said so and the times are
-// refetched; any other refusal is said too, and the booking is asked for again
-// (if it has started it now shows read-only). Inside the page's own <main>.
-export function MoveBooking({ token, slug, booking, onMoved, onBack }: Props) {
+// goes to «any» or from hours to a group), then onMove. A time taken meanwhile is said so and the times are
+// refetched; any other refusal is said too. Inside the page's own <main>.
+export function MoveBooking({
+  slug,
+  booking,
+  onMove,
+  isPending,
+  onBack,
+}: Props) {
   const { t } = useTranslation()
-  const queryClient = useQueryClient()
   const { business, slots, today } = useBookingData(slug)
   const [choice, setChoice] = useState<{ day?: string; slot?: string }>({})
   const [taken, setTaken] = useState(false)
-  // The page's callbacks sit on the hook, not on mutate(): they still run if
-  // the client has gone back by the time the back answers.
-  const move = usePublicBookingControllerMove({
-    mutation: {
-      onSuccess: () => {
-        onMoved()
-        void invalidateBooking()
-      },
-      onError: (error) => {
-        if (refusalOf(error).kind === 'taken') {
-          setTaken(true)
-          void slots.refetch()
-        } else void invalidateBooking()
-      },
-    },
-  })
-
-  const invalidateBooking = () =>
-    queryClient.invalidateQueries({
-      queryKey: getPublicBookingControllerManagedQueryKey(token),
-    })
+  const [error, setError] = useState<unknown>()
 
   const back = (
     <Button
@@ -103,9 +87,9 @@ export function MoveBooking({ token, slug, booking, onMoved, onBack }: Props) {
         slot={choice.slot}
         taken={taken}
         actionLabel={t('booking.move')}
-        actionLoading={move.isPending}
+        actionLoading={isPending}
         failure={
-          move.isError && !taken ? t(changeFailureKey(move.error)) : undefined
+          error !== undefined && !taken ? t(changeFailureKey(error)) : undefined
         }
         onChange={(next) => {
           setTaken(false)
@@ -116,15 +100,18 @@ export function MoveBooking({ token, slug, booking, onMoved, onBack }: Props) {
           const { startsAt, endsAt, groupId, oneOffSessionId } = slotOfKey(
             choice.slot,
           )
-          move.mutate({
-            token,
-            data: {
-              staffId: booking.staffId,
-              startsAt,
-              endsAt,
-              groupId,
-              oneOffSessionId,
-            },
+          setError(undefined)
+          onMove({
+            staffId: booking.staffId,
+            startsAt,
+            endsAt,
+            groupId,
+            oneOffSessionId,
+          }).catch((failure: unknown) => {
+            if (refusalOf(failure).kind === 'taken') {
+              setTaken(true)
+              void slots.refetch()
+            } else setError(failure)
           })
         }}
       />
