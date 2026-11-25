@@ -136,7 +136,7 @@ links to later steps land on step 1.
 
 **Check:** test — false → the text, no master buttons; true → as before. Commit `feat(book): say when online booking is off`.
 
-### - [ ] T5: my bookings on step 1, no saved booking
+### - [x] T5: my bookings on step 1, no saved booking
 
 **Files:** create `src/pages/book/MyBookings.tsx`; `src/pages/book/{MastersStep.tsx,BookingPage.tsx,CancelBooking.tsx,MoveBooking.tsx}`;
 delete `src/pages/book/savedBooking.ts` (+ `savedBooking.test.ts`); `src/pages/book/{booking.test.tsx,manage.test.tsx}`;

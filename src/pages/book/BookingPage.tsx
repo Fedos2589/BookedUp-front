@@ -10,7 +10,6 @@ import type {
 } from '@/api/generated.schemas'
 import { ApiError } from '@/apiFetch'
 import { PagePending } from '@/pages/PagePending'
-import { useNow } from '@/useNow'
 import { anyMasterOffered } from './anyMasterOffered'
 import { ANY_MASTER } from './bookingSearch'
 import styles from './BookingPage.module.scss'
@@ -20,7 +19,6 @@ import { ContactsStep } from './ContactsStep'
 import { MastersStep } from './MastersStep'
 import { NoSuchPage } from './NoSuchPage'
 import { OnlineBookingOff } from './OnlineBookingOff'
-import { savedBookingOf, saveBooking } from './savedBooking'
 import { type PickerSlot, pickedSlot } from './slotsForPicker'
 import { TimeStep } from './TimeStep'
 import { useBookingData } from './useBookingData'
@@ -56,7 +54,6 @@ export function BookingPage() {
   // a refetch of the times (the booking itself takes its seat) must not take
   // the form away from under them.
   const [chosen, setChosen] = useState<PickerSlot>()
-  const now = useNow()
   useBusinessManifest(business.data?.slug, business.data?.name)
 
   if (business.error instanceof ApiError && business.error.status === 404) {
@@ -119,10 +116,6 @@ export function BookingPage() {
               void navigate({ search: { staff: search.staff }, replace: true })
           }}
           onBooked={(result) => {
-            saveBooking(businessSlug, {
-              manageLink: result.manageLink,
-              startsAt: result.booking.startsAt,
-            })
             setBooked(result)
             void slots.refetch()
             void navigate({
@@ -158,7 +151,7 @@ export function BookingPage() {
         />
       ) : (
         <MastersStep
-          saved={savedBookingOf(businessSlug, now)}
+          slug={businessSlug}
           timeZone={business.data.timeZone}
           business={business.data}
           slots={slots.data}

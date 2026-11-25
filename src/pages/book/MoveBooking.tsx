@@ -13,7 +13,6 @@ import {
 import styles from './BookingPage.module.scss'
 import { changeFailureKey, refusalOf } from './bookRefusal'
 import { movableSlots } from './movableSlots'
-import { updateSavedBooking } from './savedBooking'
 import { slotOfKey } from './slotsForPicker'
 import { TimeStep } from './TimeStep'
 import { useBookingData } from './useBookingData'
@@ -40,8 +39,7 @@ export function MoveBooking({ token, slug, booking, onMoved, onBack }: Props) {
   // the client has gone back by the time the back answers.
   const move = usePublicBookingControllerMove({
     mutation: {
-      onSuccess: (moved) => {
-        updateSavedBooking(slug, token, moved.booking.startsAt)
+      onSuccess: () => {
         onMoved()
         void invalidateBooking()
       },

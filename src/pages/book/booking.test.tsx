@@ -13,7 +13,6 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
-  localStorage.clear()
   vi.useRealTimers()
   vi.unstubAllGlobals()
 })
@@ -505,46 +504,64 @@ test('step 4: the booking, who, where, and the private link to copy', async () =
   await waitFor(() =>
     expect(writeText).toHaveBeenCalledWith('https://x.test/manage/abc'),
   )
-  expect(JSON.parse(localStorage.getItem('booking:judo') ?? '{}')).toEqual({
-    manageLink: 'https://x.test/manage/abc',
-    startsAt: '2026-11-24T09:00:00.000Z',
-  })
 })
 
-test('a coming booking saved in the browser is offered on step 1', async () => {
-  localStorage.setItem(
-    'booking:judo',
-    JSON.stringify({
-      manageLink: 'https://x.test/manage/abc',
-      startsAt: '2026-11-24T09:00:00.000Z',
-    }),
-  )
+const MINE = 'GET /api/public/businesses/judo/my-bookings'
+
+const mine = (id: string, over = {}) => ({
+  id,
+  clientName: 'Ira',
+  staffId: HOURS_ANNA,
+  staffName: 'Anna',
+  startsAt: '2026-11-24T09:00:00.000Z',
+  endsAt: '2026-11-24T10:00:00.000Z',
+  title: null,
+  status: 'BOOKED',
+  groupId: null,
+  oneOffSessionId: null,
+  canChange: true,
+  ...over,
+})
+
+test('a signed-in client sees their bookings on step 1, each a link', async () => {
   fakeApi({
     [BUSINESS]: [200, business],
     [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [MINE]: [
+      200,
+      {
+        bookings: [
+          mine('b1'),
+          mine('b2', {
+            startsAt: '2026-11-25T09:00:00.000Z',
+            clientName: 'Kid',
+          }),
+        ],
+      },
+    ],
   })
   renderApp('/book/judo')
 
-  const link = await screen.findByRole('link', { name: /Your booking on/ })
-  expect(link.getAttribute('href')).toBe('https://x.test/manage/abc')
+  const links = await screen.findAllByRole('link', { name: /Anna/ })
+  expect(links.map((l) => l.getAttribute('href'))).toEqual([
+    '/book/judo/my/b1',
+    '/book/judo/my/b2',
+  ])
+  // Two different names: each booking says whose it is.
+  expect(links[1].textContent).toContain('Kid')
 })
 
-test('a past saved booking is not offered', async () => {
-  localStorage.setItem(
-    'booking:judo',
-    JSON.stringify({
-      manageLink: 'https://x.test/manage/abc',
-      startsAt: '2026-11-20T09:00:00.000Z',
-    }),
-  )
-  fakeApi({
+test('with no session step 1 has no list and asks nothing about bookings', async () => {
+  const api = stubApi({
+    [SESSION]: [200, { phone: null }],
     [BUSINESS]: [200, business],
     [SLOTS]: [200, [slot(HOURS_ANNA)]],
   })
   renderApp('/book/judo')
 
   await screen.findByRole('button', { name: /Anna/ })
-  expect(screen.queryByRole('link', { name: /Your booking on/ })).toBeNull()
+  expect(screen.queryByText('My bookings')).toBeNull()
+  expect(api.calls.some((c) => c.route === MINE)).toBe(false)
 })
 
 // ---- review of #48 ----
@@ -574,7 +591,7 @@ test('the contacts form and what is typed survive a slots refetch that no longer
   expect(screen.queryByText('Choose a day and a time')).toBeNull()
 })
 
-test('a booking made while the slots refetch still shows the link and saves it', async () => {
+test('a booking made while the slots refetch still shows the link', async () => {
   const later = deferredAnswer()
   const api = fakeApi({
     [BUSINESS]: [200, business],
@@ -593,7 +610,6 @@ test('a booking made while the slots refetch still shows the link and saves it',
   expect(
     await screen.findByRole('heading', { name: 'You are booked' }),
   ).toBeTruthy()
-  expect(localStorage.getItem('booking:judo')).toContain('manage/abc')
 })
 
 test('Back from the done screen leaves it; the address no longer holds the time', async () => {

@@ -13,7 +13,6 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
-  localStorage.clear()
   vi.useRealTimers()
   vi.unstubAllGlobals()
 })
@@ -72,11 +71,7 @@ const openCancel = async () => {
   return screen.findByRole('button', { name: 'Yes, cancel' })
 }
 
-test('cancels after a confirmation and forgets the saved booking', async () => {
-  localStorage.setItem(
-    'booking:judo',
-    JSON.stringify({ manageLink: LINK, startsAt: '2026-11-24T09:00:00.000Z' }),
-  )
+test('cancels after a confirmation', async () => {
   const api = fakeApi({
     [MANAGED]: [200, managed()],
     [CANCEL]: [201, {}],
@@ -85,8 +80,9 @@ test('cancels after a confirmation and forgets the saved booking', async () => {
 
   fireEvent.click(await openCancel())
 
-  await waitFor(() => expect(localStorage.getItem('booking:judo')).toBeNull())
-  expect(api.calls.some((c) => c.route === CANCEL)).toBe(true)
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === CANCEL)).toBe(true),
+  )
 })
 
 test('shows the cancelled status without the cancel button afterwards', async () => {
@@ -304,49 +300,6 @@ test('times that fail to load keep one main and one heading (finding 5)', async 
   expect(await screen.findByRole('button', { name: 'Try again' })).toBeTruthy()
   expect(screen.getAllByRole('main')).toHaveLength(1)
   expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
-})
-
-const LINK = 'https://app.test/book/judo/manage/secret-token'
-
-test('moving updates the remembered booking (finding 7)', async () => {
-  localStorage.setItem(
-    'booking:judo',
-    JSON.stringify({ manageLink: LINK, startsAt: '2026-11-24T09:00:00.000Z' }),
-  )
-  fakeApi({
-    ...movable(),
-    [MOVE]: [
-      200,
-      managed({
-        startsAt: '2026-11-25T13:00:00.000Z',
-        endsAt: '2026-11-25T14:00:00.000Z',
-      }),
-    ],
-  })
-  renderApp('/book/judo/manage/secret-token')
-  fireEvent.click(await openMove())
-  fireEvent.click(await screen.findByRole('button', { name: 'Move' }))
-
-  await waitFor(() =>
-    expect(JSON.parse(localStorage.getItem('booking:judo') ?? '{}')).toEqual({
-      manageLink: LINK,
-      startsAt: '2026-11-25T13:00:00.000Z',
-    }),
-  )
-})
-
-test('cancelling another booking leaves the remembered one (finding 7)', async () => {
-  const saved = JSON.stringify({
-    manageLink: 'https://app.test/book/judo/manage/another-token',
-    startsAt: '2026-11-30T09:00:00.000Z',
-  })
-  localStorage.setItem('booking:judo', saved)
-  fakeApi({ [MANAGED]: [200, managed()], [CANCEL]: [201, {}] })
-  renderApp('/book/judo/manage/secret-token')
-  fireEvent.click(await openCancel())
-
-  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
-  expect(localStorage.getItem('booking:judo')).toBe(saved)
 })
 
 test('a booking that can change offers reminders in the business channels', async () => {
