@@ -146,7 +146,15 @@
     "name": "Name",
     "bookingPage": "Booking page",
     "timeZone": "Time zone",
-    "localTime": "It’s {{time}} there now"
+    "localTime": "It’s {{time}} there now",
+    "reminders": {
+      "title": "Reminders to clients",
+      "before_one": "{{count}} hour before",
+      "before_other": "{{count}} hours before",
+      "limit": "Up to {{max}}",
+      "none": "Clients get no reminders",
+      "saved": "Saved"
+    }
   },
   "cabinet": {
     "navigation": "Cabinet",

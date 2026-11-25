@@ -29,3 +29,10 @@
 .link {
   color: var(--color-blue-300);
 }
+
+.reminders {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-12);
+}

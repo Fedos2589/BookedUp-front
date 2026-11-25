@@ -165,7 +165,7 @@ no WhatsApp row; push on for this device vs another; sign-out sends the DELETE w
 first, and still signs out when it fails; email unchecked sends `{ email:
 false }`. Commit `feat(settings): my notifications`.
 
-### - [ ] F6: reminder times
+### - [x] F6: reminder times
 
 **Files:** create `src/pages/settings/ReminderTimes.tsx` (+ test), `src/pages/settings/SettingsPage.tsx`,
 locales.

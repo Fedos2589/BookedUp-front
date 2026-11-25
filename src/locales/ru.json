@@ -148,7 +148,17 @@
     "name": "Название",
     "bookingPage": "Страница записи",
     "timeZone": "Часовой пояс",
-    "localTime": "Там сейчас {{time}}"
+    "localTime": "Там сейчас {{time}}",
+    "reminders": {
+      "title": "Напоминания клиентам",
+      "before_one": "За {{count}} час",
+      "before_few": "За {{count}} часа",
+      "before_many": "За {{count}} часов",
+      "before_other": "За {{count}} часа",
+      "limit": "Не больше {{max}}",
+      "none": "Клиенты не получат напоминаний",
+      "saved": "Сохранено"
+    }
   },
   "cabinet": {
     "navigation": "Кабинет",
