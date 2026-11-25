@@ -155,7 +155,7 @@ shown. Remove every `savedBooking` use and the tests about it; the done screen s
 **Check:** tests — a session with two bookings → both listed with hrefs; no session → no list, no
 request to `my-bookings`; `grep -r localStorage src/pages/book` is empty. Commit `feat(book): my bookings`.
 
-### - [ ] T6a: cancel and move take their actions from outside
+### - [x] T6a: cancel and move take their actions from outside
 
 **Files:** `src/pages/book/{CancelBooking.tsx,MoveBooking.tsx,ManagePage.tsx}`, `src/pages/book/manage.test.tsx`.
 
