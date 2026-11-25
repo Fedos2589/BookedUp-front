@@ -50,7 +50,10 @@
       "expired": "The link expired",
       "failed": "Couldn't confirm the phone. Try again.",
       "waiting": "Waiting for confirmation…"
-    }
+    },
+    "confirmPhone": "Confirm phone in Telegram",
+    "notYourNumber": "Not your number?",
+    "bookedOn": "Booked on {{phone}}"
   },
   "notify": {
     "title": "Get a reminder",

@@ -59,6 +59,9 @@ export function DoneStep({ booked, business }: Props) {
       <Typography variant="t2" color="grey-500">
         {businessName}
       </Typography>
+      <Typography variant="t2" color="grey-500">
+        {t('booking.bookedOn', { phone: booked.phone })}
+      </Typography>
       <CopyLink url={manageLink} label={t('booking.linkLabel')} />
       <Typography variant="t3" color="grey-500">
         {t('booking.saveLink')}

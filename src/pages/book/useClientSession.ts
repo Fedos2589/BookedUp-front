@@ -23,6 +23,8 @@ export function useClientSession() {
   return {
     phone: current.data?.phone ?? null,
     isLoading: current.isPending && !current.isFetched,
+    // Resolves once the answer is in the cache.
+    refresh: () => current.refetch(),
     signOut: () => end.mutate(),
   }
 }

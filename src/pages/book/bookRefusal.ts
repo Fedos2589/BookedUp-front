@@ -1,16 +1,18 @@
 import { ApiError } from '@/apiFetch'
 
 // What the back's refusal of a booking means for the screen: the time is gone
-// (back to step 2), a text under the button (a locale key), or fields to mark.
+// (back to step 2), the sign-in is gone (confirm the phone again), a text under
+// the button (a locale key), or fields to mark.
 export type Refusal =
   | { kind: 'taken' }
+  | { kind: 'signIn' }
   | {
       kind: 'text'
       key: 'booking.tooMany' | 'booking.tooManyAttempts' | 'booking.failed'
     }
-  | { kind: 'fields'; fields: ('name' | 'phone' | 'note')[] }
+  | { kind: 'fields'; fields: ('name' | 'note')[] }
 
-const FIELDS = ['name', 'phone', 'note'] as const
+const FIELDS = ['name', 'note'] as const
 
 const bodyOf = (error: ApiError) =>
   (error.body ?? {}) as { code?: string; message?: unknown }
@@ -19,6 +21,7 @@ export function refusalOf(error: unknown): Refusal {
   if (!(error instanceof ApiError))
     return { kind: 'text', key: 'booking.failed' }
   const { code, message } = bodyOf(error)
+  if (error.status === 401 && code === 'clientSignIn') return { kind: 'signIn' }
   if (error.status === 409) {
     if (code === 'notFree' || code === 'full') return { kind: 'taken' }
     if (code === 'tooManyBookings')

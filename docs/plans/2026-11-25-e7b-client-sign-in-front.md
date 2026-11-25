@@ -108,7 +108,7 @@ signOut }` (`signOut` = `DELETE` then refetch). Loading only until the first ans
 `onConfirmed` and stops polling; hidden page → no requests; expired → «Try again» starts a new login.
 Commit `feat(book): confirm the phone in Telegram`.
 
-### - [ ] T3: the contacts step uses the confirmed phone
+### - [x] T3: the contacts step uses the confirmed phone
 
 **Files:** `src/pages/book/{ContactsStep.tsx,contactsForm.ts,DoneStep.tsx,bookRefusal.ts}` (+
 `bookRefusal.test.ts`), `src/pages/book/booking.test.tsx`, `src/locales/{en,ru}.json`.
