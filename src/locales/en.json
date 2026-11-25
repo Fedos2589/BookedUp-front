@@ -53,7 +53,8 @@
     },
     "confirmPhone": "Confirm phone in Telegram",
     "notYourNumber": "Not your number?",
-    "bookedOn": "Booked on {{phone}}"
+    "bookedOn": "Booked on {{phone}}",
+    "signOutFailed": "Couldn't sign out. Try again."
   },
   "notify": {
     "title": "Get a reminder",

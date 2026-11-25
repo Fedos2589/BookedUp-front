@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useEffect, useEffectEvent, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
@@ -10,7 +10,7 @@ import {
   useClientSessionControllerStatus,
 } from '@/api/client-session/client-session'
 import { ApiError } from '@/apiFetch'
-import { isLanguage } from '@/language'
+import { currentLanguage } from '@/language'
 import styles from './ConfirmPhone.module.scss'
 
 const POLL_MS = 2000
@@ -18,10 +18,15 @@ const POLL_MS = 2000
 // The client confirms their phone in the Telegram bot: a login is started, the
 // page gives a link to the bot and polls until the bot answers. `confirmed`
 // means the back has set the session cookie; the parent then asks for the phone.
-export function ConfirmPhone({ onConfirmed }: { onConfirmed: () => void }) {
+export function ConfirmPhone({
+  onConfirmed,
+}: {
+  // Asks the parent for the session; false: the bot said yes, the session isn't there.
+  onConfirmed: () => Promise<boolean>
+}) {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
-  const locale = isLanguage(i18n.language) ? i18n.language : 'en'
+  const locale = currentLanguage(i18n.language)
 
   // The messages' language is the one the login starts with. The old answer
   // (`expired`) must not be read as the new login's.
@@ -33,7 +38,11 @@ export function ConfirmPhone({ onConfirmed }: { onConfirmed: () => void }) {
         }),
     },
   })
-  const begin = () => start.mutate({ data: { locale } })
+  const [lost, setLost] = useState(false)
+  const begin = () => {
+    setLost(false)
+    start.mutate({ data: { locale } })
+  }
 
   const asked = useRef(false)
   const askOnce = useEffectEvent(() => {
@@ -43,24 +52,28 @@ export function ConfirmPhone({ onConfirmed }: { onConfirmed: () => void }) {
   })
   useEffect(() => askOnce(), [])
 
-  // Polls only while pending and the page is visible; coming back to a visible
-  // page asks once more (window focus).
+  // Polls while pending (TanStack pauses it in a hidden tab; coming back asks
+  // once more). Only this login's answer counts: an old one cached under the
+  // same key is not read before the new login has started.
   const status = useClientSessionControllerStatus({
     query: {
       enabled: start.isSuccess,
+      gcTime: 0,
       refetchInterval: (query) =>
-        query.state.data?.status === 'pending' &&
-        document.visibilityState === 'visible'
-          ? POLL_MS
-          : false,
+        query.state.data?.status === 'pending' ? POLL_MS : false,
     },
   })
+  const answer = start.isSuccess ? status.data?.status : undefined
 
-  const confirmed = status.data?.status === 'confirmed'
-  const confirm = useEffectEvent(onConfirmed)
+  const confirmed = answer === 'confirmed'
+  const confirm = useEffectEvent(() => onConfirmed().then((ok) => setLost(!ok)))
   useEffect(() => {
-    if (confirmed) confirm()
+    if (confirmed) void confirm()
   }, [confirmed])
+
+  // The link is where the client goes next: focus moves to it when it appears.
+  const link = useRef<HTMLAnchorElement>(null)
+  useEffect(() => link.current?.focus(), [start.data])
 
   if (start.isError) {
     const { status: code, body } =
@@ -71,18 +84,22 @@ export function ConfirmPhone({ onConfirmed }: { onConfirmed: () => void }) {
       return (
         <Typography role="alert">{t('booking.confirm.channelOff')}</Typography>
       )
-    if (code === 429)
-      return (
-        <Typography role="alert">{t('booking.tooManyAttempts')}</Typography>
-      )
   }
 
-  const expired = status.data?.status === 'expired'
-  if (start.isError || status.isError || expired) {
+  const expired = answer === 'expired'
+  if (start.isError || status.isError || expired || lost) {
+    const tooMany =
+      start.error instanceof ApiError && start.error.status === 429
     return (
       <div className={styles.block}>
         <Typography role="alert">
-          {t(expired ? 'booking.confirm.expired' : 'booking.confirm.failed')}
+          {t(
+            tooMany
+              ? 'booking.tooManyAttempts'
+              : expired
+                ? 'booking.confirm.expired'
+                : 'booking.confirm.failed',
+          )}
         </Typography>
         <Button variant="solid" colorScheme="black" onClick={begin}>
           {t('common.tryAgain')}
@@ -98,6 +115,7 @@ export function ConfirmPhone({ onConfirmed }: { onConfirmed: () => void }) {
       {start.data && (
         <Typography variant="t2">
           <a
+            ref={link}
             className={styles.link}
             href={start.data.url}
             target="_blank"

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { ActionBar } from 'ted-ui/ActionBar'
@@ -58,7 +58,22 @@ export function ContactsStep({
   // client is on their way to the bot; it also covers a session that ran out.
   const session = useClientSession()
   const [confirming, setConfirming] = useState(false)
-  const signedIn = session.phone !== null && !confirming
+  const phone = confirming ? null : session.phone
+  const signedIn = phone !== null
+
+  // A step change moves focus to what the client does next, not to <body>:
+  // «Confirm» → the bot link (ConfirmPhone), confirmed → «Book», «Not your
+  // number?» → «Confirm». Only after the client's own action, never on load.
+  const bookButton = useRef<HTMLButtonElement>(null)
+  const confirmButton = useRef<HTMLButtonElement>(null)
+  const refocus = useRef(false)
+  useEffect(() => {
+    if (!refocus.current || confirming) return
+    const next = signedIn ? bookButton.current : confirmButton.current
+    if (!next) return
+    refocus.current = false
+    next.focus()
+  }, [signedIn, confirming])
   // The page's callbacks sit on the hook, not on mutate(): they still run if
   // this step is gone by the time the back answers.
   const book = usePublicBookingControllerBook({
@@ -88,8 +103,13 @@ export function ContactsStep({
 
   const refusal = book.isError ? refusalOf(book.error) : undefined
 
+  // Enter in the name field submits the form with no «Book» button: without a
+  // confirmed phone that is the way to the confirmation, not a booking that
+  // would only be refused (and counted toward the limit).
   const submit = (values: ContactsForm) =>
-    book.mutate({ slug, data: bookBody(slot.id, values) })
+    signedIn
+      ? book.mutate({ slug, data: bookBody(slot.id, values) })
+      : setConfirming(true)
 
   // A failed submit puts focus on the first field to fix.
   const invalid = (fields: typeof errors) => {
@@ -97,9 +117,17 @@ export function ContactsStep({
     if (first) form.setFocus(first)
   }
 
-  const confirmed = () =>
-    void session.refresh().then(() => setConfirming(false))
+  // True when the session is there. Otherwise the confirmation says so and
+  // offers another try; the step stays on it.
+  const confirmed = async () => {
+    const { data } = await session.refresh()
+    if (!data?.phone) return false
+    refocus.current = true
+    setConfirming(false)
+    return true
+  }
   const notYours = () => {
+    refocus.current = true
     setConfirming(false)
     session.signOut()
   }
@@ -124,8 +152,12 @@ export function ContactsStep({
         errorText={fieldErrorText(t, errors.name)}
         {...form.register('name')}
       />
-      {signedIn && session.phone && (
-        <ContactsPhone phone={session.phone} onNotYours={notYours} />
+      {phone !== null && (
+        <ContactsPhone
+          phone={phone}
+          failed={session.signOutFailed}
+          onNotYours={notYours}
+        />
       )}
       <Textarea
         label={t('booking.note')}
@@ -142,11 +174,13 @@ export function ContactsStep({
       <ActionBar>
         {signedIn && (
           <Button
+            ref={bookButton}
             type="submit"
             fullWidth
             size="large"
             colorScheme="blue"
             loading={book.isPending}
+            disabled={session.signingOut}
           >
             {t('booking.book')}
           </Button>
@@ -154,6 +188,7 @@ export function ContactsStep({
         {!signedIn && confirming && <ConfirmPhone onConfirmed={confirmed} />}
         {!signedIn && !confirming && (
           <Button
+            ref={confirmButton}
             type="button"
             fullWidth
             size="large"

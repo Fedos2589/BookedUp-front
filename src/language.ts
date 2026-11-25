@@ -19,6 +19,10 @@ const COOKIE_NAME = 'lang'
 export const isLanguage = (value: string | null): value is Language =>
   LANGUAGES.some((language) => language === value)
 
+// The app's language as a `Language` (i18n may say a tag the app doesn't know).
+export const currentLanguage = (language: string): Language =>
+  isLanguage(language) ? language : 'en'
+
 function cookieLanguage(): Language | null {
   const prefix = `${COOKIE_NAME}=`
   const entry = document.cookie

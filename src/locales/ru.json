@@ -53,7 +53,8 @@
     },
     "confirmPhone": "Подтвердить телефон в Telegram",
     "notYourNumber": "Не ваш номер?",
-    "bookedOn": "Запись на номер {{phone}}"
+    "bookedOn": "Запись на номер {{phone}}",
+    "signOutFailed": "Не удалось сбросить номер. Попробуйте ещё раз."
   },
   "notify": {
     "title": "Напоминание о записи",

@@ -12,11 +12,12 @@ import {
 export function useClientSession() {
   const queryClient = useQueryClient()
   const current = useClientSessionControllerCurrent()
+  // The back's 204 is the whole answer: no phone any more, no second request.
   const end = useClientSessionControllerEnd({
     mutation: {
-      onSettled: () =>
-        queryClient.refetchQueries({
-          queryKey: getClientSessionControllerCurrentQueryKey(),
+      onSuccess: () =>
+        queryClient.setQueryData(getClientSessionControllerCurrentQueryKey(), {
+          phone: null,
         }),
     },
   })
@@ -26,5 +27,7 @@ export function useClientSession() {
     // Resolves once the answer is in the cache.
     refresh: () => current.refetch(),
     signOut: () => end.mutate(),
+    signingOut: end.isPending,
+    signOutFailed: end.isError,
   }
 }

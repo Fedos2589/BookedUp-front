@@ -17,7 +17,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-function show(onConfirmed = vi.fn()) {
+function show(onConfirmed = vi.fn(async () => true)) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   })
@@ -109,4 +109,54 @@ test('says so when Telegram is off or there were too many tries', async () => {
   fakeApi({ [START]: [429] })
   show()
   await screen.findByText('Too many attempts, try later')
+})
+
+test('a 429 on starting offers to try again', async () => {
+  const api = fakeApi({ [START]: [429] })
+  show()
+  await screen.findByText('Too many attempts, try later')
+
+  api.set(START, [201, { url: 'https://t.me/bot?start=abc' }])
+  api.set(STATUS, [200, { status: 'pending' }])
+  await act(async () =>
+    screen.getByRole('button', { name: 'Try again' }).click(),
+  )
+  expect(
+    await screen.findByRole('link', { name: 'Open Telegram' }),
+  ).toBeTruthy()
+})
+
+test('confirmed but no session behind it says so and offers a new try', async () => {
+  fakeApi({
+    [START]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [STATUS]: [200, { status: 'confirmed' }],
+  })
+  show(vi.fn(async () => false))
+
+  expect(
+    await screen.findByText("Couldn't confirm the phone. Try again."),
+  ).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Try again' })).toBeTruthy()
+})
+
+test('a login confirmed before is not this login’s answer', async () => {
+  fakeApi({
+    [START]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [STATUS]: [200, { status: 'pending' }],
+  })
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  queryClient.setQueryData(['/api/public/client-login'], {
+    status: 'confirmed',
+  })
+  const onConfirmed = vi.fn(async () => true)
+  render(
+    <QueryClientProvider client={queryClient}>
+      <ConfirmPhone onConfirmed={onConfirmed} />
+    </QueryClientProvider>,
+  )
+
+  await screen.findByRole('link', { name: 'Open Telegram' })
+  expect(onConfirmed).not.toHaveBeenCalled()
 })

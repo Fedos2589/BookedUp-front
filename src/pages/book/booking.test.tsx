@@ -25,6 +25,7 @@ const GROUPS_CARA = '33333333-3333-4333-8333-333333333333'
 const BUSINESS = 'GET /api/public/businesses/judo'
 const SESSION = 'GET /api/public/client-session'
 const PHONE = '+66812345678'
+const PHONE_SHOWN = '+66 81 234 5678'
 
 // The client is signed in unless a test says otherwise.
 const fakeApi = (routes: Parameters<typeof stubApi>[0]) =>
@@ -311,7 +312,7 @@ test('step 3: the name books the chosen master and time on the confirmed phone',
   expect(document.activeElement).toBe(heading)
   expect(screen.getByText(/10:00–11:00/)).toBeTruthy()
   expect(screen.getByText(/Anna/)).toBeTruthy()
-  expect(await screen.findByText(PHONE)).toBeTruthy()
+  expect(await screen.findByText(PHONE_SHOWN)).toBeTruthy()
 
   typeInto('Name', 'Ira')
   fireEvent.click(screen.getByRole('button', { name: 'Book' }))
@@ -709,6 +710,15 @@ test('step 4: turning on WhatsApp for the new booking switches the row to «On»
   ).toEqual({ locale: 'en' })
 })
 
+// The button is there while the session loads, but only works once it has.
+const confirmButton = async () => {
+  const button = await screen.findByRole('button', {
+    name: 'Confirm phone in Telegram',
+  })
+  await waitFor(() => expect(button.hasAttribute('disabled')).toBe(false))
+  return button
+}
+
 const LOGIN = 'POST /api/public/client-login'
 const LOGIN_STATUS = 'GET /api/public/client-login'
 const SIGN_OUT = 'DELETE /api/public/client-session'
@@ -730,10 +740,8 @@ test('without a session the phone is confirmed in Telegram, then one tap books; 
   expect(screen.queryByRole('button', { name: 'Book' })).toBeNull()
   typeInto('Name', 'Ira')
 
-  fireEvent.click(
-    await screen.findByRole('button', { name: 'Confirm phone in Telegram' }),
-  )
-  expect(await screen.findByText(PHONE)).toBeTruthy()
+  fireEvent.click(await confirmButton())
+  expect(await screen.findByText(PHONE_SHOWN)).toBeTruthy()
   expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('Ira')
 
   fireEvent.click(screen.getByRole('button', { name: 'Book' }))
@@ -757,14 +765,14 @@ test('"Not your number?" signs the client out and asks to confirm again', async 
     },
   })
   await toContacts(HOURS_ANNA)
-  await screen.findByText(PHONE)
+  await screen.findByText(PHONE_SHOWN)
 
   fireEvent.click(screen.getByRole('button', { name: 'Not your number?' }))
 
   expect(
     await screen.findByRole('button', { name: 'Confirm phone in Telegram' }),
   ).toBeTruthy()
-  expect(screen.queryByText(PHONE)).toBeNull()
+  expect(screen.queryByText(PHONE_SHOWN)).toBeNull()
   expect(screen.queryByRole('button', { name: 'Book' })).toBeNull()
 })
 
@@ -780,7 +788,7 @@ test('a session that ran out meanwhile asks to confirm again instead of failing'
     },
   })
   await toContacts(HOURS_ANNA)
-  await screen.findByText(PHONE)
+  await screen.findByText(PHONE_SHOWN)
   typeInto('Name', 'Ira')
   fireEvent.click(screen.getByRole('button', { name: 'Book' }))
 
@@ -798,5 +806,118 @@ test('the done screen says which phone was booked', async () => {
   await toContacts(HOURS_ANNA)
   await fillAndBook()
 
-  expect(await screen.findByText(`Booked on ${PHONE}`)).toBeTruthy()
+  expect(await screen.findByText(`Booked on ${PHONE_SHOWN}`)).toBeTruthy()
+})
+
+test('after "Not your number?" the next confirmation starts a fresh login, not the old answer', async () => {
+  const api: ReturnType<typeof fakeApi> = fakeApi({
+    [SESSION]: [200, { phone: null }],
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [LOGIN]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [LOGIN_STATUS]: (): [number, unknown] => {
+      api.set(SESSION, [200, { phone: PHONE }])
+      return [200, { status: 'confirmed' }]
+    },
+    [SIGN_OUT]: (): [number, unknown] => {
+      api.set(SESSION, [200, { phone: null }])
+      api.set(LOGIN_STATUS, [200, { status: 'pending' }])
+      return [204, undefined]
+    },
+  })
+  await toContacts(HOURS_ANNA)
+  fireEvent.click(await confirmButton())
+  await screen.findByText(PHONE_SHOWN)
+  fireEvent.click(screen.getByRole('button', { name: 'Not your number?' }))
+  fireEvent.click(await confirmButton())
+
+  expect(
+    await screen.findByRole('link', { name: 'Open Telegram' }),
+  ).toBeTruthy()
+  expect(screen.queryByText(PHONE_SHOWN)).toBeNull()
+  expect(api.calls.filter((c) => c.route === LOGIN).length).toBe(2)
+})
+
+test('the old number cannot be booked while "Not your number?" is on its way', async () => {
+  const later = deferredAnswer()
+  const api = fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [SIGN_OUT]: later.answer,
+  })
+  await toContacts(HOURS_ANNA)
+  await screen.findByText(PHONE_SHOWN)
+  typeInto('Name', 'Ira')
+  fireEvent.click(screen.getByRole('button', { name: 'Not your number?' }))
+
+  await waitFor(() =>
+    expect(api.calls.some((c) => c.route === SIGN_OUT)).toBe(true),
+  )
+  expect(
+    screen.getByRole('button', { name: 'Book' }).hasAttribute('disabled'),
+  ).toBe(true)
+})
+
+test('a failed sign-out says so and keeps the phone', async () => {
+  fakeApi({
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [SIGN_OUT]: [500, { statusCode: 500 }],
+  })
+  await toContacts(HOURS_ANNA)
+  await screen.findByText(PHONE_SHOWN)
+  fireEvent.click(screen.getByRole('button', { name: 'Not your number?' }))
+
+  expect(await screen.findByText("Couldn't sign out. Try again.")).toBeTruthy()
+  expect(screen.getByText(PHONE_SHOWN)).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Book' })).toBeTruthy()
+})
+
+test('Enter in the name without a session opens the confirmation and books nothing', async () => {
+  const api = fakeApi({
+    [SESSION]: [200, { phone: null }],
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [LOGIN]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [LOGIN_STATUS]: [200, { status: 'pending' }],
+  })
+  await toContacts(HOURS_ANNA)
+  await screen.findByRole('button', { name: 'Confirm phone in Telegram' })
+  typeInto('Name', 'Ira')
+  fireEvent.submit(screen.getByLabelText('Name').closest('form')!)
+
+  expect(await screen.findByText('Waiting for confirmation…')).toBeTruthy()
+  expect(api.calls.some((c) => c.route === BOOK)).toBe(false)
+})
+
+test('focus follows the client from the button they pressed', async () => {
+  const api: ReturnType<typeof fakeApi> = fakeApi({
+    [SESSION]: [200, { phone: null }],
+    [BUSINESS]: [200, business],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [LOGIN]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [LOGIN_STATUS]: (): [number, unknown] => {
+      api.set(SESSION, [200, { phone: PHONE }])
+      return [200, { status: 'confirmed' }]
+    },
+    [SIGN_OUT]: (): [number, unknown] => {
+      api.set(SESSION, [200, { phone: null }])
+      return [204, undefined]
+    },
+  })
+  await toContacts(HOURS_ANNA)
+  fireEvent.click(await confirmButton())
+  await screen.findByText(PHONE_SHOWN)
+  await waitFor(() =>
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Book' }),
+    ),
+  )
+
+  fireEvent.click(screen.getByRole('button', { name: 'Not your number?' }))
+  await waitFor(() =>
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Confirm phone in Telegram' }),
+    ),
+  )
 })
