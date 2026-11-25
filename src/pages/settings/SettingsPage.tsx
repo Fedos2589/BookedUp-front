@@ -6,6 +6,7 @@ import { useCurrentBusiness } from '@/business/currentBusiness'
 import { roleCan } from '@/business/roles'
 import { timeIn } from '@/dates'
 import { useNow } from '@/useNow'
+import { ReminderTimes } from './ReminderTimes'
 import styles from './SettingsPage.module.scss'
 
 // What the business is set up with: read-only for now (E2 asks to see the time
@@ -65,6 +66,7 @@ export function SettingsPage() {
           </dd>
         </div>
       </dl>
+      <ReminderTimes />
     </main>
   )
 }
