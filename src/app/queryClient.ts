@@ -10,7 +10,12 @@ export const retryServerErrors =
 
 export function createQueryClient({
   onQueryError,
-}: { onQueryError?: (error: unknown) => void } = {}) {
+}: {
+  onQueryError?: (
+    error: unknown,
+    query: { queryKey: readonly unknown[] },
+  ) => void
+} = {}) {
   return new QueryClient({
     queryCache: new QueryCache({ onError: onQueryError }),
     defaultOptions: { queries: { retry: retryServerErrors(3) } },

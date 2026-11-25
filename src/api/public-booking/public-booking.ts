@@ -30,6 +30,7 @@ import type {
 import type {
   PublicBookingControllerBook201,
   PublicBookingControllerBook400,
+  PublicBookingControllerBook401,
   PublicBookingControllerBook409,
   PublicBookingControllerBookBody,
   PublicBookingControllerBusiness200,
@@ -37,6 +38,10 @@ import type {
   PublicBookingControllerCancel201,
   PublicBookingControllerCancel400,
   PublicBookingControllerCancel409,
+  PublicBookingControllerCancelMine201,
+  PublicBookingControllerCancelMine400,
+  PublicBookingControllerCancelMine401,
+  PublicBookingControllerCancelMine409,
   PublicBookingControllerEmailOff400,
   PublicBookingControllerEmailOn400,
   PublicBookingControllerEmailOn404,
@@ -50,6 +55,14 @@ import type {
   PublicBookingControllerMove400,
   PublicBookingControllerMove409,
   PublicBookingControllerMoveBody,
+  PublicBookingControllerMoveMine200,
+  PublicBookingControllerMoveMine400,
+  PublicBookingControllerMoveMine401,
+  PublicBookingControllerMoveMine409,
+  PublicBookingControllerMoveMineBody,
+  PublicBookingControllerMyBookings200,
+  PublicBookingControllerMyBookings400,
+  PublicBookingControllerMyBookings401,
   PublicBookingControllerPushOff400,
   PublicBookingControllerPushOffBody,
   PublicBookingControllerPushOn400,
@@ -64,6 +77,7 @@ import type {
   PublicBookingControllerTelegramLink404,
   PublicBookingControllerTelegramLink409,
   PublicBookingControllerTelegramLinkBody,
+  PublicBookingControllerTelegramOff400,
   PublicBookingControllerWhatsappOff400,
   PublicBookingControllerWhatsappOn400,
   PublicBookingControllerWhatsappOn404,
@@ -586,7 +600,7 @@ return apiFetch<PublicBookingControllerBook201>(getPublicBookingControllerBookUr
 
 export const getPublicBookingControllerBookMutationKey = () => ['publicBookingControllerBook'] as const;
 
-export const getPublicBookingControllerBookMutationOptions = <TError = ErrorType<PublicBookingControllerBook400 | void | PublicBookingControllerBook409>,
+export const getPublicBookingControllerBookMutationOptions = <TError = ErrorType<PublicBookingControllerBook400 | PublicBookingControllerBook401 | void | PublicBookingControllerBook409>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerBook>>, TError,PublicBookingControllerBookMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerBook>>, TError,PublicBookingControllerBookMutationVariables, TContext> => {
 
@@ -615,10 +629,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PublicBookingControllerBookMutationResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerBook>>>
     export type PublicBookingControllerBookMutationBody = PublicBookingControllerBookBody
-    export type PublicBookingControllerBookMutationError = ErrorType<PublicBookingControllerBook400 | void | PublicBookingControllerBook409>
+    export type PublicBookingControllerBookMutationError = ErrorType<PublicBookingControllerBook400 | PublicBookingControllerBook401 | void | PublicBookingControllerBook409>
     export type PublicBookingControllerBookMutationVariables = {slug: string;data: PublicBookingControllerBookBody}
 
-    export const usePublicBookingControllerBook = <TError = ErrorType<PublicBookingControllerBook400 | void | PublicBookingControllerBook409>,
+    export const usePublicBookingControllerBook = <TError = ErrorType<PublicBookingControllerBook400 | PublicBookingControllerBook401 | void | PublicBookingControllerBook409>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerBook>>, TError,PublicBookingControllerBookMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof publicBookingControllerBook>>,
@@ -627,6 +641,303 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getPublicBookingControllerBookMutationOptions(options), queryClient);
+    }
+    export const getPublicBookingControllerMyBookingsUrl = (slug: string,) => {
+
+
+
+
+  return `/api/public/businesses/${slug}/my-bookings`
+}
+
+export const publicBookingControllerMyBookings = async (slug: string, options?: Parameters<typeof apiFetch>[1]): Promise<PublicBookingControllerMyBookings200> => {
+
+  return apiFetch<PublicBookingControllerMyBookings200>(getPublicBookingControllerMyBookingsUrl(slug),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getPublicBookingControllerMyBookingsQueryKey = (slug: string,) => {
+    return [
+    `/api/public/businesses/${slug}/my-bookings`
+    ] as const;
+    }
+
+
+export const getPublicBookingControllerMyBookingsQueryOptions = <TData = Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>>(slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPublicBookingControllerMyBookingsQueryKey(slug);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>> = ({ signal }) => publicBookingControllerMyBookings(slug, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: slug !== null && slug !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PublicBookingControllerMyBookingsQueryResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>>
+export type PublicBookingControllerMyBookingsQueryError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>
+
+
+export function usePublicBookingControllerMyBookings<TData = Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>>(
+ slug: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof publicBookingControllerMyBookings>>,
+          TError,
+          Awaited<ReturnType<typeof publicBookingControllerMyBookings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePublicBookingControllerMyBookings<TData = Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof publicBookingControllerMyBookings>>,
+          TError,
+          Awaited<ReturnType<typeof publicBookingControllerMyBookings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePublicBookingControllerMyBookings<TData = Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePublicBookingControllerMyBookings<TData = Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPublicBookingControllerMyBookingsQueryOptions(slug,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getPublicBookingControllerMyBookingsSuspenseQueryOptions = <TData = Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>>(slug: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPublicBookingControllerMyBookingsQueryKey(slug);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>> = ({ signal }) => publicBookingControllerMyBookings(slug, { signal, ...requestOptions });
+
+
+
+
+
+   return  queryOptionsBuilder({ queryKey, ...queryOptions, queryFn: queryOptions?.queryFn ?? queryFn}) as UseSuspenseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> } & { throwOnError?: ((this: never, error: TError) => boolean) & { readonly __inferenceOnly: never } }
+}
+
+export type PublicBookingControllerMyBookingsSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>>
+export type PublicBookingControllerMyBookingsSuspenseQueryError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>
+
+
+export function usePublicBookingControllerMyBookingsSuspense<TData = Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>>(
+ slug: string, options: { query:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePublicBookingControllerMyBookingsSuspense<TData = Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>>(
+ slug: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePublicBookingControllerMyBookingsSuspense<TData = Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>>(
+ slug: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePublicBookingControllerMyBookingsSuspense<TData = Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError = ErrorType<PublicBookingControllerMyBookings400 | PublicBookingControllerMyBookings401 | void>>(
+ slug: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof publicBookingControllerMyBookings>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPublicBookingControllerMyBookingsSuspenseQueryOptions(slug,options)
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getPublicBookingControllerCancelMineUrl = (slug: string,
+    id: string,) => {
+
+
+
+
+  return `/api/public/businesses/${slug}/my-bookings/${id}/cancel`
+}
+
+export const publicBookingControllerCancelMine = async (slug: string,
+    id: string, options?: Parameters<typeof apiFetch>[1]): Promise<PublicBookingControllerCancelMine201> => {
+
+  return apiFetch<PublicBookingControllerCancelMine201>(getPublicBookingControllerCancelMineUrl(slug,id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getPublicBookingControllerCancelMineMutationKey = () => ['publicBookingControllerCancelMine'] as const;
+
+export const getPublicBookingControllerCancelMineMutationOptions = <TError = ErrorType<PublicBookingControllerCancelMine400 | PublicBookingControllerCancelMine401 | void | PublicBookingControllerCancelMine409>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerCancelMine>>, TError,PublicBookingControllerCancelMineMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerCancelMine>>, TError,PublicBookingControllerCancelMineMutationVariables, TContext> => {
+
+const mutationKey = getPublicBookingControllerCancelMineMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publicBookingControllerCancelMine>>, PublicBookingControllerCancelMineMutationVariables> = (props) => {
+          const {slug,id} = props ?? {};
+
+          return  publicBookingControllerCancelMine(slug,id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublicBookingControllerCancelMineMutationResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerCancelMine>>>
+
+    export type PublicBookingControllerCancelMineMutationError = ErrorType<PublicBookingControllerCancelMine400 | PublicBookingControllerCancelMine401 | void | PublicBookingControllerCancelMine409>
+    export type PublicBookingControllerCancelMineMutationVariables = {slug: string;id: string}
+
+    export const usePublicBookingControllerCancelMine = <TError = ErrorType<PublicBookingControllerCancelMine400 | PublicBookingControllerCancelMine401 | void | PublicBookingControllerCancelMine409>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerCancelMine>>, TError,PublicBookingControllerCancelMineMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof publicBookingControllerCancelMine>>,
+        TError,
+        PublicBookingControllerCancelMineMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPublicBookingControllerCancelMineMutationOptions(options), queryClient);
+    }
+    export const getPublicBookingControllerMoveMineUrl = (slug: string,
+    id: string,) => {
+
+
+
+
+  return `/api/public/businesses/${slug}/my-bookings/${id}`
+}
+
+export const publicBookingControllerMoveMine = async (slug: string,
+    id: string,
+    publicBookingControllerMoveMineBody: PublicBookingControllerMoveMineBody, options?: Parameters<typeof apiFetch>[1]): Promise<PublicBookingControllerMoveMine200> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return apiFetch<PublicBookingControllerMoveMine200>(getPublicBookingControllerMoveMineUrl(slug,id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(publicBookingControllerMoveMineBody)
+  }
+);}
+
+
+
+
+
+export const getPublicBookingControllerMoveMineMutationKey = () => ['publicBookingControllerMoveMine'] as const;
+
+export const getPublicBookingControllerMoveMineMutationOptions = <TError = ErrorType<PublicBookingControllerMoveMine400 | PublicBookingControllerMoveMine401 | void | PublicBookingControllerMoveMine409>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerMoveMine>>, TError,PublicBookingControllerMoveMineMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerMoveMine>>, TError,PublicBookingControllerMoveMineMutationVariables, TContext> => {
+
+const mutationKey = getPublicBookingControllerMoveMineMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publicBookingControllerMoveMine>>, PublicBookingControllerMoveMineMutationVariables> = (props) => {
+          const {slug,id,data} = props ?? {};
+
+          return  publicBookingControllerMoveMine(slug,id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublicBookingControllerMoveMineMutationResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerMoveMine>>>
+    export type PublicBookingControllerMoveMineMutationBody = PublicBookingControllerMoveMineBody
+    export type PublicBookingControllerMoveMineMutationError = ErrorType<PublicBookingControllerMoveMine400 | PublicBookingControllerMoveMine401 | void | PublicBookingControllerMoveMine409>
+    export type PublicBookingControllerMoveMineMutationVariables = {slug: string;id: string;data: PublicBookingControllerMoveMineBody}
+
+    export const usePublicBookingControllerMoveMine = <TError = ErrorType<PublicBookingControllerMoveMine400 | PublicBookingControllerMoveMine401 | void | PublicBookingControllerMoveMine409>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerMoveMine>>, TError,PublicBookingControllerMoveMineMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof publicBookingControllerMoveMine>>,
+        TError,
+        PublicBookingControllerMoveMineMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPublicBookingControllerMoveMineMutationOptions(options), queryClient);
     }
     export const getPublicBookingControllerManagedUrl = (token: string,) => {
 
@@ -1315,6 +1626,73 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getPublicBookingControllerWhatsappOffMutationOptions(options), queryClient);
+    }
+    export const getPublicBookingControllerTelegramOffUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/bookings/${token}/telegram`
+}
+
+export const publicBookingControllerTelegramOff = async (token: string, options?: Parameters<typeof apiFetch>[1]): Promise<void> => {
+
+  return apiFetch<void>(getPublicBookingControllerTelegramOffUrl(token),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getPublicBookingControllerTelegramOffMutationKey = () => ['publicBookingControllerTelegramOff'] as const;
+
+export const getPublicBookingControllerTelegramOffMutationOptions = <TError = ErrorType<PublicBookingControllerTelegramOff400 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerTelegramOff>>, TError,PublicBookingControllerTelegramOffMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerTelegramOff>>, TError,PublicBookingControllerTelegramOffMutationVariables, TContext> => {
+
+const mutationKey = getPublicBookingControllerTelegramOffMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publicBookingControllerTelegramOff>>, PublicBookingControllerTelegramOffMutationVariables> = (props) => {
+          const {token} = props ?? {};
+
+          return  publicBookingControllerTelegramOff(token,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublicBookingControllerTelegramOffMutationResult = NonNullable<Awaited<ReturnType<typeof publicBookingControllerTelegramOff>>>
+
+    export type PublicBookingControllerTelegramOffMutationError = ErrorType<PublicBookingControllerTelegramOff400 | void>
+    export type PublicBookingControllerTelegramOffMutationVariables = {token: string}
+
+    export const usePublicBookingControllerTelegramOff = <TError = ErrorType<PublicBookingControllerTelegramOff400 | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publicBookingControllerTelegramOff>>, TError,PublicBookingControllerTelegramOffMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof publicBookingControllerTelegramOff>>,
+        TError,
+        PublicBookingControllerTelegramOffMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPublicBookingControllerTelegramOffMutationOptions(options), queryClient);
     }
     export const getPublicBookingControllerEmailOnUrl = (token: string,) => {
 

@@ -315,7 +315,6 @@ test('step 3: name and phone book the chosen master and time', async () => {
       startsAt: '2026-11-24T09:00:00.000Z',
       endsAt: '2026-11-24T10:00:00.000Z',
       name: 'Ira',
-      phone: '+66812345678',
     }),
   )
 })
@@ -339,7 +338,6 @@ test('booking an "any master" time sends no master; a note goes along', async ()
       startsAt: '2026-11-24T09:00:00.000Z',
       endsAt: '2026-11-24T10:00:00.000Z',
       name: 'Ira',
-      phone: '+66812345678',
       note: 'First time',
     }),
   )

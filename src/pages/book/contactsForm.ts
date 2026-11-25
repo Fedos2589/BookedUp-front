@@ -50,7 +50,6 @@ export function bookBody(
   return {
     ...slotOfKey(slotKey),
     name: values.name.trim(),
-    phone: phoneOf(values.country, values.phone) ?? '',
     ...(values.note ? { note: values.note } : {}),
   }
 }
