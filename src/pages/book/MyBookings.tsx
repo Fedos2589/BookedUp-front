@@ -29,7 +29,7 @@ export function MyBookings({ slug, timeZone }: Props) {
       <ul className={styles.mine}>
         {bookings.map((b) => (
           <li key={b.id}>
-            <a className={styles.saved} href={`/book/${slug}/my/${b.id}`}>
+            <a className={styles.myBooking} href={`/book/${slug}/my/${b.id}`}>
               {dateTimeIn(new Date(b.startsAt), timeZone, i18n.language)}
               {` · ${b.title ?? b.staffName}`}
               {several && ` · ${b.clientName}`}

@@ -81,14 +81,16 @@ test('shows the business and its masters; one without free time is dimmed', asyn
 })
 
 test('without Telegram on the server there is no booking, only the way to call', async () => {
-  fakeApi({
+  // The times are not even asked for: a failing /slots changes nothing.
+  const api = fakeApi({
     [BUSINESS]: [200, { ...business, clientSignIn: false }],
-    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+    [SLOTS]: [500, {}],
   })
   renderApp(`/book/judo?staff=${HOURS_ANNA}&slot=x&contacts=true`)
 
   expect(await screen.findByText("Online booking isn't available")).toBeTruthy()
   expect(screen.queryByRole('button', { name: /Anna/ })).toBeNull()
+  expect(api.calls.some((c) => c.route === SLOTS)).toBe(false)
 })
 
 test('"Any free master" is offered when an hours master has a free time', async () => {

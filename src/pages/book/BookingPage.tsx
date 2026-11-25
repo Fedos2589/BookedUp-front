@@ -1,4 +1,5 @@
 import { getRouteApi, useRouter } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'ted-ui/Typography'
@@ -8,6 +9,7 @@ import type {
   PublicBookingControllerBusiness200,
   PublicBookingControllerSlots200Item,
 } from '@/api/generated.schemas'
+import { getPublicBookingControllerMyBookingsQueryKey } from '@/api/public-booking/public-booking'
 import { ApiError } from '@/apiFetch'
 import { PagePending } from '@/pages/PagePending'
 import { anyMasterOffered } from './anyMasterOffered'
@@ -44,6 +46,7 @@ export function BookingPage() {
   const { businessSlug } = route.useParams()
   const navigate = route.useNavigate()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const search = route.useSearch()
   const { i18n } = useTranslation()
   const { business, slots, today } = useBookingData(businessSlug)
@@ -58,6 +61,17 @@ export function BookingPage() {
 
   if (business.error instanceof ApiError && business.error.status === 404) {
     return <NoSuchPage />
+  }
+  // No Telegram: nobody can book, so the times are not even asked for.
+  if (business.data && !business.data.clientSignIn) {
+    return (
+      <main className={styles.page}>
+        <Typography variant="h3" component="h1">
+          {business.data.name}
+        </Typography>
+        <OnlineBookingOff />
+      </main>
+    )
   }
   // A failed refetch keeps what is already on screen (the old data stays).
   if ((business.isError && !business.data) || (slots.isError && !slots.data)) {
@@ -96,8 +110,6 @@ export function BookingPage() {
       </Typography>
       {booked && search.done ? (
         <DoneStep booked={booked} business={business.data} />
-      ) : !business.data.clientSignIn ? (
-        <OnlineBookingOff />
       ) : contacts ? (
         <ContactsStep
           slug={businessSlug}
@@ -118,6 +130,10 @@ export function BookingPage() {
           onBooked={(result) => {
             setBooked(result)
             void slots.refetch()
+            void queryClient.invalidateQueries({
+              queryKey:
+                getPublicBookingControllerMyBookingsQueryKey(businessSlug),
+            })
             void navigate({
               search: { staff: search.staff, done: true },
               replace: true,

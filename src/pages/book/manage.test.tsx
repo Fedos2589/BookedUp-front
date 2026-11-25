@@ -26,6 +26,7 @@ const judo = {
   timeZone: 'Europe/Berlin',
   channels: { telegram: false, whatsapp: true, push: false, email: false },
   pushKey: null,
+  clientSignIn: true,
   masters: [],
 }
 
