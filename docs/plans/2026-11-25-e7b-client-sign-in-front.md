@@ -32,9 +32,13 @@ Regenerate with `npm run api:generate` (the back running on its `main` with S me
 - `POST /public/client-login` `{ locale }` → 201 `{ url }` (`t.me/<bot>?start=…`), 404 `channelOff`, 429.
 - `GET /public/client-login` → `{ status: 'pending' | 'confirmed' | 'expired' }`; `confirmed` also sets the
   session cookie. Poll it; a login lives 10 minutes.
-- `GET /public/client-session` → `{ phone: string | null }`; `DELETE /public/client-session` → 204.
-- `POST /public/businesses/:slug/bookings` — `phone` is gone from the body, `locale` is new (optional);
-  without a session → 401 `{ code: 'clientSignIn' }`; the 201 result gains `phone` (the booked one).
+- `GET /public/client-session` → `{ phone: string | null }`; `DELETE /public/client-session` → 204. A live
+  session is kept 30 days from its last use (the cookie too); nothing for the front to do about it.
+- `POST /public/businesses/:slug/bookings` — `phone` is gone from the body and there is no `locale` in it
+  either: the messages' language is the one the sign-in was started with (`POST client-login {locale}`), kept
+  in the session. Without a session → 401 `{ code: 'clientSignIn' }`; the 201 result gains `phone` (the
+  booked one). Every attempt counts toward the 10/hour limit, a 401 too: ask `GET client-session` first
+  (`useClientSession`) and never book «to see if it works».
 - `GET /public/businesses/:slug/my-bookings` → `{ bookings: { id, clientName, staffId, staffName,
 startsAt, endsAt, title, status, groupId, oneOffSessionId, canChange }[] }`; 401 without a session.
 - `POST /public/businesses/:slug/my-bookings/:id/cancel`, `PATCH /public/businesses/:slug/my-bookings/:id`
@@ -113,7 +117,8 @@ Commit `feat(book): confirm the phone in Telegram`.
 **Files:** `src/pages/book/{ContactsStep.tsx,contactsForm.ts,DoneStep.tsx,bookRefusal.ts}` (+
 `bookRefusal.test.ts`), `src/pages/book/booking.test.tsx`, `src/locales/{en,ru}.json`.
 
-- The form: name and note (no phone, no country). `bookBody` sends `locale`.
+- The form: name and note (no phone, no country, no `locale`: the language of the messages is the sign-in's,
+  so `ConfirmPhone` must start the login with the app's language).
 - No session → the primary action is «Confirm phone in Telegram», which shows `<ConfirmPhone>` in place
   of the action bar's button; on confirm the step shows the phone and «Book» (one more tap, the name and
   note kept — the form stays mounted).
@@ -122,7 +127,7 @@ Commit `feat(book): confirm the phone in Telegram`.
   `<ConfirmPhone>`, not an error.
 - Done screen: «Booked on {phone}» from the result's `phone`.
 
-**Check:** `booking.test.tsx` — without a session: name → confirm → book, the body has no `phone`; with a
+**Check:** `booking.test.tsx` — without a session: name → confirm → book, the body has no `phone` and no `locale`; with a
 session: the phone is shown, booking in one tap; 401 → confirmation shown; the done screen shows the phone.
 Commit `feat(book): book with the phone confirmed in Telegram`.
 
