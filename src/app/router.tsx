@@ -187,6 +187,16 @@ const manageRoute = createRoute({
   ),
 })
 
+// A signed-in client's own booking, from the list on step 1.
+const myBookingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/book/$businessSlug/my/$bookingId',
+  component: lazyRouteComponent(
+    () => import('@/pages/book/MyBookingPage'),
+    'MyBookingPage',
+  ),
+})
+
 export const routeTree = rootRoute.addChildren([
   cabinetRoute.addChildren([
     dashboardRoute,
@@ -203,6 +213,7 @@ export const routeTree = rootRoute.addChildren([
   inviteRoute,
   bookingRoute,
   manageRoute,
+  myBookingRoute,
 ])
 
 export function createAppRouter(
