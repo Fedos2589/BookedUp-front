@@ -79,7 +79,7 @@ startsAt, endsAt, title, status, groupId, oneOffSessionId, canChange }[] }`; 401
 
 ---
 
-### - [ ] T1: the new client, and 401 on public routes
+### - [x] T1: the new client, and 401 on public routes
 
 **Files:** `src/api/**` (generated), `src/app/createApp.ts` (+ its test), whatever fails typecheck after
 generation (expect `src/pages/book/contactsForm.ts`: drop `phone` from `bookBody` for now, the form
