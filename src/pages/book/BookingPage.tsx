@@ -19,6 +19,7 @@ import { LoadFailed } from './LoadFailed'
 import { ContactsStep } from './ContactsStep'
 import { MastersStep } from './MastersStep'
 import { NoSuchPage } from './NoSuchPage'
+import { OnlineBookingOff } from './OnlineBookingOff'
 import { savedBookingOf, saveBooking } from './savedBooking'
 import { type PickerSlot, pickedSlot } from './slotsForPicker'
 import { TimeStep } from './TimeStep'
@@ -98,6 +99,8 @@ export function BookingPage() {
       </Typography>
       {booked && search.done ? (
         <DoneStep booked={booked} business={business.data} />
+      ) : !business.data.clientSignIn ? (
+        <OnlineBookingOff />
       ) : contacts ? (
         <ContactsStep
           slug={businessSlug}

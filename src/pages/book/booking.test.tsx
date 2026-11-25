@@ -39,6 +39,7 @@ const business = {
   timeZone: 'Europe/Berlin',
   channels: { telegram: false, whatsapp: true, push: false, email: false },
   pushKey: null,
+  clientSignIn: true,
   masters: [
     { id: HOURS_ANNA, name: 'Anna', scheduleMode: 'HOURS' },
     { id: HOURS_BORIS, name: 'Boris', scheduleMode: 'HOURS' },
@@ -78,6 +79,17 @@ test('shows the business and its masters; one without free time is dimmed', asyn
   const boris = screen.getByRole('button', { name: /Boris/ })
   expect(boris.hasAttribute('disabled')).toBe(true)
   expect(boris.textContent).toContain('No free time in the next two weeks')
+})
+
+test('without Telegram on the server there is no booking, only the way to call', async () => {
+  fakeApi({
+    [BUSINESS]: [200, { ...business, clientSignIn: false }],
+    [SLOTS]: [200, [slot(HOURS_ANNA)]],
+  })
+  renderApp(`/book/judo?staff=${HOURS_ANNA}&slot=x&contacts=true`)
+
+  expect(await screen.findByText("Online booking isn't available")).toBeTruthy()
+  expect(screen.queryByRole('button', { name: /Anna/ })).toBeNull()
 })
 
 test('"Any free master" is offered when an hours master has a free time', async () => {

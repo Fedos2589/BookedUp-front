@@ -4,6 +4,8 @@
     "loadFailed": "Couldn't load your account"
   },
   "booking": {
+    "offTitle": "Online booking isn't available",
+    "offText": "Call the business to book.",
     "chooseMaster": "Choose a master",
     "anyMaster": "Any free master",
     "noFreeTime": "No free time in the next two weeks",
