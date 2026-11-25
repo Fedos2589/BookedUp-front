@@ -133,6 +133,7 @@ test('the business settings render for a signed-in owner', async ({ page }) => {
     slug: 'judo-kids',
     timeZone: 'Asia/Bangkok',
     role: 'OWNER',
+    reminderOffsets: [1440],
   }
   await page.route('**/api/me', (route) =>
     route.fulfill({
