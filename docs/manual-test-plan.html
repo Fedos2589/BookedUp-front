@@ -379,12 +379,12 @@
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow">План ручного тестирования · 23.11.2026</div>
+    <div class="eyebrow">План ручного тестирования · 25.11.2026</div>
     <h1>BookedUp — весь текущий функционал</h1>
     <div class="meta">
-      <span>BookedUp-front <code>e7/booking-g6 @ 86b96cc</code></span>
-      <span>BookedUp-back <code>main @ 3eac4d6</code></span>
-      <span>55 сценариев</span>
+      <span>BookedUp-front <code>e9/e2e-test-plan @ 7f0e91f</code></span>
+      <span>BookedUp-back <code>main @ aae5ad9</code></span>
+      <span>59 сценариев</span>
     </div>
     <p>
       Что сейчас есть в приложении: регистрация владельца вместе с бизнесом,
@@ -398,6 +398,10 @@
       записей. Публичная страница записи (E7): выбор мастера или «любого
       свободного», день и время, данные клиента, личная ссылка для просмотра,
       переноса и отмены, установка страницы бизнеса на главный экран.
+      Напоминания (E9): клиент включает Telegram, WhatsApp, push или email на
+      экране «You are booked» и на странице управления; сотрудник выбирает свои
+      каналы в «Notifications»; владелец и админ задают время напоминаний в
+      настройках.
     </p>
   </header>
 
@@ -715,6 +719,22 @@
       </li>
       <li>
         <a href="#t55">Установка страницы бизнеса на главный экран</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t56">Напоминания клиенту: Telegram и WhatsApp</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t57">Напоминания клиенту: push и email</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t58">Время напоминаний и свои каналы в кабинете</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t59">Напоминания и перенос / отмена / запись мастером</a>
         <span class="chip c-corner">корнер-кейс</span>
       </li>
     </ol>
@@ -4286,6 +4306,212 @@
           <div class="exp">
             Под иконкой — название бизнеса; запуск с главного экрана открывает
             страницу записи без адресной строки.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t56">
+      <div class="hd">
+        <h3>56. Напоминания клиенту: Telegram и WhatsApp</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Бэк с настоящим ботом Telegram и шаблонами WhatsApp (тестовый номер) —
+          в канале <code>log</code> сообщений не увидеть. Окно Б на телефоне,
+          <code>localhost:5173/book/yoga-plus-qa</code>, запись сделана (экран
+          «You are booked»).
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            На экране <span class="ui">«Get a reminder»</span> нажмите
+            <span class="ui">«Telegram»</span>.
+          </div>
+          <div class="exp">
+            В новой вкладке открывается Telegram с ботом (на iOS Safari — без
+            блокировки всплывающих окон). Нажмите «Start» в боте.
+          </div>
+        </li>
+        <li>
+          <div class="act">Вернитесь на вкладку с записью.</div>
+          <div class="exp">
+            Строка Telegram стала <span class="ui">«On»</span> с ссылкой
+            <span class="ui">«Turn off»</span>. В Telegram пришло подтверждение
+            со ссылкой на управление записью.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«WhatsApp to +…»</span>.
+          </div>
+          <div class="exp">
+            Строка стала <span class="ui">«On»</span>, под ней «Covers all your
+            bookings with this business». На тестовый номер пришло подтверждение
+            со ссылкой.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Turn off»</span> у обоих каналов.
+          </div>
+          <div class="exp">
+            Обе строки снова кнопками. Напоминания не приходят.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t57">
+      <div class="hd">
+        <h3>57. Напоминания клиенту: push и email</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Android Chrome и iPhone с установленной страницей бизнеса (сценарий
+          55); у бэка включены push (VAPID) и email (Resend). Ссылка управления
+          записью открыта.
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Android Chrome: нажмите
+            <span class="ui">«Notifications on this device»</span>, разрешите.
+          </div>
+          <div class="exp">
+            Строка стала <span class="ui">«On»</span>; приходит тестовое
+            push-уведомление при переносе записи в кабинете; по нажатию на него
+            открывается ссылка управления.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Turn off»</span>, затем снова включите и в
+            настройках браузера запретите уведомления для сайта, нажмите кнопку
+            ещё раз.
+          </div>
+          <div class="exp">
+            Текст «Notifications are blocked in the browser settings», кнопка не
+            «мёртвая».
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            iPhone, страница открыта в Safari (не установлена).
+          </div>
+          <div class="exp">
+            Вместо кнопки — «Add this page to your home screen to get
+            notifications». Из установленной страницы кнопка есть и работает.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Email»</span>, введите
+            <code>ira@example.com</code>, <span class="ui">«Save»</span>. Затем
+            введите неверный адрес <code>ira@</code>.
+          </div>
+          <div class="exp">
+            Строка стала «Email i***@example.com · On»; на почту пришло письмо
+            со ссылкой. Неверный адрес — ошибка у поля, а не «On».
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t58">
+      <div class="hd">
+        <h3>58. Время напоминаний и свои каналы в кабинете</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно О (владелец), Settings и Notifications; для мастера — окно М.
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Settings → <span class="ui">«Reminders to clients»</span>: отметьте
+            «2 hours before», <span class="ui">«Save»</span>.
+          </div>
+          <div class="exp">
+            Выбрать можно не больше трёх, остальные недоступны, подсказка «Up to
+            3»; после сохранения «Saved». Снять все — «Clients get no
+            reminders».
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Запишите клиента через страницу записи с включённым email и
+            подождите время напоминания (или подведите запись под него).
+          </div>
+          <div class="exp">
+            Письмо приходит ровно за выбранное время; без отметки — не приходит.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Notifications (меню): снимите <span class="ui">«Email»</span>; для
+            владельца отметьте «All online bookings of this business».
+          </div>
+          <div class="exp">
+            Своё письмо о записях перестало приходить; «All online» — приходит о
+            каждой онлайн-записи. У мастера (окно М) этой отметки и
+            WhatsApp-строки нет, Settings недоступны.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            На телефоне и ПК включите push для этого устройства, затем нажмите
+            <span class="ui">«Sign out»</span> на телефоне.
+          </div>
+          <div class="exp">
+            После выхода уведомления на этот телефон не идут; на ПК — идут. На
+            другом устройстве видно «Also on 1 other device».
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t59">
+      <div class="hd">
+        <h3>59. Напоминания и перенос / отмена / запись мастером</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Клиент с включённым напоминанием (сценарии 56–57); окно О.</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Перенесите запись клиента в кабинете на другое время.
+          </div>
+          <div class="exp">
+            Напоминание приходит в новое время, в старое — нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">Отмените запись.</div>
+          <div class="exp">Напоминаний нет.</div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте ссылку управления отменённой или начавшейся записи.
+          </div>
+          <div class="exp">Блока «Get a reminder» нет.</div>
+        </li>
+        <li>
+          <div class="act">Мастер сам переносит свою запись в кабинете.</div>
+          <div class="exp">
+            Сообщения мастеру о его собственном изменении нет.
           </div>
         </li>
       </ol>

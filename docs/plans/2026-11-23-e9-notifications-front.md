@@ -177,7 +177,7 @@ Owner / admin only: «Reminders to clients» — 5 `Checkbox`es (1 h, 2 h, 3 h, 
 **Check:** test — a master doesn't see it; a 4th box is disabled; save sends sorted offsets; empty is
 allowed and shows the text. Commit `feat(settings): reminder times`.
 
-### - [ ] F7: e2e, test plan, close the step
+### - [x] F7: e2e, test plan, close the step
 
 **Files:** create `e2e/notifications.spec.ts`, `docs/manual-test-plan.html`, then the common plan in
 BookedUp-back.
