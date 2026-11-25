@@ -35,6 +35,7 @@ test('/book/judo-kids renders without page errors', async ({ page }) => {
         name: 'Judo Kids',
         slug: 'judo-kids',
         timeZone: 'Asia/Bangkok',
+        clientSignIn: true,
         masters: [
           {
             id: '00000000-0000-4000-8000-000000000003',
