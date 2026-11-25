@@ -151,7 +151,7 @@
       "title": "Reminders to clients",
       "before_one": "{{count}} hour before",
       "before_other": "{{count}} hours before",
-      "limit": "Up to 3",
+      "limit": "Up to {{max}}",
       "none": "Clients get no reminders",
       "saved": "Saved"
     }

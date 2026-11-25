@@ -1,8 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ActionBar } from 'ted-ui/ActionBar'
 import { Button } from 'ted-ui/Button'
 import { Checkbox } from 'ted-ui/Checkbox'
+import { LiveRegion } from 'ted-ui/LiveRegion/LiveRegion'
 import { Typography } from 'ted-ui/Typography'
 
 import { getMeControllerMeQueryKey } from '@/api/account/account'
@@ -13,7 +15,7 @@ import {
   knownOffsets,
   MAX_OFFSETS,
   REMINDER_OFFSETS,
-  toggled,
+  withOffset,
 } from './reminderOffsets'
 import styles from './SettingsPage.module.scss'
 
@@ -24,7 +26,15 @@ export function ReminderTimes() {
   const business = useCurrentBusiness()
   const queryClient = useQueryClient()
   const saved = knownOffsets(business.reminderOffsets)
+  const hintId = useId()
   const [chosen, setChosen] = useState(saved)
+  // The saved times can change under an open form (another window, a
+  // refetch): an untouched form follows them, a touched one keeps its input.
+  const [seen, setSeen] = useState(saved.join())
+  if (seen !== saved.join()) {
+    setSeen(saved.join())
+    if (chosen.join() === seen) setChosen(saved)
+  }
   const save = useBusinessControllerSetReminders({
     mutation: {
       onSuccess: () =>
@@ -37,6 +47,10 @@ export function ReminderTimes() {
   useUnsavedInput(changed)
 
   const full = chosen.length >= MAX_OFFSETS
+  const justSaved =
+    save.isSuccess && save.variables.data.offsets.join() === chosen.join()
+  const failed = save.isError ? t('notify.failed') : ''
+  const savedNote = justSaved ? t('settings.reminders.saved') : ''
 
   return (
     <form
@@ -56,30 +70,39 @@ export function ReminderTimes() {
           label={t('settings.reminders.before', { count: offset / 60 })}
           checked={chosen.includes(offset)}
           disabled={full && !chosen.includes(offset)}
-          onCheckedChange={() => setChosen(toggled(chosen, offset))}
+          aria-describedby={hintId}
+          onCheckedChange={(on) => {
+            save.reset()
+            setChosen(withOffset(chosen, offset, on))
+          }}
         />
       ))}
-      <Typography variant="t4" color="grey-400">
-        {t(
-          chosen.length
-            ? 'settings.reminders.limit'
-            : 'settings.reminders.none',
-        )}
+      <Typography variant="t4" color="grey-400" id={hintId}>
+        {chosen.length
+          ? t('settings.reminders.limit', { max: MAX_OFFSETS })
+          : t('settings.reminders.none')}
       </Typography>
       {save.isError && (
-        <Typography variant="t4" color="red-300" role="alert">
-          {t('notify.failed')}
+        <Typography variant="t4" color="red-300">
+          {failed}
         </Typography>
       )}
-      {save.isSuccess &&
-        save.variables.data.offsets.join() === chosen.join() && (
-          <Typography variant="t4" role="status">
-            {t('settings.reminders.saved')}
-          </Typography>
-        )}
-      <Button type="submit" loading={save.isPending} disabled={!changed}>
-        {t('notify.save')}
-      </Button>
+      {justSaved && <Typography variant="t4">{savedNote}</Typography>}
+      <LiveRegion
+        message={failed || savedNote}
+        politeness={failed ? 'assertive' : 'polite'}
+      />
+      <ActionBar>
+        <Button
+          type="submit"
+          variant="solid"
+          colorScheme="black"
+          loading={save.isPending}
+          disabled={!changed}
+        >
+          {t('common.save')}
+        </Button>
+      </ActionBar>
     </form>
   )
 }

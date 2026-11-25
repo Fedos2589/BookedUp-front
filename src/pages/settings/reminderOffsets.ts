@@ -21,7 +21,9 @@ export const MAX_OFFSETS = 3
 export const knownOffsets = (saved: number[]) =>
   REMINDER_OFFSETS.filter((offset) => saved.includes(offset))
 
-export const toggled = (chosen: ReminderOffset[], offset: ReminderOffset) =>
-  REMINDER_OFFSETS.filter((o) =>
-    o === offset ? !chosen.includes(o) : chosen.includes(o),
-  )
+// The choice with one offset on or off, kept in the order they are shown.
+export const withOffset = (
+  chosen: ReminderOffset[],
+  offset: ReminderOffset,
+  on: boolean,
+) => REMINDER_OFFSETS.filter((o) => (o === offset ? on : chosen.includes(o)))

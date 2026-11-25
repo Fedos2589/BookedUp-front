@@ -46,7 +46,7 @@ test('save sends the offsets sorted and says so', async () => {
       offsets: [60, 1440, 2880],
     }),
   )
-  await screen.findByText('Saved')
+  await screen.findAllByText('Saved')
 })
 
 test('no times at all is allowed and says clients get no reminders', async () => {
@@ -84,4 +84,43 @@ test('a master does not get to the settings, so not to the times either', async 
   expect(
     screen.queryByRole('heading', { name: 'Reminders to clients' }),
   ).toBeNull()
+})
+
+test('a newer saved choice from /me replaces the untouched form', async () => {
+  const api = fakeApi({ 'GET /api/me': [200, account] })
+  const { queryClient } = renderApp('/settings')
+  await screen.findByRole('heading', { name: 'Reminders to clients' })
+
+  api.set('GET /api/me', [
+    200,
+    {
+      ...account,
+      businesses: [{ ...account.businesses[0], reminderOffsets: [60, 1440] }],
+    },
+  ])
+  await queryClient.invalidateQueries()
+
+  await waitFor(() =>
+    expect(box('1 hour before').getAttribute('aria-checked')).toBe('true'),
+  )
+  // Nothing was typed, so there is nothing to save.
+  expect(
+    screen.getByRole('button', { name: 'Save' }).hasAttribute('disabled'),
+  ).toBe(true)
+})
+
+test('a failed save shows its error until the choice changes', async () => {
+  fakeApi({
+    'GET /api/me': [200, account],
+    [REMINDERS]: [500],
+  })
+  renderApp('/settings')
+  await screen.findByRole('heading', { name: 'Reminders to clients' })
+
+  tick('1 hour before')
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await screen.findAllByText(/^Couldn.t/)
+
+  tick('2 hours before')
+  await waitFor(() => expect(screen.queryByText(/^Couldn.t/)).toBeNull())
 })

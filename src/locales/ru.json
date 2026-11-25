@@ -155,7 +155,7 @@
       "before_few": "За {{count}} часа",
       "before_many": "За {{count}} часов",
       "before_other": "За {{count}} часа",
-      "limit": "Не больше 3",
+      "limit": "Не больше {{max}}",
       "none": "Клиенты не получат напоминаний",
       "saved": "Сохранено"
     }

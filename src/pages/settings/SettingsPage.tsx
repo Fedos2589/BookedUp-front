@@ -9,8 +9,8 @@ import { useNow } from '@/useNow'
 import { ReminderTimes } from './ReminderTimes'
 import styles from './SettingsPage.module.scss'
 
-// What the business is set up with: read-only for now (E2 asks to see the time
-// zone). All of it comes with GET /me; editing will bring its own endpoint.
+// What the business is set up with. The facts (name, booking page, time zone)
+// come with GET /me and are read-only; the reminder times are edited here.
 // The owner's and the admins' page, not a master's (roles.ts).
 export function SettingsPage() {
   const { t } = useTranslation()
