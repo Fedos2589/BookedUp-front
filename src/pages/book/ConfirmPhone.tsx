@@ -125,6 +125,11 @@ export function ConfirmPhone({
           </a>
         </Typography>
       )}
+      {start.data && (
+        <Typography variant="t3">
+          {t('booking.confirm.code', { code: start.data.code })}
+        </Typography>
+      )}
       <Typography variant="t3" role="status">
         {t('booking.confirm.waiting')}
       </Typography>

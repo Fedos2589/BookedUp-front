@@ -4180,6 +4180,8 @@ export type ClientSessionControllerStartBody = {
 
 export type ClientSessionControllerStart201 = {
   url: string;
+  /** @pattern ^\d{4}$ */
+  code: string;
 };
 
 export type ClientSessionControllerStart400StatusCode = typeof ClientSessionControllerStart400StatusCode[keyof typeof ClientSessionControllerStart400StatusCode];
@@ -4234,6 +4236,8 @@ export const ClientSessionControllerStatus200Status = {
 
 export type ClientSessionControllerStatus200 = {
   status: ClientSessionControllerStatus200Status;
+  /** @pattern ^\d{4}$ */
+  code?: string;
 };
 
 export type ClientSessionControllerCurrent200 = {

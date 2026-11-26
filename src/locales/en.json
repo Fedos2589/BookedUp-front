@@ -51,6 +51,7 @@
     "back": "Back",
     "confirm": {
       "channelOff": "Online booking isn't available — call the business",
+      "code": "Code: {{code}} — the bot will ask you to compare it",
       "expired": "The link expired",
       "failed": "Couldn't confirm the phone. Try again.",
       "waiting": "Waiting for confirmation…"

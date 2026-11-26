@@ -100,6 +100,38 @@ test('an expired login offers to try again with a new one', async () => {
   expect(count(api, START)).toBe(2)
 })
 
+test("shows the sign-in's code, a new one after Try again", async () => {
+  const codes = ['4821', '7305']
+  const api = fakeApi({
+    [START]: () => [
+      201,
+      { url: 'https://t.me/bot?start=abc', code: codes.shift() },
+    ],
+    [STATUS]: [200, { status: 'expired' }],
+  })
+  show()
+  await screen.findByText('The link expired')
+  expect(screen.queryByText(/4821/)).toBeNull()
+
+  api.set(STATUS, [200, { status: 'pending' }])
+  await act(async () =>
+    screen.getByRole('button', { name: 'Try again' }).click(),
+  )
+  expect(await screen.findByText(/7305/)).toBeTruthy()
+  expect(screen.queryByText(/4821/)).toBeNull()
+})
+
+test('shows the code while waiting', async () => {
+  fakeApi({
+    [START]: [201, { url: 'https://t.me/bot?start=abc', code: '4821' }],
+    [STATUS]: [200, { status: 'pending' }],
+  })
+  show()
+  expect(
+    await screen.findByText('Code: 4821 — the bot will ask you to compare it'),
+  ).toBeTruthy()
+})
+
 test('says so when Telegram is off or there were too many tries', async () => {
   fakeApi({ [START]: [404, { code: 'channelOff' }] })
   show()
