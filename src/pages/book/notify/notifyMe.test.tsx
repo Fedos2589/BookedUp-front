@@ -123,9 +123,10 @@ test('WhatsApp: turning on sends PUT with the locale', async () => {
   })
 })
 
-test('Telegram: turning off sends DELETE and the row shows off', async () => {
-  let on = true
+test('Telegram: turning off sends DELETE, the row shows off without the spent link', async () => {
+  let on = false
   const api = fakeApi({
+    [TELEGRAM]: () => [201, { url: 'https://t.me/bot?start=abc' }],
     [`DELETE ${TELEGRAM_OFF}`]: () => {
       on = false
       return [204]
@@ -135,18 +136,25 @@ test('Telegram: turning off sends DELETE and the row shows off', async () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   })
-  queryClient.setQueryData(
-    getPublicBookingControllerManagedQueryOptions('tok').queryKey,
-    { notifications: { ...OFF, telegram: true } } as never,
-  )
   render(
     <QueryClientProvider client={queryClient}>
       <WithBooking />
     </QueryClientProvider>,
   )
-  fireEvent.click(screen.getByRole('button', { name: 'Turn off' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Telegram' }))
+  await screen.findByRole('link', { name: 'Open Telegram' })
+  // The bot connected; coming back to the tab asks for the booking.
+  on = true
+  await queryClient.fetchQuery({
+    ...getPublicBookingControllerManagedQueryOptions('tok'),
+    staleTime: 0,
+  })
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Turn off' }))
   expect(await screen.findByRole('button', { name: 'Telegram' })).toBeTruthy()
   expect(api.calls.some((c) => c.route === `DELETE ${TELEGRAM_OFF}`)).toBe(true)
+  // Its start token is spent: the old link is never offered again.
+  expect(screen.queryByRole('link', { name: 'Open Telegram' })).toBeNull()
 })
 
 // The booking is read like the parent does: the row follows its answers.

@@ -115,8 +115,15 @@ export function NotifyMe({
               label={t('notify.telegram')}
               on={notifications.telegram}
               loading={telegram.isPending || telegramOff.isPending}
-              onTurnOn={() => telegram.mutate({ token, data: { locale } })}
-              onTurnOff={() => telegramOff.mutate({ token })}
+              onTurnOn={() => {
+                telegramOff.reset()
+                telegram.mutate({ token, data: { locale } })
+              }}
+              onTurnOff={() => {
+                // The old link's token is spent: never offer it again.
+                telegram.reset()
+                telegramOff.mutate({ token })
+              }}
             >
               {/* A link the client taps: window.open after the answer is blocked
                 by iOS Safari, which only allows it inside the tap itself. */}
