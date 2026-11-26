@@ -125,7 +125,7 @@ export function ConfirmPhone({
           </a>
         </Typography>
       )}
-      {start.data && (
+      {start.data?.code && (
         <Typography variant="t3">
           {t('booking.confirm.code', { code: start.data.code })}
         </Typography>

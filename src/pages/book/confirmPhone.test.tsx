@@ -107,11 +107,14 @@ test("shows the sign-in's code, a new one after Try again", async () => {
       201,
       { url: 'https://t.me/bot?start=abc', code: codes.shift() },
     ],
-    [STATUS]: [200, { status: 'expired' }],
+    [STATUS]: [200, { status: 'pending' }],
   })
   show()
+  expect(await screen.findByText(/4821/)).toBeTruthy()
+
+  api.set(STATUS, [200, { status: 'expired' }])
+  await tick(2000)
   await screen.findByText('The link expired')
-  expect(screen.queryByText(/4821/)).toBeNull()
 
   api.set(STATUS, [200, { status: 'pending' }])
   await act(async () =>
@@ -130,6 +133,16 @@ test('shows the code while waiting', async () => {
   expect(
     await screen.findByText('Code: 4821 — the bot will ask you to compare it'),
   ).toBeTruthy()
+})
+
+test('shows no code line when the start answer has no code', async () => {
+  fakeApi({
+    [START]: [201, { url: 'https://t.me/bot?start=abc' }],
+    [STATUS]: [200, { status: 'pending' }],
+  })
+  show()
+  await screen.findByRole('link', { name: 'Open Telegram' })
+  expect(screen.queryByText(/^Code:/)).toBeNull()
 })
 
 test('says so when Telegram is off or there were too many tries', async () => {
