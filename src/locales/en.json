@@ -30,7 +30,7 @@
     "failed": "Couldn't book. Try again.",
     "doneTitle": "You are booked",
     "linkLabel": "Your booking link",
-    "saveLink": "Save this link: it is the only way to cancel or move your booking.",
+    "saveLink": "Save this link to cancel or move your booking. While you are signed in on this phone, it is also under My bookings on the first step.",
     "myBookings": "My bookings",
     "badLink": "This link doesn't work",
     "notMine": "This booking isn't yours or is gone",

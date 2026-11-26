@@ -397,11 +397,13 @@
       статусы, перенос и отмена, прошедшие занятия, отказ расписания из-за
       записей. Публичная страница записи (E7): выбор мастера или «любого
       свободного», день и время, данные клиента, личная ссылка для просмотра,
-      переноса и отмены, установка страницы бизнеса на главный экран.
-      Напоминания (E9): клиент включает Telegram, WhatsApp, push или email на
-      экране «You are booked» и на странице управления; сотрудник выбирает свои
-      каналы в «Notifications»; владелец и админ задают время напоминаний в
-      настройках.
+      переноса и отмены, установка страницы бизнеса на главный экран. Вход
+      клиента (E7b): телефон подтверждается в боте Telegram перед записью,
+      дальше страница знает клиента — «My bookings» на первом шаге, перенос и
+      отмена своей записи, «Not your number?». Напоминания (E9): клиент включает
+      Telegram, WhatsApp, push или email на экране «You are booked» и на
+      странице управления; сотрудник выбирает свои каналы в «Notifications»;
+      владелец и админ задают время напоминаний в настройках.
     </p>
   </header>
 
@@ -735,6 +737,28 @@
       </li>
       <li>
         <a href="#t59">Напоминания и перенос / отмена / запись мастером</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t60">Вход клиента: подтвердить телефон в Telegram</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t61">Вход клиента: чужой контакт и просроченная ссылка</a>
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t62">«My bookings»: перенос и отмена своей записи</a>
+        <span class="chip c-happy">основной</span>
+      </li>
+      <li>
+        <a href="#t63"
+          >Сессия клиента: два браузера, «Not your number?», cookie</a
+        >
+        <span class="chip c-corner">корнер-кейс</span>
+      </li>
+      <li>
+        <a href="#t64">Telegram выключен на сервере</a>
         <span class="chip c-corner">корнер-кейс</span>
       </li>
     </ol>
@@ -3031,34 +3055,37 @@
           <div class="act">Нажмите <span class="ui">«Continue»</span>.</div>
           <div class="exp">
             Шаг <span class="ui">«Your details»</span>: поля
-            <span class="ui">Name</span>, <span class="ui">Phone</span>,
-            <span class="ui">Note (optional)</span>; выбранное время и мастер
-            показаны над ними.
+            <span class="ui">Name</span> и
+            <span class="ui">Note (optional)</span>, поля телефона нет;
+            выбранное время и мастер показаны над ними. Кнопка —
+            <span class="ui">«Confirm phone in Telegram»</span> (окно Б в
+            инкогнито, сессии клиента нет).
           </div>
         </li>
         <li>
           <div class="act">
-            Нажмите <span class="ui">«Book»</span> с пустыми полями.
+            Нажмите <span class="ui">«Confirm phone in Telegram»</span> с пустым
+            Name.
           </div>
-          <div class="exp">
-            Ошибки под Name и Phone, курсор в первом неверном поле; запроса не
-            было.
-          </div>
+          <div class="exp">Ошибка под Name, курсор в нём; запроса не было.</div>
         </li>
         <li>
           <div class="act">
-            В <span class="ui">Name</span> — <code>Ира</code>, в
-            <span class="ui">Phone</span> — <code>+79001234567</code>, нажмите
+            В <span class="ui">Name</span> — <code>Ира</code>, нажмите
+            <span class="ui">«Confirm phone in Telegram»</span> и подтвердите
+            телефон в боте (как в сценарии 60), вернитесь и нажмите
             <span class="ui">«Book»</span>.
           </div>
           <div class="exp">
             Экран <span class="ui">«You are booked»</span>: время в часовом
-            поясе бизнеса, мастер, поле
+            поясе бизнеса, мастер, <span class="ui">«Booked on +…»</span> с
+            телефоном из Telegram, поле
             <span class="ui">«Your booking link»</span> со ссылкой и кнопка
             <span class="ui">«Copy link»</span>; текст
             <span class="ui"
-              >«Save this link: it is the only way to cancel or move your
-              booking.»</span
+              >«Save this link to cancel or move your booking. While you are
+              signed in on this phone, it is also under My bookings on the first
+              step.»</span
             >
           </div>
         </li>
@@ -3088,9 +3115,8 @@
             Обновите <code>localhost:5173/book/yoga-plus-qa</code> в окне Б.
           </div>
           <div class="exp">
-            Над списком мастеров ссылка
-            <span class="ui">«Your booking on …»</span> — она ведёт на страницу
-            записи (сценарий 49).
+            Над списком мастеров <span class="ui">«My bookings»</span> с этой
+            записью — она ведёт на страницу записи (сценарий 62).
           </div>
         </li>
       </ol>
@@ -3882,8 +3908,9 @@
         </li>
         <li>
           <div class="act">
-            <span class="ui">«Continue»</span>, имя <code>Олег</code>, телефон
-            <code>+79007654321</code>, <span class="ui">«Book»</span>.
+            <span class="ui">«Continue»</span>, имя <code>Олег</code>,
+            <span class="ui">«Book»</span> (телефон подтверждён в Telegram —
+            сценарий 60).
           </div>
           <div class="exp">
             <span class="ui">«You are booked»</span>: назван мастер, которому
@@ -3930,8 +3957,8 @@
         </li>
         <li>
           <div class="act">
-            Запишитесь на «Йога» (имя <code>Анна</code>, телефон
-            <code>+79001112233</code>).
+            Запишитесь на «Йога» (имя <code>Анна</code>; телефон подтверждён в
+            Telegram).
           </div>
           <div class="exp"><span class="ui">«You are booked»</span>.</div>
         </li>
@@ -4067,7 +4094,7 @@
             Откройте <code>localhost:5173/book/yoga-plus-qa</code>.
           </div>
           <div class="exp">
-            Ссылки <span class="ui">«Your booking on …»</span> над мастерами
+            В <span class="ui">«My bookings»</span> над мастерами этой записи
             больше нет.
           </div>
         </li>
@@ -4134,11 +4161,11 @@
       </div>
       <dl class="pre">
         <dt>Старт</dt>
-        <dd>Окно Б, один и тот же телефон <code>+79005550000</code></dd>
+        <dd>Окно Б, телефон подтверждён в Telegram (сценарий 60)</dd>
       </dl>
       <ol class="steps">
         <li>
-          <div class="act">Запишите этот телефон трижды на разные времена.</div>
+          <div class="act">Запишитесь трижды на разные времена.</div>
           <div class="exp">
             Три раза <span class="ui">«You are booked»</span>.
           </div>
@@ -4513,6 +4540,266 @@
           <div class="exp">
             Сообщения мастеру о его собственном изменении нет.
           </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t60">
+      <div class="hd">
+        <h3>60. Вход клиента: подтвердить телефон в Telegram</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Бэк с настоящим тестовым ботом Telegram (в канале <code>log</code>
+          бота нет). Окно Б в инкогнито на телефоне,
+          <code>localhost:5173/book/yoga-plus-qa</code>; Telegram на том же
+          телефоне.
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Мастер, время, <span class="ui">«Continue»</span>, имя
+            <code>Ира</code>,
+            <span class="ui">«Confirm phone in Telegram»</span>.
+          </div>
+          <div class="exp">
+            Вместо кнопки — ссылка <span class="ui">«Open Telegram»</span> и
+            <span class="ui">«Waiting for confirmation…»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Нажмите <span class="ui">«Open Telegram»</span>, в боте «Start» и
+            поделитесь своим контактом.
+          </div>
+          <div class="exp">
+            Telegram открылся (на iOS Safari — без блокировки всплывающих окон);
+            бот ответил, что телефон подтверждён.
+          </div>
+        </li>
+        <li>
+          <div class="act">Вернитесь на вкладку записи.</div>
+          <div class="exp">
+            Через пару секунд на шаге телефон из Telegram текстом,
+            <span class="ui">«Not your number?»</span> и кнопка
+            <span class="ui">«Book»</span>; имя не потерялось.
+          </div>
+        </li>
+        <li>
+          <div class="act">Нажмите <span class="ui">«Book»</span>.</div>
+          <div class="exp">
+            <span class="ui">«You are booked»</span>,
+            <span class="ui">«Booked on +…»</span> — тот же телефон. В окне О в
+            календаре запись «Ира» с этим телефоном.
+          </div>
+        </li>
+        <li>
+          <div class="act">Сделайте вторую запись в этом же окне.</div>
+          <div class="exp">
+            На шаге данных сразу телефон и <span class="ui">«Book»</span>, без
+            Telegram.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t61">
+      <div class="hd">
+        <h3>61. Вход клиента: чужой контакт и просроченная ссылка</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Как в сценарии 60, другое окно в инкогнито, сессии нет.</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Дойдите до <span class="ui">«Open Telegram»</span>, в боте перешлите
+            вместо своего контакт другого человека.
+          </div>
+          <div class="exp">
+            Бот отказывает (принимает только свой контакт); страница всё ещё
+            <span class="ui">«Waiting for confirmation…»</span>, телефона и
+            «Book» нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Не подтверждая, подождите 10 минут (вкладка открыта).
+          </div>
+          <div class="exp">
+            <span class="ui">«The link expired»</span> и
+            <span class="ui">«Try again»</span>.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            <span class="ui">«Try again»</span> — новая ссылка; подтвердите свой
+            контакт.
+          </div>
+          <div class="exp">Телефон и «Book», как в сценарии 60.</div>
+        </li>
+        <li>
+          <div class="act">
+            Пока идёт ожидание, сверните браузер на минуту и вернитесь (DevTools
+            → Network).
+          </div>
+          <div class="exp">
+            В свёрнутой вкладке запросов <code>client-login</code> нет, по
+            возвращении — один сразу, дальше раз в 2 с.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t62">
+      <div class="hd">
+        <h3>62. «My bookings»: перенос и отмена своей записи</h3>
+        <span class="chip c-happy">основной</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>
+          Окно Б после сценария 60: две записи впереди;
+          <code>localhost:5173/book/yoga-plus-qa</code>.
+        </dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">Посмотрите на первый шаг.</div>
+          <div class="exp">
+            Над мастерами <span class="ui">«My bookings»</span>: обе записи,
+            время в часовом поясе бизнеса и мастер.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте первую, <span class="ui">«Change time»</span>, другое
+            время, <span class="ui">«Move»</span>.
+          </div>
+          <div class="exp">
+            На странице новое время; в «My bookings» и в календаре окна О —
+            тоже.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            <span class="ui">«Cancel booking»</span> →
+            <span class="ui">«Yes, cancel»</span>.
+          </div>
+          <div class="exp">
+            <span class="ui">«Cancelled»</span>; в «My bookings» её больше нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Поменяйте в адресе <code>/my/&lt;id&gt;</code> id на id чужой записи
+            (из календаря окна О) или на любой.
+          </div>
+          <div class="exp">
+            <span class="ui">«This booking isn't yours or is gone»</span> со
+            ссылкой на первый шаг; чужая запись не показана.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t63">
+      <div class="hd">
+        <h3>63. Сессия клиента: два браузера, «Not your number?», cookie</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Окно Б с сессией (сценарий 60); второй браузер без неё.</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Во втором браузере откройте
+            <code>localhost:5173/book/yoga-plus-qa</code>; откройте там же
+            ссылку <code>/my/&lt;id&gt;</code> записи из окна Б.
+          </div>
+          <div class="exp">
+            «My bookings» нет; на странице записи — подтверждение телефона, а не
+            запись. Сессия первого браузера сюда не перешла.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В окне Б на шаге данных нажмите
+            <span class="ui">«Not your number?»</span>.
+          </div>
+          <div class="exp">
+            Телефон пропал, кнопка снова
+            <span class="ui">«Confirm phone in Telegram»</span>; на первом шаге
+            «My bookings» нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Войдите снова (сценарий 60), затем удалите cookie сайта (DevTools →
+            Application → Cookies) и обновите страницу.
+          </div>
+          <div class="exp">
+            Как без сессии: «My bookings» нет, на шаге данных — подтверждение.
+            Ошибок на экране нет.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Удалите cookie на шаге данных, когда телефон уже показан, и нажмите
+            <span class="ui">«Book»</span>.
+          </div>
+          <div class="exp">
+            Записи нет, шаг снова просит подтвердить телефон (а не показывает
+            ошибку); после подтверждения запись проходит.
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            В окне О войдите владельцем, в том же браузере откройте свою
+            <code>/book/yoga-plus-qa</code> без сессии клиента и пройдите до
+            подтверждения.
+          </div>
+          <div class="exp">
+            Кабинет не разлогинился: вернитесь на <code>/calendar</code> — вы
+            всё ещё в нём.
+          </div>
+        </li>
+      </ol>
+    </article>
+
+    <article class="tc" id="t64">
+      <div class="hd">
+        <h3>64. Telegram выключен на сервере</h3>
+        <span class="chip c-corner">корнер-кейс</span>
+      </div>
+      <dl class="pre">
+        <dt>Старт</dt>
+        <dd>Бэк без токена бота Telegram (канал выключен).</dd>
+      </dl>
+      <ol class="steps">
+        <li>
+          <div class="act">
+            Откройте <code>localhost:5173/book/yoga-plus-qa</code>.
+          </div>
+          <div class="exp">
+            Вместо мастеров
+            <span class="ui">«Online booking isn't available»</span> и
+            <span class="ui">«Call the business to book.»</span>
+          </div>
+        </li>
+        <li>
+          <div class="act">
+            Откройте ссылку управления старой записи
+            <code>/book/yoga-plus-qa/manage/&lt;token&gt;</code>.
+          </div>
+          <div class="exp">Работает: перенос и отмена, как в сценарии 49.</div>
         </li>
       </ol>
     </article>

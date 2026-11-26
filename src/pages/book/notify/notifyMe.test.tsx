@@ -29,6 +29,7 @@ afterEach(() => {
 const ALL = { telegram: true, whatsapp: true, push: false, email: false }
 const OFF = { telegram: false, whatsapp: false, push: [], email: null }
 const TELEGRAM = 'POST /api/public/bookings/tok/telegram-link'
+const TELEGRAM_OFF = '/api/public/bookings/tok/telegram'
 const WHATSAPP = '/api/public/bookings/tok/whatsapp'
 const MANAGED = 'GET /api/public/bookings/tok'
 
@@ -120,6 +121,40 @@ test('WhatsApp: turning on sends PUT with the locale', async () => {
   expect(api.calls.find((c) => c.route === `PUT ${WHATSAPP}`)?.body).toEqual({
     locale: 'en',
   })
+})
+
+test('Telegram: turning off sends DELETE, the row shows off without the spent link', async () => {
+  let on = false
+  const api = fakeApi({
+    [TELEGRAM]: () => [201, { url: 'https://t.me/bot?start=abc' }],
+    [`DELETE ${TELEGRAM_OFF}`]: () => {
+      on = false
+      return [204]
+    },
+    [MANAGED]: () => [200, { notifications: { ...OFF, telegram: on } }],
+  })
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  render(
+    <QueryClientProvider client={queryClient}>
+      <WithBooking />
+    </QueryClientProvider>,
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Telegram' }))
+  await screen.findByRole('link', { name: 'Open Telegram' })
+  // The bot connected; coming back to the tab asks for the booking.
+  on = true
+  await queryClient.fetchQuery({
+    ...getPublicBookingControllerManagedQueryOptions('tok'),
+    staleTime: 0,
+  })
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Turn off' }))
+  expect(await screen.findByRole('button', { name: 'Telegram' })).toBeTruthy()
+  expect(api.calls.some((c) => c.route === `DELETE ${TELEGRAM_OFF}`)).toBe(true)
+  // Its start token is spent: the old link is never offered again.
+  expect(screen.queryByRole('link', { name: 'Open Telegram' })).toBeNull()
 })
 
 // The booking is read like the parent does: the row follows its answers.
@@ -215,12 +250,6 @@ test('404 channelOff asks for the business again, so its channels are fresh', as
       api.calls.some((c) => c.route === 'GET /api/public/businesses/judo'),
     ).toBe(true),
   )
-})
-
-test('Telegram connected shows «On» and no way to turn it off', () => {
-  show({ notifications: { ...OFF, telegram: true } })
-  expect(screen.getByText('On')).toBeTruthy()
-  expect(screen.queryByRole('button', { name: 'Turn off' })).toBeNull()
 })
 
 // Push and email (the page's side of push is mocked at its module).

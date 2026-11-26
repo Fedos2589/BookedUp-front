@@ -28,8 +28,9 @@ const NOTHING_ON: PublicBookingControllerManaged200Notifications = {
   email: null,
 }
 
-// Step 4: the booking is made. The manage link is the only way to cancel or
-// move it, so it is shown big and can be copied.
+// Step 4: the booking is made. The manage link cancels or moves it from any
+// device; «My bookings» on step 1 does too, but only while the client's
+// session lives. So the link is shown big and can be copied.
 export function DoneStep({ booked, business }: Props) {
   const { name: businessName, timeZone } = business
   const { t, i18n } = useTranslation()
