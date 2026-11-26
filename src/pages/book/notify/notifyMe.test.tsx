@@ -29,6 +29,7 @@ afterEach(() => {
 const ALL = { telegram: true, whatsapp: true, push: false, email: false }
 const OFF = { telegram: false, whatsapp: false, push: [], email: null }
 const TELEGRAM = 'POST /api/public/bookings/tok/telegram-link'
+const TELEGRAM_OFF = '/api/public/bookings/tok/telegram'
 const WHATSAPP = '/api/public/bookings/tok/whatsapp'
 const MANAGED = 'GET /api/public/bookings/tok'
 
@@ -120,6 +121,32 @@ test('WhatsApp: turning on sends PUT with the locale', async () => {
   expect(api.calls.find((c) => c.route === `PUT ${WHATSAPP}`)?.body).toEqual({
     locale: 'en',
   })
+})
+
+test('Telegram: turning off sends DELETE and the row shows off', async () => {
+  let on = true
+  const api = fakeApi({
+    [`DELETE ${TELEGRAM_OFF}`]: () => {
+      on = false
+      return [204]
+    },
+    [MANAGED]: () => [200, { notifications: { ...OFF, telegram: on } }],
+  })
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  queryClient.setQueryData(
+    getPublicBookingControllerManagedQueryOptions('tok').queryKey,
+    { notifications: { ...OFF, telegram: true } } as never,
+  )
+  render(
+    <QueryClientProvider client={queryClient}>
+      <WithBooking />
+    </QueryClientProvider>,
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Turn off' }))
+  expect(await screen.findByRole('button', { name: 'Telegram' })).toBeTruthy()
+  expect(api.calls.some((c) => c.route === `DELETE ${TELEGRAM_OFF}`)).toBe(true)
 })
 
 // The booking is read like the parent does: the row follows its answers.
@@ -215,12 +242,6 @@ test('404 channelOff asks for the business again, so its channels are fresh', as
       api.calls.some((c) => c.route === 'GET /api/public/businesses/judo'),
     ).toBe(true),
   )
-})
-
-test('Telegram connected shows «On» and no way to turn it off', () => {
-  show({ notifications: { ...OFF, telegram: true } })
-  expect(screen.getByText('On')).toBeTruthy()
-  expect(screen.queryByRole('button', { name: 'Turn off' })).toBeNull()
 })
 
 // Push and email (the page's side of push is mocked at its module).

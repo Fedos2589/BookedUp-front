@@ -178,7 +178,7 @@ step 1. No session → `<ConfirmPhone>`, then the page. Cancel / Move with the i
 **Check:** test — open from the list, move → new time shown and the list refetched; cancel → status
 cancelled; an id not in the list → the text. `npm run check:chunks` green. Commit `feat(book): cancel and move my booking`.
 
-### - [ ] T7: the client's Telegram can be switched off
+### - [x] T7: the client's Telegram can be switched off
 
 **Files:** `src/pages/book/notify/NotifyMe.tsx`, `src/pages/book/notify/notifyMe.test.tsx`.
 

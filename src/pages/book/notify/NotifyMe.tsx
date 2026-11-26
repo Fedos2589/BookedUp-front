@@ -11,6 +11,7 @@ import {
   getPublicBookingControllerBusinessQueryKey,
   getPublicBookingControllerManagedQueryOptions,
   usePublicBookingControllerTelegramLink,
+  usePublicBookingControllerTelegramOff,
   usePublicBookingControllerWhatsappOff,
   usePublicBookingControllerWhatsappOn,
 } from '@/api/public-booking/public-booking'
@@ -80,9 +81,10 @@ export function NotifyMe({
   // A telegram-link answer changes nothing on the booking: no refetch after it.
   const telegram = usePublicBookingControllerTelegramLink({ mutation })
   const rowMutation = { ...mutation, onSettled: refetchBooking }
-  const whatsappOptions = { mutation: rowMutation }
-  const whatsappOn = usePublicBookingControllerWhatsappOn(whatsappOptions)
-  const whatsappOff = usePublicBookingControllerWhatsappOff(whatsappOptions)
+  const rowOptions = { mutation: rowMutation }
+  const telegramOff = usePublicBookingControllerTelegramOff(rowOptions)
+  const whatsappOn = usePublicBookingControllerWhatsappOn(rowOptions)
+  const whatsappOff = usePublicBookingControllerWhatsappOff(rowOptions)
 
   // Back from Telegram (the tab is visible again): the bot may have connected.
   // Only once a link was given out; window focus covers the rest.
@@ -112,8 +114,9 @@ export function NotifyMe({
             <ChannelRow
               label={t('notify.telegram')}
               on={notifications.telegram}
-              loading={telegram.isPending}
+              loading={telegram.isPending || telegramOff.isPending}
               onTurnOn={() => telegram.mutate({ token, data: { locale } })}
+              onTurnOff={() => telegramOff.mutate({ token })}
             >
               {/* A link the client taps: window.open after the answer is blocked
                 by iOS Safari, which only allows it inside the tap itself. */}
