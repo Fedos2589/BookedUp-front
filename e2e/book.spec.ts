@@ -1,7 +1,8 @@
 import { expect, type Page, test } from '@playwright/test'
 
-// A client's phone in English: book with «any», open the private link, move,
-// cancel. The API is answered by the test (as calendar.spec.ts does).
+// A client's phone in English: confirm the phone in Telegram and book, move and
+// cancel by the private link, move one of «My bookings». The API is answered by
+// the test (as calendar.spec.ts does).
 test.use({
   locale: 'en-US',
   isMobile: true,
@@ -12,6 +13,7 @@ test.use({
 const ANNA = '00000000-0000-4000-8000-000000000021'
 const BORIS = '00000000-0000-4000-8000-000000000022'
 const TOKEN = 'secret-token'
+const PHONE = '+4915112345678'
 const json = (body: unknown, status = 200) => ({
   status,
   contentType: 'application/json',
@@ -40,11 +42,34 @@ const slot = (staffId: string, hour: number) => ({
   oneOffSessionId: null,
 })
 
+// One of the signed-in client's bookings, as `my-bookings` lists it.
+const mine = (startsAt: string) => ({
+  id: 'b1',
+  clientName: 'Ira',
+  staffId: ANNA,
+  staffName: 'Anna',
+  startsAt,
+  endsAt: new Date(Date.parse(startsAt) + 3_600_000).toISOString(),
+  title: null,
+  status: 'BOOKED',
+  groupId: null,
+  oneOffSessionId: null,
+  canChange: true,
+})
+
 // The business of two masters with free times, and what the back says of the
 // booking as it moves: one `current` that the move and the cancel change.
+// `back.phone` is the client's session (null: not signed in; the bot's
+// `confirmed` signs in), `back.mine` their bookings to come.
 async function openBusiness(page: Page) {
   let current = { startsAt: tomorrowAt(9), status: 'BOOKED' }
   const requests: string[] = []
+  const back = {
+    requests,
+    phone: PHONE as string | null,
+    mine: [] as ReturnType<typeof mine>[],
+    bookBody: undefined as unknown,
+  }
 
   await page.route('**/api/public/businesses/judo', (route) =>
     route.fulfill(
@@ -67,15 +92,36 @@ async function openBusiness(page: Page) {
       }),
     ),
   )
-  // Signed in: the phone is the one confirmed in Telegram (the sign-in itself is T8).
   await page.route('**/api/public/client-session', (route) =>
-    route.fulfill(json({ phone: '+4915112345678' })),
+    route.fulfill(json({ phone: back.phone })),
   )
+  // The bot answers on the second poll: pending, then confirmed.
+  let polls = 0
+  await page.route('**/api/public/client-login', (route) => {
+    if (route.request().method() === 'POST') {
+      requests.push('sign in')
+      return route.fulfill(json({ url: 'https://t.me/bot?start=abc' }, 201))
+    }
+    polls += 1
+    if (polls < 2) return route.fulfill(json({ status: 'pending' }))
+    back.phone = PHONE
+    return route.fulfill(json({ status: 'confirmed' }))
+  })
+  await page.route('**/api/public/businesses/judo/my-bookings', (route) =>
+    route.fulfill(json({ bookings: back.mine })),
+  )
+  await page.route('**/api/public/businesses/judo/my-bookings/b1', (route) => {
+    const { startsAt } = route.request().postDataJSON()
+    requests.push(`move mine to ${startsAt}`)
+    back.mine = [mine(startsAt)]
+    return route.fulfill(json(back.mine[0]))
+  })
   await page.route('**/api/public/businesses/judo/slots?*', (route) =>
     route.fulfill(json([slot(ANNA, 9), slot(ANNA, 11), slot(BORIS, 9)])),
   )
   await page.route('**/api/public/businesses/judo/bookings', (route) => {
     requests.push('book')
+    back.bookBody = route.request().postDataJSON()
     return route.fulfill(
       json(
         {
@@ -89,7 +135,7 @@ async function openBusiness(page: Page) {
             groupId: null,
             oneOffSessionId: null,
           },
-          phone: '+4915112345678',
+          phone: PHONE,
           manageLink: `http://localhost:5180/book/judo/manage/${TOKEN}`,
         },
         201,
@@ -135,7 +181,7 @@ async function openBusiness(page: Page) {
     current = { ...current, status: 'CANCELLED' }
     return route.fulfill(json({}))
   })
-  return requests
+  return back
 }
 
 // Tomorrow is the second day of the strip; its times are the «Time» group.
@@ -154,7 +200,7 @@ const overflow = (page: Page) =>
 test('book with «any master», then move and cancel by the private link', async ({
   page,
 }) => {
-  const requests = await openBusiness(page)
+  const { requests } = await openBusiness(page)
   await page.goto('/book/judo')
 
   // Four screens: master → time → details → done.
@@ -184,6 +230,51 @@ test('book with «any master», then move and cancel by the private link', async
   // The move asked for the time the strip offered: Anna's 11:00Z (her 09:00Z
   // is the booking's own, not offered again).
   expect(requests).toEqual(['book', `move to ${tomorrowAt(11)}`, 'cancel'])
+})
+
+test('confirm the phone in Telegram, then book: the done screen says which phone', async ({
+  page,
+}) => {
+  const back = await openBusiness(page)
+  back.phone = null
+  await page.goto('/book/judo')
+
+  await page.getByRole('button', { name: 'Any free master' }).click()
+  await (await times(page)).first().click()
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await page.getByLabel('Name').fill('Ira')
+  await page.getByRole('button', { name: 'Confirm phone in Telegram' }).click()
+
+  // The link to the bot, then (the poll says confirmed) the phone and «Book».
+  await expect(
+    page.getByRole('link', { name: 'Open Telegram' }),
+  ).toHaveAttribute('href', 'https://t.me/bot?start=abc')
+  await page.getByRole('button', { name: 'Book' }).click()
+  await expect(
+    page.getByRole('heading', { name: 'You are booked' }),
+  ).toBeVisible()
+  await expect(page.getByText(/Booked on \+49/)).toBeVisible()
+  expect(back.requests).toEqual(['sign in', 'book'])
+  // The phone is the session's: never in the booking's body.
+  expect(back.bookBody).not.toHaveProperty('phone')
+})
+
+test('signed in: step 1 lists my bookings, and my booking moves', async ({
+  page,
+}) => {
+  const back = await openBusiness(page)
+  back.mine = [mine(tomorrowAt(9))]
+  await page.goto('/book/judo')
+
+  const list = page.getByRole('region', { name: 'My bookings' })
+  await list.getByRole('link', { name: /Anna/ }).click()
+  await expect(page.getByText('Booked', { exact: true })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Change time' }).click()
+  await (await times(page)).first().click()
+  await page.getByRole('button', { name: 'Move' }).click()
+  await expect(page.getByRole('button', { name: 'Change time' })).toBeVisible()
+  expect(back.requests).toEqual([`move mine to ${tomorrowAt(11)}`])
 })
 
 // iOS Safari lays the keyboard over the page: only the visual viewport

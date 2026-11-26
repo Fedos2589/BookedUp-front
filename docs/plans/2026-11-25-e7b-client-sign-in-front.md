@@ -8,8 +8,7 @@
 > **When the step is merged:** its last task updates the step's row in the common plan (another repo —
 > its own branch from `main` and its own commit; don't push).
 
-**Status:** not started — waits for the back's step S (BookedUp-back
-`docs/superpowers/plans/2026-11-25-e7b-client-sign-in-back.md`) to be merged.
+**Status:** done — T1–T8 (PRs #60–#62, T7–T8 in the PR of `e7b/telegram-off`).
 
 **Goal (epic E7b):** on `/book/<slug>` the client confirms their phone through the Telegram bot at the last
 step, then books; while the cookie lives the page knows them: the phone is filled in, and step 1 lists
@@ -187,7 +186,7 @@ query refetches (as the other rows do — see `rowMutation.ts`).
 
 **Check:** test — on → off sends the DELETE and the row shows off. Commit `feat(notify): switch Telegram off`.
 
-### - [ ] T8: e2e, manual scenarios, the plan
+### - [x] T8: e2e, manual scenarios, the plan
 
 **Files:** `e2e/book.spec.ts` (and its mocks), the manual test plan where E7a's lives, this file's status,
 the common plan's row T (in BookedUp-back, its own branch and commit).
