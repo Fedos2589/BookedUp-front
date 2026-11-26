@@ -33,6 +33,8 @@
     "saveLink": "Save this link: it is the only way to cancel or move your booking.",
     "myBookings": "My bookings",
     "badLink": "This link doesn't work",
+    "notMine": "This booking isn't yours or is gone",
+    "toBooking": "Book online",
     "manageStatus": {
       "BOOKED": "Booked",
       "CONFIRMED": "Confirmed",

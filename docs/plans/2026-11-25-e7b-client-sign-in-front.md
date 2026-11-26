@@ -155,7 +155,7 @@ shown. Remove every `savedBooking` use and the tests about it; the done screen s
 **Check:** tests — a session with two bookings → both listed with hrefs; no session → no list, no
 request to `my-bookings`; `grep -r localStorage src/pages/book` is empty. Commit `feat(book): my bookings`.
 
-### - [ ] T6a: cancel and move take their actions from outside
+### - [x] T6a: cancel and move take their actions from outside
 
 **Files:** `src/pages/book/{CancelBooking.tsx,MoveBooking.tsx,ManagePage.tsx}`, `src/pages/book/manage.test.tsx`.
 
@@ -165,7 +165,7 @@ token hooks themselves; `ManagePage` passes the token ones.
 
 **Check:** `manage.test.tsx` green unchanged (except imports). Commit `refactor(book): cancel and move take their actions`.
 
-### - [ ] T6b: a booking of mine
+### - [x] T6b: a booking of mine
 
 **Files:** `src/app/router.tsx`, create `src/pages/book/MyBookingPage.tsx` and
 `src/pages/book/myBooking.test.tsx`, `src/locales/{en,ru}.json`.

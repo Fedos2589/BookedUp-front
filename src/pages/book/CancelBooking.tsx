@@ -1,37 +1,25 @@
-import { useQueryClient } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { ConfirmDialog } from 'ted-ui/ConfirmDialog'
 import { Typography } from 'ted-ui/Typography'
 
-import {
-  getPublicBookingControllerManagedQueryKey,
-  usePublicBookingControllerCancel,
-} from '@/api/public-booking/public-booking'
 import styles from './BookingPage.module.scss'
 import { changeFailureKey } from './bookRefusal'
 
-type Props = { token: string }
+type Props = {
+  // Cancels the booking; rejects with the refusal. The parent owns the mutation
+  // (and what is refetched after it), so a token and an id both fit.
+  onCancel: () => Promise<unknown>
+  isPending: boolean
+}
 
-// «Cancel booking» behind a confirmation. Whatever the answer, the booking is
-// asked for again: a cancel refused because the time has passed must show the
-// booking as it is now (read-only). Any other failure is said under the button.
-export function CancelBooking({ token }: Props) {
+// «Cancel booking» behind a confirmation. A failure is said under the button.
+export function CancelBooking({ onCancel, isPending }: Props) {
   const { t } = useTranslation()
-  const queryClient = useQueryClient()
   const [asking, setAsking] = useState(false)
+  const [error, setError] = useState<unknown>()
   const opener = useRef<HTMLButtonElement>(null)
-  // The callbacks sit on the hook, not on mutate(): they still run if the
-  // client has left the page by the time the back answers.
-  const cancel = usePublicBookingControllerCancel({
-    mutation: {
-      onSettled: () =>
-        queryClient.invalidateQueries({
-          queryKey: getPublicBookingControllerManagedQueryKey(token),
-        }),
-    },
-  })
 
   return (
     <>
@@ -44,9 +32,9 @@ export function CancelBooking({ token }: Props) {
       >
         {t('booking.cancelBooking')}
       </Button>
-      {cancel.isError && (
+      {error !== undefined && (
         <Typography variant="t4" color="red-300" role="alert">
-          {t(changeFailureKey(cancel.error))}
+          {t(changeFailureKey(error))}
         </Typography>
       )}
       <ConfirmDialog
@@ -54,11 +42,14 @@ export function CancelBooking({ token }: Props) {
         colorScheme="red"
         title={t('booking.cancelTitle')}
         confirmLabel={t('booking.cancelConfirm')}
-        loading={cancel.isPending}
+        loading={isPending}
         finalFocus={opener}
         onClose={() => setAsking(false)}
         onConfirm={() => {
-          cancel.mutate({ token }, { onSettled: () => setAsking(false) })
+          setError(undefined)
+          onCancel()
+            .catch(setError)
+            .finally(() => setAsking(false))
         }}
       />
     </>
