@@ -48,6 +48,10 @@ SPA на React + TypeScript + Vite. Бэк — репозиторий BookedUp-b
 
 Браузер ходит в API только на свой origin, под `/api`; dev-proxy без `changeOrigin`; ошибки — `ApiError`. Подробности — скилл `front-api`.
 
+## Деплой
+
+Образ собирает workflow Release (вручную, из `main`); сервер, Caddy и команда деплоя — в `docs/deploy.md` бэка.
+
 ## PWA и экран телефона
 
 Главное действие формы — `ActionBar` из кита; высота — `dvh`, никогда `vh`; viewport meta не трогать; `/api` не кэшируется; каждая форма сообщает о несохранённом вводе (`useUnsavedInput`). Подробности — скилл `front-pwa`.

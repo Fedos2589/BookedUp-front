@@ -1,0 +1,47 @@
+name: Release
+
+on: workflow_dispatch
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # A second dispatch waits instead of racing this one on the gha cache.
+    concurrency: release
+    permissions:
+      contents: read
+      checks: read
+      packages: write
+    steps:
+      # The image build runs only `npm run build`: the rest of the checks are
+      # CI's job ("check" in ci.yml), and a commit without a green one is not
+      # released.
+      - name: CI passed on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ok=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs?check_name=check" \
+            --jq '.check_runs | length > 0 and all(.conclusion == "success")')
+          if [ "$ok" != true ]; then
+            echo "::error::CI (check) has not passed on ${{ github.sha }}"
+            exit 1
+          fi
+      # Pinned by commit: this job can write to GHCR. The comment is the tag.
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/fedos2589/bookedup-web:${{ github.sha }}
+          build-args: REVISION=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - run: echo "ghcr.io/fedos2589/bookedup-web:${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
