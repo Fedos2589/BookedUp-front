@@ -8,7 +8,7 @@
 > **When the step is merged:** its last task updates the step's row in the common plan (another repo —
 > its own branch from `main` and its own commit; don't push).
 
-**Status:** done — T1–T8 (PRs #60–#62, T7–T8 in the PR of `e7b/telegram-off`).
+**Status:** done — T1–T8 (PRs #60–#62, T7–T8 in #63).
 
 **Goal (epic E7b):** on `/book/<slug>` the client confirms their phone through the Telegram bot at the last
 step, then books; while the cookie lives the page knows them: the phone is filled in, and step 1 lists
