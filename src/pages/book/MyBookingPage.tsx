@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'ted-ui/Button'
 import { Typography } from 'ted-ui/Typography'
@@ -12,13 +12,17 @@ import {
   usePublicBookingControllerMoveMine,
   usePublicBookingControllerMyBookings,
 } from '@/api/public-booking/public-booking'
+import { ApiError } from '@/apiFetch'
 import { dateTimeIn, timeIn } from '@/dates'
 import { PagePending } from '@/pages/PagePending'
 import styles from './BookingPage.module.scss'
+import { refusalOf } from './bookRefusal'
 import { CancelBooking } from './CancelBooking'
 import { ConfirmPhone } from './ConfirmPhone'
 import { LoadFailed } from './LoadFailed'
 import { MoveBooking } from './MoveBooking'
+import { NoSuchPage } from './NoSuchPage'
+import { OnlineBookingOff } from './OnlineBookingOff'
 import { useBusinessManifest } from './useBusinessManifest'
 import { useClientSession } from './useClientSession'
 
@@ -42,14 +46,30 @@ export function MyBookingPage() {
     queryClient.invalidateQueries({
       queryKey: getPublicBookingControllerMyBookingsQueryKey(slug),
     })
+  // The session ended meanwhile (another tab, the cookie's term): ask for it
+  // again, the phone is then gone and the page asks to confirm it.
+  const lostSession = (error: unknown) => {
+    if (refusalOf(error).kind === 'signIn') void session.refresh()
+  }
   const cancel = usePublicBookingControllerCancelMine({
-    mutation: { onSettled: invalidate },
+    mutation: { onSettled: invalidate, onError: lostSession },
   })
   const move = usePublicBookingControllerMoveMine({
-    mutation: { onSuccess: () => setMoving(false), onSettled: invalidate },
+    mutation: {
+      onSuccess: () => setMoving(false),
+      onSettled: invalidate,
+      onError: lostSession,
+    },
   })
+  const listFailed = useEffectEvent(lostSession)
+  useEffect(() => {
+    if (mine.error) listFailed(mine.error)
+  }, [mine.error])
   useBusinessManifest(slug, business.data?.name)
 
+  if (business.error instanceof ApiError && business.error.status === 404) {
+    return <NoSuchPage />
+  }
   if (business.isError && !business.data) {
     return <LoadFailed onRetry={() => void business.refetch()} />
   }
@@ -61,21 +81,31 @@ export function MyBookingPage() {
         <Typography variant="h3" component="h1">
           {business.data.name}
         </Typography>
-        <ConfirmPhone
-          onConfirmed={async () => {
-            const { data } = await session.refresh()
-            return Boolean(data?.phone)
-          }}
-        />
+        {business.data.clientSignIn ? (
+          <ConfirmPhone
+            onConfirmed={async () => {
+              const { data } = await session.refresh()
+              return Boolean(data?.phone)
+            }}
+          />
+        ) : (
+          <OnlineBookingOff />
+        )}
       </main>
     )
   }
+  // The session is being asked for again (its end is the list's 401).
+  if (mine.isError && refusalOf(mine.error).kind === 'signIn')
+    return <PagePending />
   if (mine.isError && !mine.data) {
     return <LoadFailed onRetry={() => void mine.refetch()} />
   }
   if (!mine.data) return <PagePending />
 
-  const booking = mine.data.bookings.find((b) => b.id === bookingId)
+  // A cancelled booking is no longer in the list: its own answer is shown.
+  const booking =
+    mine.data.bookings.find((b) => b.id === bookingId) ??
+    (cancel.data?.id === bookingId ? cancel.data : undefined)
   if (!booking) {
     return (
       <main className={styles.page}>

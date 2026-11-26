@@ -105,14 +105,14 @@ test('moves my booking, and the list is asked for again', async () => {
 })
 
 test('cancels my booking and shows it cancelled', async () => {
-  const fake = api({ [CANCEL]: [200, mine('b1', { status: 'CANCELLED' })] })
+  const fake = api({
+    [CANCEL]: [200, mine('b1', { status: 'CANCELLED', canChange: false })],
+  })
   renderApp('/book/judo/my/b1')
 
   fireEvent.click(await screen.findByRole('button', { name: 'Cancel booking' }))
-  fake.set(MINE, [
-    200,
-    { bookings: [mine('b1', { status: 'CANCELLED', canChange: false })] },
-  ])
+  // The back's list holds no cancelled booking: the cancel's own answer shows.
+  fake.set(MINE, [200, { bookings: [] }])
   fireEvent.click(await screen.findByRole('button', { name: 'Yes, cancel' }))
 
   expect(await screen.findByText('Cancelled')).toBeTruthy()
@@ -144,4 +144,52 @@ test('without a session the phone is confirmed first and nothing is asked about 
 
   expect(await screen.findByText('Open Telegram')).toBeTruthy()
   expect(fake.calls.some((c) => c.route === MINE)).toBe(false)
+})
+
+const SIGN_IN = { statusCode: 401, code: 'clientSignIn', message: 'x' }
+const START = 'POST /api/public/client-login'
+const LOGIN = {
+  [START]: [201, { url: 'https://t.me/bot?start=a' }] as [number, unknown],
+  'GET /api/public/client-login': [200, { status: 'pending' }] as [
+    number,
+    unknown,
+  ],
+}
+
+test('a list refused for the session asks to confirm the phone again', async () => {
+  const fake = api({ ...LOGIN, [MINE]: [401, SIGN_IN] })
+  // The phone is gone by the time the session is asked for again.
+  setTimeout(() => fake.set(SESSION, [200, { phone: null }]), 0)
+  renderApp('/book/judo/my/b1')
+
+  expect(await screen.findByText('Open Telegram')).toBeTruthy()
+})
+
+test('a cancel refused for the session asks to confirm the phone again', async () => {
+  const fake = api({ ...LOGIN, [CANCEL]: [401, SIGN_IN] })
+  renderApp('/book/judo/my/b1')
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Cancel booking' }))
+  fake.set(SESSION, [200, { phone: null }])
+  fireEvent.click(await screen.findByRole('button', { name: 'Yes, cancel' }))
+
+  expect(await screen.findByText('Open Telegram')).toBeTruthy()
+})
+
+test('a business that is not there is "no such page"', async () => {
+  api({ [BUSINESS]: [404, { statusCode: 404, message: 'x' }] })
+  renderApp('/book/judo/my/b1')
+
+  expect(await screen.findByText(/no such page|doesn't exist/i)).toBeTruthy()
+})
+
+test('with Telegram off no login is started', async () => {
+  const fake = api({
+    [SESSION]: [200, { phone: null }],
+    [BUSINESS]: [200, { ...business, clientSignIn: false }],
+  })
+  renderApp('/book/judo/my/b1')
+
+  expect(await screen.findByText("Online booking isn't available")).toBeTruthy()
+  expect(fake.calls.some((c) => c.route === START)).toBe(false)
 })
