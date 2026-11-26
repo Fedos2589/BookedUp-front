@@ -8,7 +8,7 @@
 > **When the step is merged:** its last task updates the step's row in the common plan (another repo —
 > its own branch from `main` and its own commit; don't push).
 
-**Status:** done — T1–T8 (PRs #60–#62, T7–T8 in #63).
+**Status:** T1–T8 done (PRs #60–#63); T9 (show the sign-in's code) open — came from the review of back #58, back S12–S14 (PR #63) is merged.
 
 **Goal (epic E7b):** on `/book/<slug>` the client confirms their phone through the Telegram bot at the last
 step, then books; while the cookie lives the page knows them: the phone is filled in, and step 1 lists
@@ -196,3 +196,21 @@ bookings and the my-booking page moves one. Manual scenarios with a real test bo
 forward someone else's (refused), two browsers (the second gets no session), sign out, cookie gone.
 
 **Check:** `npm run test:e2e`, `npm run check:chunks`, `npm run build` green. Commit `test(book): client sign-in e2e`.
+
+### - [ ] T9: show the sign-in's code
+
+_From the review of back #58 (a forwarded sign-in link). Back S12–S14 is merged: `POST /public/client-login`
+answers `{ url, code }`; the bot's message shows the same four-digit code. The server never checks it — it
+lets a human spot a link that someone else sent them._
+
+**Files:** `src/api/…` (regenerated), `src/pages/book/ConfirmPhone.tsx`, `src/pages/book/ConfirmPhone.module.scss`
+(only if the line needs a style), `src/pages/book/confirmPhone.test.tsx`, `src/locales/{en,ru}.json`,
+`e2e/book.spec.ts` (mock of the start answer gains `code`).
+
+- `npm run api:generate` with the back on its `main` (`code` in the start answer).
+- On the waiting screen, next to the «Open Telegram» button: «Code: 4821 — the bot will ask you to compare
+  it» (en and ru). The code is kept while the login lives; «Try again» starts a new login and shows its new code.
+
+**Check:** test — the start answer's code is on the screen; «Try again» shows the second login's code. `npm run
+typecheck && npm run lint && npm test && npm run test:e2e`; en and ru strings both exist. Commit
+`feat(book): show the sign-in's code`.
