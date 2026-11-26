@@ -41,11 +41,13 @@ checks against a local image from T1).
 
 **Files:** create `Dockerfile`, `.dockerignore`.
 
-- Build stage `node:22-alpine` (check `node -v` satisfies `engines` ≥ 22.22.1): `apk add --no-cache git` (TedUI is a
+- Build stage pinned to an exact `node:22.<x>.<y>-alpine` that satisfies `engines` ≥ 22.22.1 (check with
+  `docker run --rm node:<tag> node -v`): `apk add --no-cache git` (TedUI is a
   `github:` dependency — drop it if `npm ci` works without git), `COPY package.json package-lock.json`, `npm ci`,
   `COPY . .`, `ARG VITE_SENTRY_DSN` `ARG VITE_POSTHOG_KEY` (empty by default), `npm run build`.
-- Final stage `caddy:2-alpine`: `COPY --from=build /app/dist /srv`. No Caddyfile of its own beyond the image's
-  default (the server mounts the back's one).
+- Final stage pinned `caddy:2.<minor>-alpine` (the current one): `COPY --from=build /app/dist /srv`. No Caddyfile of
+  its own (the server mounts the back's one). Note: the image's default Caddyfile serves `/usr/share/caddy`, not
+  `/srv` — so a bare `docker run` of the image shows Caddy's welcome page; the check below runs `caddy file-server`.
 - `.dockerignore`: `node_modules`, `dist`, `.git`, `.github`, `docs`, `e2e`, `e2e-pwa`, `playwright-report`,
   `test-results`, `.env*`, `*.log`.
 
@@ -55,7 +57,7 @@ checks against a local image from T1).
 docker build -t bookedup-web:local .
 docker run --rm --entrypoint ls bookedup-web:local /srv /srv/assets | head -30
 #   index.html, sw.js, workbox-*.js, push-sw.js, manifest.webmanifest, pwa-*.png, assets/…
-docker run --rm -d --name t1web -p 8080:80 bookedup-web:local && sleep 2
+docker run --rm -d --name t1web -p 8080:80 bookedup-web:local caddy file-server --root /srv --listen :80 && sleep 2
 curl -s localhost:8080/ | grep -c '<div id="root">'     # 1
 docker rm -f t1web
 ```
@@ -68,7 +70,8 @@ Keep `bookedup-web:local`: the back's S3 uses it. Commit `build(docker): the web
 
 - `on: workflow_dispatch`; job `if: github.ref == 'refs/heads/main'`; `permissions: contents: read, packages: write`.
 - `actions/checkout@v5`, `docker/setup-buildx-action`, `docker/login-action` (`ghcr.io`, `${{ github.actor }}`,
-  `${{ secrets.GITHUB_TOKEN }}`), `docker/build-push-action`: `platforms: linux/amd64`, `push: true`,
+  `${{ secrets.GITHUB_TOKEN }}`), `docker/build-push-action` — each pinned `@v<current major>` —: `platforms:
+linux/amd64`, `push: true`,
   `tags: ghcr.io/fedos2589/bookedup-web:${{ github.sha }}`, `cache-from/to: type=gha`. Last step writes the tag to
   `$GITHUB_STEP_SUMMARY`.
 - `AGENTS.md`: «Deploy: the image is built by the Release workflow (by hand, from `main`); the server, Caddy and the
@@ -96,7 +99,7 @@ Regenerate with `npm run api:generate` (the back running on its P1 branch).
 `src/pages/auth/forgotPassword.test.tsx`, `src/locales/en.json`, `src/locales/ru.json`, `src/api/` (generated).
 
 - Sign-in: a link «Forgot password?» under the password field → `/forgot-password`, carrying the typed email as
-  `?email=` (validated like `invitationTokenOf`: a string ≤ 320, else dropped).
+  `?email=` (validated like `invitationTokenOf`: a string ≤ 254 — the back's `emailSchema` limit — else dropped).
 - `/forgot-password` (`redirectIfSignedIn`, lazy, `AuthLayout`): one email field (the sign-in's schema), «Send link».
   After 204 the form is replaced by «If an account with <email> exists, we sent a link to it. It works for one hour.
   No letter? Check spam or send again» with «Send again» (same email) and «Back to sign-in». 429 →
