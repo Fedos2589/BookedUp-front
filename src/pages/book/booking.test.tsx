@@ -500,7 +500,9 @@ test('step 4: the booking, who, where, and the private link to copy', async () =
   expect(
     (screen.getByLabelText('Your booking link') as HTMLInputElement).value,
   ).toBe('https://x.test/manage/abc')
-  expect(screen.getByText(/only way to cancel or move/)).toBeTruthy()
+  expect(
+    screen.getByText(/from this link, or here under «My bookings»/),
+  ).toBeTruthy()
 
   fireEvent.click(screen.getByRole('button', { name: 'Copy link' }))
   await waitFor(() =>
