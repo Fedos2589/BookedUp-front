@@ -8,7 +8,7 @@
 > **When the step is merged:** its last task updates the step's row in the common plan (another repo —
 > its own branch from `main` and its own commit; don't push).
 
-**Status:** T1–T8 done (PRs #60–#63); T9 (show the sign-in's code) open — came from the review of back #58, back S12–S14 (PR #63) is merged.
+**Status:** T1–T9 done (PRs #60–#63, #65); only the common plan's step row is left.
 
 **Goal (epic E7b):** on `/book/<slug>` the client confirms their phone through the Telegram bot at the last
 step, then books; while the cookie lives the page knows them: the phone is filled in, and step 1 lists
@@ -197,7 +197,7 @@ forward someone else's (refused), two browsers (the second gets no session), sig
 
 **Check:** `npm run test:e2e`, `npm run check:chunks`, `npm run build` green. Commit `test(book): client sign-in e2e`.
 
-### - [ ] T9: show the sign-in's code
+### - [x] T9: show the sign-in's code
 
 _From the review of back #58 (a forwarded sign-in link). Back S12–S14 is merged: `POST /public/client-login`
 answers `{ url, code }`; the bot's message shows the same four-digit code. The server never checks it — it

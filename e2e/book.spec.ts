@@ -100,7 +100,9 @@ async function openBusiness(page: Page) {
   await page.route('**/api/public/client-login', (route) => {
     if (route.request().method() === 'POST') {
       requests.push('sign in')
-      return route.fulfill(json({ url: 'https://t.me/bot?start=abc' }, 201))
+      return route.fulfill(
+        json({ url: 'https://t.me/bot?start=abc', code: '4821' }, 201),
+      )
     }
     polls += 1
     if (polls < 2) return route.fulfill(json({ status: 'pending' }))
