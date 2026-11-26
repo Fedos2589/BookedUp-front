@@ -5,7 +5,7 @@
 > than described, stop and say so — it gets split, not pushed through. Tick the task's box when its check
 > passes, commit, don't push.
 
-**Status:** planned 2026-11-26, nothing done. Three branches: `e21/deploy` (T1–T2), `e21/password-reset`
+**Status:** planned 2026-11-26; T1–T2 done on `e21/deploy`. Three branches: `e21/deploy` (T1–T2), `e21/password-reset`
 (T3–T4), `e21/legal` (T5–T7).
 
 **Goal (epic E21):** the front ships as a Docker image that the server's Caddy runs: the built `dist/` inside
@@ -37,7 +37,7 @@ checks against a local image from T1).
 
 ---
 
-### - [ ] T1: the web image
+### - [x] T1: the web image
 
 **Files:** create `Dockerfile`, `.dockerignore`.
 
@@ -64,7 +64,7 @@ docker rm -f t1web
 
 Keep `bookedup-web:local`: the back's S3 uses it. Commit `build(docker): the web image`.
 
-### - [ ] T2: Release workflow and a pointer
+### - [x] T2: Release workflow and a pointer
 
 **Depends on:** T1. **Files:** create `.github/workflows/release.yml`; `AGENTS.md` (one line); this file (status, ticks).
 
