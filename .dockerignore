@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+.github
+docs
+e2e
+e2e-pwa
+playwright-report
+test-results
+.env*
+*.log
