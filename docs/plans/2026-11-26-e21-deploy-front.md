@@ -102,11 +102,13 @@ Regenerate with `npm run api:generate` (the back running on its P1 branch).
   `?email=` (validated like `invitationTokenOf`: a string ≤ 254 — the back's `emailSchema` limit — else dropped).
 - `/forgot-password` (`redirectIfSignedIn`, lazy, `AuthLayout`): one email field (the sign-in's schema), «Send link».
   After 204 the form is replaced by «If an account with <email> exists, we sent a link to it. It works for one hour.
-  No letter? Check spam or send again» with «Send again» (same email) and «Back to sign-in». 429 →
+  No letter? Check spam, or try again in a minute» with «Send again» (same email) and «Back to sign-in». The back
+  answers 204 and sends nothing to a repeat request inside one minute (D25), and a failed send is also a 204 — so
+  «Send again» is disabled for 60 s after each send (a visible countdown), not clickable into silence. 429 →
   `auth.tooManyAttempts`; anything else → `auth.failed`. `useUnsavedInput` as the sign-in.
 
 **Check:** `forgotPassword.test.tsx` with `fakeApi` — the link on sign-in carries the email; submit posts
-`{ email }`, shows the sent screen with the address; 429 shows the limit text; an invalid email doesn't post. `npm run
+`{ email }`, shows the sent screen with the address and «Send again» disabled until 60 s pass (fake timers); 429 shows the limit text; an invalid email doesn't post. `npm run
 typecheck && npm run lint && npm test`. Commit `feat(auth): ask for a password reset link`.
 
 ### - [ ] T4: the new-password page
